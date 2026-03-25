@@ -8,9 +8,16 @@ use Illuminate\Http\Request;
 
 class VilleController extends Controller
 {
-    public function index()
+    public function index(Request $request) // <-- Inject Request
     {
-        $villes = Ville::withCount('zones')->paginate(10);
+        $search = $request->get('search');
+
+        $villes = Ville::withCount('zones')
+            ->when($search, function ($query, $search) {
+                return $query->where('nom', 'like', "%{$search}%");
+            })
+            ->paginate(10);
+
         return view('villes.index', compact('villes'));
     }
 

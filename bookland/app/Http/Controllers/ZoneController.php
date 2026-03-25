@@ -9,9 +9,24 @@ use Illuminate\Http\Request;
 
 class ZoneController extends Controller
 {
-    public function index()
+    public function index(Request $request) // <-- Inject Request
     {
-        $zones = Zone::with(['ville', 'rbo'])->paginate(10);
+        $search = $request->get('search');
+
+        $zones = Zone::with(['ville', 'rbo'])
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('ville', function ($q) use ($search) {
+                        $q->where('nom', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('rbo', function ($q) use ($search) {
+                        $q->where('nom', 'like', "%{$search}%")
+                          ->orWhere('prenom', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%");
+                    });
+            })
+            ->paginate(10);
+
         return view('zones.index', compact('zones'));
     }
 

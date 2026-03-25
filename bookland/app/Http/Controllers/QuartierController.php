@@ -8,9 +8,22 @@ use Illuminate\Http\Request;
 
 class QuartierController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $quartiers = Quartier::with('zone')->paginate(15);
+        $search = $request->get('search');
+
+        $quartiers = Quartier::with('zone.ville') // Eager load zone and its ville
+            ->when($search, function ($query, $search) {
+                return $query->where('nom', 'like', "%{$search}%")
+                    ->orWhereHas('zone', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                          ->orWhereHas('ville', function ($q2) use ($search) {
+                              $q2->where('nom', 'like', "%{$search}%");
+                          });
+                    });
+            })
+            ->paginate(15);
+
         return view('quartiers.index', compact('quartiers'));
     }
 
