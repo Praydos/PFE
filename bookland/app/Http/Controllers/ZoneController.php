@@ -9,26 +9,32 @@ use Illuminate\Http\Request;
 
 class ZoneController extends Controller
 {
-    public function index(Request $request) // <-- Inject Request
-    {
-        $search = $request->get('search');
+    public function index(Request $request)
+{
+    // $user = auth()->user();
+    $search = $request->get('search');
 
-        $zones = Zone::with(['ville', 'rbo'])
-            ->when($search, function ($query, $search) {
-                return $query->where('name', 'like', "%{$search}%")
-                    ->orWhereHas('ville', function ($q) use ($search) {
-                        $q->where('nom', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('rbo', function ($q) use ($search) {
-                        $q->where('nom', 'like', "%{$search}%")
-                          ->orWhere('prenom', 'like', "%{$search}%")
-                          ->orWhere('email', 'like', "%{$search}%");
-                    });
-            })
-            ->paginate(10);
+    $query = Zone::with(['ville', 'rbo']);
 
-        return view('zones.index', compact('zones'));
+    // if ($user->role === 'delegue') {
+    //     $query->whereHas('delegates', fn($q) => $q->where('user_id', $user->id));
+    // } elseif ($user->role === 'rbo') {
+    //     $query->whereIn('ville_id', $user->rboVilles->pluck('id'));
+    // }
+    // Admin and ABO see all zones
+
+    if ($search) {
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhereHas('ville', fn($q2) => $q2->where('nom', 'like', "%{$search}%"))
+              ->orWhereHas('rbo', fn($q2) => $q2->where('nom', 'like', "%{$search}%")
+                                                      ->orWhere('prenom', 'like', "%{$search}%"));
+        });
     }
+
+    $zones = $query->paginate(10);
+    return view('zones.index', compact('zones'));
+}
 
     public function create()
     {   // fetch all villes, rbo users and delegue users to populate the form dropdowns
@@ -52,6 +58,12 @@ class ZoneController extends Controller
             'delegues' => 'array',
             'delegues.*' => 'exists:users,id',
         ]);
+
+         $ville = Ville::findOrFail($validated['ville_id']);
+        if (!$ville->rbos()->where('user_id', $validated['rbo_id'])->exists()) {
+            return back()->withErrors(['rbo_id' => 'Le RBO sélectionné n\'est pas assigné à cette ville.']);
+        }
+
         // Create the zone
         $zone = Zone::create([
             'name' => $validated['name'],

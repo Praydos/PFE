@@ -89,4 +89,9 @@ class VilleController extends Controller
 
     return redirect()->back()->with('success', 'Zone assignée à la ville.');
 }
+
+    public function getRbos(Ville $ville)
+    {
+        return response()->json($ville->rbos);
+    }
 }

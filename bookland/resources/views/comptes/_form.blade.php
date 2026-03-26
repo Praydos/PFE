@@ -79,7 +79,7 @@
 <div class="row">
     <div class="col-md-6 mb-3">
     <label for="delegue_id" class="form-label">Délégué pédagogique</label>
-    <select class="form-select @error('delegue_id') is-invalid @enderror" id="delegue_id" name="delegue_id" required>
+    <select class="form-select @error('delegue_id') is-invalid @enderror" id="delegue_id" name="delegue_id" >
         <option value="">Sélectionnez un délégué</option>
         @foreach($delegues as $delegue)
             @php

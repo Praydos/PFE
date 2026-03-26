@@ -337,7 +337,115 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 
 /* Pagination wrapper */
 /* ── Pagination fix ──────────────────────────────────── */
+/* ── Modal (reused from roles view) ─────────────────── */
+.dr-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26,31,54,.42);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.dr-modal-overlay.visible { display: flex; animation: oIn .2s ease both; }
+@keyframes oIn { from { opacity: 0; } to { opacity: 1; } }
 
+.dr-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-md);
+    border-radius: var(--r-xl);
+    width: 100%; max-width: 480px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: mIn .28s cubic-bezier(.34,1.4,.64,1) both;
+}
+@keyframes mIn {
+    from { opacity: 0; transform: scale(.94) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.dr-modal-hd {
+    padding: 1.35rem 1.6rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    background: linear-gradient(to bottom, #fafbff, #fff);
+}
+.modal-icon {
+    width: 40px; height: 40px;
+    border-radius: var(--r-md);
+    background: var(--blue-light);
+    border: 1px solid var(--blue-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blue);
+    flex-shrink: 0;
+}
+.modal-title-grp { flex: 1; }
+.modal-title-grp h2 { font-size: 1rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
+.modal-title-grp p  { font-size: .78rem; color: var(--text-muted); margin-top: .2rem; }
+
+.modal-close {
+    width: 30px; height: 30px;
+    border-radius: var(--r-xs);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--t);
+    flex-shrink: 0;
+}
+.modal-close:hover { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.2); }
+
+.dr-modal-body {
+    padding: 1.25rem 1.6rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+.dr-modal-body::-webkit-scrollbar { width: 4px; }
+.dr-modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.loc-detail-row {
+    display: flex;
+    align-items: baseline;
+    gap: .75rem;
+    padding: .85rem 0;
+    border-bottom: 1px solid var(--border);
+}
+.loc-detail-icon {
+    width: 28px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+}
+.loc-detail-label {
+    width: 80px;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.loc-detail-value {
+    flex: 1;
+    font-size: .85rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+.dr-modal-ft {
+    padding: 1rem 1.6rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: .6rem;
+    background: var(--bg-base);
+}
 /* ── Responsive ────────────────────────────────────── */
 @media (max-width: 768px) {
     .cp-page { padding: 1.25rem 1rem 2rem; }
@@ -470,9 +578,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                     <tr>
                         <th>#</th>
                         <th>Établissement</th>
-                        <th>Ville</th>
-                        <th>Zone</th>
-                        <th>Quartier</th>
+                        <th>Géographie</th>
                         <th>Délégué</th>
                         <th>Téléphone</th>
                         <th>Email</th>
@@ -502,35 +608,27 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                             </div>
                         </td>
 
-                        {{-- Ville --}}
                         <td>
-                            @if($compte->ville)
-                                <div class="loc-cell">
-                                    <span class="loc-dot"></span>
-                                    {{ $compte->ville->nom }}
-                                </div>
-                            @else
-                                <span style="color:var(--text-hint);">—</span>
-                            @endif
-                        </td>
-
-                        {{-- Zone --}}
-                        <td>
-                            @if($compte->zone)
-                                <span style="font-size:.81rem;color:var(--text-secondary);">{{ $compte->zone->name }}</span>
-                            @else
-                                <span style="color:var(--text-hint);">—</span>
-                            @endif
-                        </td>
-
-                        {{-- Quartier --}}
-                        <td>
-                            @if($compte->quartier)
-                                <span style="font-size:.81rem;color:var(--text-secondary);">{{ $compte->quartier->nom }}</span>
-                            @else
-                                <span style="color:var(--text-hint);">—</span>
-                            @endif
-                        </td>
+    @php
+        $villeName = $compte->ville?->nom ?? '—';
+        $zoneName = $compte->zone?->name ?? '—';
+        $quartierName = $compte->quartier?->nom ?? '—';
+        $hasLocation = $compte->ville || $compte->zone || $compte->quartier;
+    @endphp
+    <div class="loc-cell" style="cursor:pointer;" 
+         data-ville="{{ $villeName }}"
+         data-zone="{{ $zoneName }}"
+         data-quartier="{{ $quartierName }}"
+         data-etablissement="{{ $compte->etablissement }}">
+        <span class="loc-dot"></span>
+        <span style="font-size:.81rem;color:var(--text-secondary);">
+            {{ $hasLocation ? ($quartierName != '—' ? $quartierName : ($zoneName != '—' ? $zoneName : $villeName)) : '—' }}
+        </span>
+        @if($hasLocation)
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        @endif
+    </div>
+</td>
 
                         {{-- Délégué --}}
                         <td>
@@ -623,6 +721,43 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     </div>
 
 </div>
+{{-- ── Modal for Geography details ─────────────────────── --}}
+<div class="dr-modal-overlay" id="drModalGeo">
+    <div class="dr-modal" role="dialog" aria-modal="true" aria-labelledby="drModalGeoTitle">
+        <div class="dr-modal-hd">
+            <div class="modal-icon">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="modal-title-grp">
+                <h2 id="drModalGeoTitle">Détails géographiques</h2>
+                <p id="drModalGeoSubtitle">Établissement</p>
+            </div>
+            <button class="modal-close" id="drModalGeoClose" aria-label="Fermer">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="dr-modal-body" id="drModalGeoBody">
+            <div class="loc-detail-row">
+                <div class="loc-detail-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+                <div class="loc-detail-label">Quartier</div>
+                <div class="loc-detail-value" id="geo-quartier">—</div>
+            </div>
+            <div class="loc-detail-row">
+                <div class="loc-detail-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+                <div class="loc-detail-label">Zone</div>
+                <div class="loc-detail-value" id="geo-zone">—</div>
+            </div>
+            <div class="loc-detail-row">
+                <div class="loc-detail-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+                <div class="loc-detail-label">Ville</div>
+                <div class="loc-detail-value" id="geo-ville">—</div>
+            </div>
+        </div>
+        <div class="dr-modal-ft">
+            <button class="btn-cp btn-cp-ghost" id="drModalGeoCancel">Fermer</button>
+        </div>
+    </div>
+</div>
 
 @endsection
 
@@ -639,5 +774,43 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         }
     });
 })();
+
+
+// Geography modal logic
+const geoModal = document.getElementById('drModalGeo');
+const geoTitle = document.getElementById('drModalGeoSubtitle');
+const geoQuartier = document.getElementById('geo-quartier');
+const geoZone = document.getElementById('geo-zone');
+const geoVille = document.getElementById('geo-ville');
+
+function openGeoModal(etablissement, quartier, zone, ville) {
+    geoTitle.textContent = etablissement;
+    geoQuartier.textContent = quartier !== '—' ? quartier : 'Non renseigné';
+    geoZone.textContent = zone !== '—' ? zone : 'Non renseigné';
+    geoVille.textContent = ville !== '—' ? ville : 'Non renseigné';
+    geoModal.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeGeoModal() {
+    geoModal.classList.remove('visible');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('drModalGeoClose').addEventListener('click', closeGeoModal);
+document.getElementById('drModalGeoCancel').addEventListener('click', closeGeoModal);
+geoModal.addEventListener('click', e => { if (e.target === geoModal) closeGeoModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGeoModal(); });
+
+// Attach click handlers to geography cells
+document.querySelectorAll('.loc-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+        const etablissement = cell.dataset.etablissement;
+        const quartier = cell.dataset.quartier;
+        const zone = cell.dataset.zone;
+        const ville = cell.dataset.ville;
+        openGeoModal(etablissement, quartier, zone, ville);
+    });
+});
 </script>
 @endpush

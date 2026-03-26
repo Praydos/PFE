@@ -41,6 +41,34 @@
         </select>
         @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
+        {{-- After the role select --}}
+    <div id="rbo-villes-container" class="form-group" style="{{ $user->role == 'rbo' ? '' : 'display:none;' }}">
+        <label>Villes assignées (pour RBO)</label>
+        <select name="ville_ids[]" id="ville_ids" class="form-control" multiple>
+            @foreach($villes as $ville)
+                <option value="{{ $ville->id }}" {{ in_array($ville->id, $assignedVilles ?? []) ? 'selected' : '' }}>
+                    {{ $ville->nom }}
+                </option>
+            @endforeach
+        </select>
+        <small class="form-text text-muted">Sélectionnez les villes que ce RBO supervisera.</small>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelect = document.getElementById('role');
+        const rboContainer = document.getElementById('rbo-villes-container');
+        function toggleRboVilles() {
+            if (roleSelect.value === 'rbo') {
+                rboContainer.style.display = 'block';
+            } else {
+                rboContainer.style.display = 'none';
+            }
+        }
+        roleSelect.addEventListener('change', toggleRboVilles);
+        toggleRboVilles(); // initial state
+    });
+    </script>
     <div class="col-md-6 mb-3">
         <label for="ville_id" class="form-label">Ville (optionnelle)</label>
         <select class="form-select @error('ville_id') is-invalid @enderror" id="ville_id" name="ville_id">

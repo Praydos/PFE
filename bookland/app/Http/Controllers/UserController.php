@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Ville;
 use App\Models\Zone;
+use App\Models\Compte;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -34,35 +37,51 @@ class UserController extends Controller
     {
         $villes = Ville::all();
         $roles = ['admin', 'rbo', 'delegue', 'abo'];
-        $selectedRole = request('role', 'delegue'); // default to delegue
-        return view('users.create', compact('villes', 'roles', 'selectedRole'));
+        $selectedRole = request('role', 'delegue');
+        $user = new User(['role' => $selectedRole]); // dummy user for the form
+        $assignedVilles = [];
+        return view('users.create', compact('villes', 'roles', 'user', 'assignedVilles'));
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'prenom' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'is_active' => 'boolean',
-            'role' => 'required|in:admin,rbo,delegue,abo',
-            'ville_id' => 'nullable|exists:villes,id',
-        ]);
+{
+    $validated = $request->validate([
+        'nom' => 'required|string|max:255',
+        'prenom' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:8|confirmed',
+        'is_active' => 'boolean',
+        'role' => 'required|in:admin,rbo,delegue,abo',
+        'ville_id' => 'nullable|exists:villes,id',
+        'ville_ids' => 'nullable|array',
+        'ville_ids.*' => 'exists:villes,id',
+    ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+    $validated['password'] = Hash::make($validated['password']);
 
-        User::create($validated);
+    $user = User::create($validated);
 
-        return redirect()->route('users.index')
-            ->with('success', 'Utilisateur créé.');
+    // Handle RBO ville assignments
+    if ($user->role === 'rbo') {
+        $villeIds = $request->input('ville_ids', []);
+        $user->rboVilles()->sync($villeIds);
+    } else {
+        $user->rboVilles()->detach(); // optional, but ensures no leftover data
     }
+
+    return redirect()->route('users.index')
+        ->with('success', 'Utilisateur créé.');
+}
     // edit user with role and city assignment
     public function edit(User $user)
     {
         $villes = Ville::all();
         $roles = ['admin', 'rbo', 'delegue', 'abo'];
-        return view('users.edit', compact('user', 'villes', 'roles'));
+
+        // For RBOs, get the currently assigned villes
+        $assignedVilles = $user->role === 'rbo' ? $user->rboVilles->pluck('id')->toArray() : [];
+
+        return view('users.edit', compact('user', 'villes', 'roles', 'assignedVilles'));
     }
 
     public function update(Request $request, User $user)
@@ -85,8 +104,16 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        return redirect()->route('users.index')
-            ->with('success', 'Utilisateur mis à jour.');
+        // Handle RBO ville assignments
+        if ($user->role === 'rbo') {
+            $villeIds = $request->input('ville_ids', []);
+            $user->rboVilles()->sync($villeIds);
+        } else {
+            // Ensure no leftover assignments for non‑RBO users
+            $user->rboVilles()->detach();
+        }
+
+        return redirect()->route('users.index')->with('success', 'Utilisateur mis à jour.');
     }
     // delete user with checks for assigned zones and comptes
     public function destroy(User $user)
@@ -115,6 +142,12 @@ class UserController extends Controller
                 ->with('error', 'Cet utilisateur est délégué de comptes, veuillez d\'abord réassigner ces comptes.');
         }
 
+        //check if user is rbo for any city
+        if ($user->role === 'rbo' && $user->rboVilles()->count() > 0) {
+            return redirect()->route('users.index')
+                ->with('error', 'Cet utilisateur est RBO de villes, veuillez d\'abord réassigner ces villes.');
+            }
+
         $user->delete();
 
         return redirect()->route('users.index')
@@ -124,41 +157,47 @@ class UserController extends Controller
 
     // New method to show roles and assignments
     public function roles()
-{
-    // Get all delegates with their city and assigned zones (with city)
-    $delegues = User::with(['ville', 'zones.ville'])
-        ->where('role', 'delegue')
-        ->get();
+    {
+        $delegues = User::with(['ville', 'zones.ville', 'comptes'])
+            ->where('role', 'delegue')
+            ->get();
 
-    // Get all RBOs with their city, the zones they supervise (with city), and delegates in those zones
-    $rbos = User::with(['ville', 'zonesAsRbo.ville', 'zonesAsRbo.delegates'])
-        ->where('role', 'rbo')
-        ->get();
+        $rbos = User::with(['ville', 'zonesAsRbo.ville', 'zonesAsRbo.delegates'])
+            ->where('role', 'rbo')
+            ->get();
 
-    return view('users.roles', compact('delegues', 'rbos'));
-} 
-
+        return view('users.roles', compact('delegues', 'rbos'));
+    }
   // fetch zones for a user (delegue or rbo) for AJAX requests
   
 
     public function getZones(User $user)
-    {
-        // Only for delegates and RBOs
-        if (!in_array($user->role, ['delegue', 'rbo'])) {
-            return response()->json(['error' => 'Invalid user type'], 400);
-        }
-
-        $allZones = Zone::with('ville')->get();
-        $assignedZoneIds = $user->role === 'delegue' 
-            ? $user->zones->pluck('id')->toArray() 
-            : $user->zonesAsRbo->pluck('id')->toArray();
-
-        return response()->json([
-            'all_zones' => $allZones,
-            'assigned_ids' => $assignedZoneIds,
-            'role' => $user->role
-        ]);
+{
+    if (!in_array($user->role, ['delegue', 'rbo'])) {
+        return response()->json(['error' => 'Invalid user type'], 400);
     }
+
+    if ($user->role === 'delegue') {
+        // Delegates: see all zones (many-to-many assignment)
+        $allZones = Zone::with('ville')->get();
+        $assignedIds = $user->zones->pluck('id')->toArray();
+    } else { // rbo
+        // RBO: see only zones they already supervise + free zones
+        $allZones = Zone::with('ville')
+            ->where(function ($query) use ($user) {
+                $query->where('rbo_id', $user->id)
+                      ->orWhereNull('rbo_id');
+            })
+            ->get();
+        $assignedIds = $user->zonesAsRbo->pluck('id')->toArray();
+    }
+
+    return response()->json([
+        'all_zones' => $allZones,
+        'assigned_ids' => $assignedIds,
+        'role' => $user->role,
+    ]);
+}
 
     public function updateZones(Request $request, User $user)
     {
@@ -186,6 +225,63 @@ class UserController extends Controller
         return response()->json(['success' => true]);
     }
 
+
+
+
+
+    public function getComptes(User $user)
+{
+    if ($user->role !== 'delegue') {
+        return response()->json(['error' => 'Invalid user type'], 400);
+    }
+    // Get comptes assigned to this user OR unassigned (delegue_id null)
+    $allComptes = Compte::with(['quartier.zone.ville'])
+        ->where(function($query) use ($user) {
+            $query->where('delegue_id', $user->id)
+                  ->orWhereNull('delegue_id');
+        })
+        ->get();
+    $assignedIds = $user->comptes->pluck('id')->toArray(); // these are the ones currently assigned
+
+    return response()->json([
+        'all_comptes' => $allComptes,
+        'assigned_ids' => $assignedIds,
+    ]);
+}
+
+public function updateComptes(Request $request, User $user)
+{
+    try {
+        if ($user->role !== 'delegue') {
+            return response()->json(['error' => 'L\'utilisateur n\'est pas un délégué.'], 400);
+        }
+
+        $request->validate([
+            'compte_ids' => 'array',
+            'compte_ids.*' => 'exists:comptes,id',
+        ]);
+
+        $newIds = $request->compte_ids ?? [];
+
+        DB::transaction(function () use ($user, $newIds) {
+            // Unassign comptes that were assigned to this user but not in new selection
+            $user->comptes()
+                 ->whereNotIn('id', $newIds)
+                 ->update(['delegue_id' => null]);
+
+            // Assign comptes that are in new selection and currently unassigned
+            Compte::whereIn('id', $newIds)
+                  ->whereNull('delegue_id')
+                  ->update(['delegue_id' => $user->id]);
+        });
+
+        return response()->json(['success' => true]);
+
+    } catch (\Exception $e) {
+        Log::error('Error updating comptes: ' . $e->getMessage());
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
 
 
 

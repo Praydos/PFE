@@ -733,14 +733,19 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                     </div>
                                 </td>
                                 <td>
-                                    @if($delegue->ville)
+                                    @php $comptesCount = $delegue->comptes->count(); @endphp
+                                    <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
                                         <span class="dr-badge bd-teal">
-                                            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                            {{ $delegue->ville->nom }}
+                                            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                            {{ $comptesCount }} compte{{ $comptesCount > 1 ? 's' : '' }}
                                         </span>
-                                    @else
-                                        <span style="color:var(--text-hint);font-size:.8rem;">—</span>
-                                    @endif
+                                        <button class="btn-dr btn-dr-sm btn-dr-info assign-comptes-btn"
+                                                data-user-id="{{ $delegue->id }}"
+                                                data-user-name="{{ $delegue->prenom }} {{ $delegue->nom }}">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                            Gérer
+                                        </button>
+                                    </div>
                                 </td>
                                 <td>
                                     @if($delegue->zones->isNotEmpty())
@@ -928,6 +933,43 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             </button>
         </div>
     </div>
+    
+</div>
+{{-- ── Modal for Zones ─────────────────────────────── --}}
+{{-- <div class="dr-modal-overlay" id="drModalOverlay">
+    <div class="dr-modal" role="dialog" aria-modal="true" aria-labelledby="drModalTitle">
+        <div class="dr-modal-hd">...</div>
+        <div class="dr-modal-body" id="drModalBody">...</div>
+        <div class="dr-modal-ft">...</div>
+    </div>
+</div> --}}
+
+{{-- ── Modal for Comptes ─────────────────────────────── --}}
+<div class="dr-modal-overlay" id="drModalComptes">
+    <div class="dr-modal" role="dialog" aria-modal="true" aria-labelledby="drModalComptesTitle">
+        <div class="dr-modal-hd">
+            <div class="modal-icon">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div class="modal-title-grp">
+                <h2 id="drModalComptesTitle">Assigner des comptes clients</h2>
+                <p id="drModalComptesSubtitle">Sélectionnez les comptes à attribuer</p>
+            </div>
+            <button class="modal-close" id="drModalComptesClose" aria-label="Fermer">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="dr-modal-body" id="drModalComptesBody">
+            <div class="dr-loading"><div class="dr-spinner"></div>Chargement des comptes…</div>
+        </div>
+        <div class="dr-modal-ft">
+            <button class="btn-dr btn-dr-ghost" id="drModalComptesCancel">Annuler</button>
+            <button class="btn-dr btn-dr-primary" id="drModalComptesSave">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Enregistrer
+            </button>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -1030,5 +1072,103 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         });
     });
 })();
+
+////
+
+// ---- Comptes modal logic ----
+let currentComptesUserId = null;
+const comptesOverlay = document.getElementById('drModalComptes');
+const comptesModalBody = document.getElementById('drModalComptesBody');
+const comptesSubtitle = document.getElementById('drModalComptesSubtitle');
+
+function openComptesModal() {
+    comptesOverlay.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+}
+function closeComptesModal() {
+    comptesOverlay.classList.remove('visible');
+    document.body.style.overflow = '';
+}
+
+// Close buttons
+document.getElementById('drModalComptesClose')?.addEventListener('click', closeComptesModal);
+document.getElementById('drModalComptesCancel')?.addEventListener('click', closeComptesModal);
+comptesOverlay?.addEventListener('click', e => { if (e.target === comptesOverlay) closeComptesModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeComptesModal(); });
+
+// Attach click handlers to "Gérer" buttons
+document.querySelectorAll('.assign-comptes-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        currentComptesUserId = btn.dataset.userId;
+        comptesSubtitle.textContent = btn.dataset.userName;
+        comptesModalBody.innerHTML = '<div class="dr-loading"><div class="dr-spinner"></div>Chargement des comptes…</div>';
+        openComptesModal();
+
+        fetch(`/users/${currentComptesUserId}/comptes`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.all_comptes.length) {
+                    comptesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucun compte client disponible.</p>';
+                    return;
+                }
+                comptesModalBody.innerHTML = data.all_comptes.map(compte => {
+    const checked = data.assigned_ids.includes(compte.id) ? 'checked' : '';
+    const clientName = compte.etablissement || 'Sans nom';
+    const type = compte.type ? `(${compte.type})` : '';
+    let location = '—';
+    if (compte.quartier) {
+        const villeName = compte.quartier.zone?.ville?.nom || '?';
+        location = `${compte.quartier.nom} (${villeName})`;
+    } else if (compte.ville) {
+        location = compte.ville.nom;
+    } else if (compte.zone) {
+        location = compte.zone.name;
+    }
+    return `
+    <label class="zone-check">
+        <input class="compte-checkbox" type="checkbox" value="${compte.id}" ${checked}>
+        <div class="zc-icon">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div>
+            <div class="zc-label">${clientName} ${type}</div>
+            <div class="zc-sub">${location}</div>
+        </div>
+    </label>`;
+}).join('');
+            })
+            .catch(() => {
+                comptesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des comptes.</p>';
+            });
+    });
+});
+
+// Save comptes
+document.getElementById('drModalComptesSave')?.addEventListener('click', function () {
+    const selected = [...document.querySelectorAll('.compte-checkbox:checked')].map(cb => cb.value);
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="dr-spinner" style="width:13px;height:13px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,.35);"></div> Enregistrement…';
+
+    fetch(`/users/${currentComptesUserId}/comptes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ compte_ids: selected })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeComptesModal();
+            location.reload();
+        } else {
+            alert('Erreur : ' + (data.error || 'inconnue'));
+        }
+    })
+    .catch(() => alert('Erreur réseau.'))
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Enregistrer';
+    });
+});
 </script>
 @endpush

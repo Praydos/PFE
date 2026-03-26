@@ -16,6 +16,11 @@ class Ville extends Model
         return $this->hasMany(Zone::class);
     }
 
+    public function rbos()
+    {
+        return $this->belongsToMany(User::class, 'rbo_ville');
+    }
+
     public function comptes()
     {
         return $this->hasMany(Compte::class);

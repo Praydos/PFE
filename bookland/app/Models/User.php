@@ -58,6 +58,19 @@ class User extends Authenticatable
         return $this->hasMany(Compte::class, 'delegue_id');
     }
 
+    // a rbo has many cities
+    public function rboVilles()
+    {
+        return $this->belongsToMany(Ville::class, 'rbo_ville');
+    }
+
+    //check if user is assigned to a zone 
+    
+    public function isRboForZone(Zone $zone)
+    {
+        return $this->role === 'rbo' && $this->rboVilles->contains($zone->ville);
+    }
+
     // Helper to check role
     public function hasRole($role)
     {

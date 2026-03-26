@@ -21,5 +21,7 @@ Route::resource('quartiers', QuartierController::class);
 // fetch and zone asignemnt for delegue and rbo
 Route::get('/users/{user}/zones', [UserController::class, 'getZones'])->name('users.zones.get');
 Route::post('/users/{user}/zones', [UserController::class, 'updateZones'])->name('users.zones.update');
-//assign zone to a city 
-Route::post('/villes/{ville}/assign-zone', [VilleController::class, 'assignZone'])->name('villes.assignZone');
+
+//fetch comptes for a given delegue 
+Route::get('/users/{user}/comptes', [UserController::class, 'getComptes'])->name('users.comptes');
+Route::post('/users/{user}/comptes', [UserController::class, 'updateComptes']);
