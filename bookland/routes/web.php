@@ -25,3 +25,10 @@ Route::post('/users/{user}/zones', [UserController::class, 'updateZones'])->name
 //fetch comptes for a given delegue 
 Route::get('/users/{user}/comptes', [UserController::class, 'getComptes'])->name('users.comptes');
 Route::post('/users/{user}/comptes', [UserController::class, 'updateComptes']);
+
+//fetch villes for rbos 
+Route::get('/users/{user}/villes', [UserController::class, 'getVilles'])->name('users.villes');
+Route::post('/users/{user}/villes', [UserController::class, 'updateVilles']);
+
+//
+Route::post('/villes/{ville}/assign-zone', [VilleController::class, 'assignZone'])->name('villes.assignZone');

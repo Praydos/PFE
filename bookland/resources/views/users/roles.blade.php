@@ -835,6 +835,12 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                                 Gérer zones
                             </button>
+                            <button class="btn-dr btn-dr-sm btn-dr-info assign-villes-btn"
+                                    data-user-id="{{ $rbo->id }}"
+                                    data-user-name="{{ $rbo->prenom }} {{ $rbo->nom }}">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                Gérer villes
+                            </button>
                             <form action="{{ route('users.destroy', $rbo) }}" method="POST" style="display:inline;">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn-dr btn-dr-sm btn-dr-danger" onclick="return confirm('Supprimer ce RBO ?')">
@@ -906,7 +912,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     </div>
 
 </div>
-
+{{-- ===================================================================================================== --}}
 {{-- ── Modal ─────────────────────────────────────────── --}}
 <div class="dr-modal-overlay" id="drModalOverlay">
     <div class="dr-modal" role="dialog" aria-modal="true" aria-labelledby="drModalTitle">
@@ -965,6 +971,34 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         <div class="dr-modal-ft">
             <button class="btn-dr btn-dr-ghost" id="drModalComptesCancel">Annuler</button>
             <button class="btn-dr btn-dr-primary" id="drModalComptesSave">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Enregistrer
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- ── Modal for Villes (RBO) ─────────────────────────────── --}}
+<div class="dr-modal-overlay" id="drModalVilles">
+    <div class="dr-modal" role="dialog" aria-modal="true" aria-labelledby="drModalVillesTitle">
+        <div class="dr-modal-hd">
+            <div class="modal-icon">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div class="modal-title-grp">
+                <h2 id="drModalVillesTitle">Assigner des villes</h2>
+                <p id="drModalVillesSubtitle">Sélectionnez les villes que ce RBO supervisera</p>
+            </div>
+            <button class="modal-close" id="drModalVillesClose" aria-label="Fermer">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="dr-modal-body" id="drModalVillesBody">
+            <div class="dr-loading"><div class="dr-spinner"></div>Chargement des villes…</div>
+        </div>
+        <div class="dr-modal-ft">
+            <button class="btn-dr btn-dr-ghost" id="drModalVillesCancel">Annuler</button>
+            <button class="btn-dr btn-dr-primary" id="drModalVillesSave">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                 Enregistrer
             </button>
@@ -1159,6 +1193,88 @@ document.getElementById('drModalComptesSave')?.addEventListener('click', functio
     .then(data => {
         if (data.success) {
             closeComptesModal();
+            location.reload();
+        } else {
+            alert('Erreur : ' + (data.error || 'inconnue'));
+        }
+    })
+    .catch(() => alert('Erreur réseau.'))
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Enregistrer';
+    });
+});
+
+//=======================================================================================================================
+// ---- Villes modal logic (RBO) ----
+let currentVillesUserId = null;
+const villesOverlay = document.getElementById('drModalVilles');
+const villesModalBody = document.getElementById('drModalVillesBody');
+const villesSubtitle = document.getElementById('drModalVillesSubtitle');
+
+function openVillesModal() {
+    villesOverlay.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+}
+function closeVillesModal() {
+    villesOverlay.classList.remove('visible');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('drModalVillesClose')?.addEventListener('click', closeVillesModal);
+document.getElementById('drModalVillesCancel')?.addEventListener('click', closeVillesModal);
+villesOverlay?.addEventListener('click', e => { if (e.target === villesOverlay) closeVillesModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVillesModal(); });
+
+document.querySelectorAll('.assign-villes-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        currentVillesUserId = btn.dataset.userId;
+        villesSubtitle.textContent = btn.dataset.userName;
+        villesModalBody.innerHTML = '<div class="dr-loading"><div class="dr-spinner"></div>Chargement des villes…</div>';
+        openVillesModal();
+
+        fetch(`/users/${currentVillesUserId}/villes`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.all_villes.length) {
+                    villesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucune ville disponible.</p>';
+                    return;
+                }
+                villesModalBody.innerHTML = data.all_villes.map(ville => {
+                    const checked = data.assigned_ids.includes(ville.id) ? 'checked' : '';
+                    return `
+                    <label class="zone-check">
+                        <input class="ville-checkbox" type="checkbox" value="${ville.id}" ${checked}>
+                        <div class="zc-icon">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        </div>
+                        <div>
+                            <div class="zc-label">${ville.nom}</div>
+                        </div>
+                    </label>`;
+                }).join('');
+            })
+            .catch(() => {
+                villesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des villes.</p>';
+            });
+    });
+});
+
+document.getElementById('drModalVillesSave')?.addEventListener('click', function () {
+    const selected = [...document.querySelectorAll('.ville-checkbox:checked')].map(cb => cb.value);
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="dr-spinner" style="width:13px;height:13px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,.35);"></div> Enregistrement…';
+
+    fetch(`/users/${currentVillesUserId}/villes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ ville_ids: selected })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeVillesModal();
             location.reload();
         } else {
             alert('Erreur : ' + (data.error || 'inconnue'));

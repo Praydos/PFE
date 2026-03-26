@@ -162,9 +162,9 @@ class UserController extends Controller
             ->where('role', 'delegue')
             ->get();
 
-        $rbos = User::with(['ville', 'zonesAsRbo.ville', 'zonesAsRbo.delegates'])
-            ->where('role', 'rbo')
-            ->get();
+        $rbos = User::with(['ville', 'zonesAsRbo.ville', 'zonesAsRbo.delegates', 'rboVilles'])
+        ->where('role', 'rbo')
+        ->get();
 
         return view('users.roles', compact('delegues', 'rbos'));
     }
@@ -280,6 +280,44 @@ public function updateComptes(Request $request, User $user)
     } catch (\Exception $e) {
         Log::error('Error updating comptes: ' . $e->getMessage());
         return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+//=======================================================================
+// New methods for RBO ville assignments
+public function getVilles(User $user)
+{
+    if ($user->role !== 'rbo') {
+        return response()->json(['error' => 'Seuls les RBOs peuvent avoir des villes assignées.'], 400);
+    }
+
+    $allVilles = Ville::all();
+    $assignedIds = $user->rboVilles->pluck('id')->toArray();
+
+    return response()->json([
+        'all_villes' => $allVilles,
+        'assigned_ids' => $assignedIds,
+    ]);
+}
+
+public function updateVilles(Request $request, User $user)
+{
+    if ($user->role !== 'rbo') {
+        return response()->json(['error' => 'Seuls les RBOs peuvent avoir des villes assignées.'], 400);
+    }
+
+    try {
+        $request->validate([
+            'ville_ids' => 'array',
+            'ville_ids.*' => 'exists:villes,id',
+        ]);
+
+        $user->rboVilles()->sync($request->ville_ids ?? []);
+
+        return response()->json(['success' => true]);
+    } catch (\Exception $e) {
+        Log::error('Error updating villes for RBO ' . $user->id . ': ' . $e->getMessage());
+        return response()->json(['error' => 'Erreur serveur: ' . $e->getMessage()], 500);
     }
 }
 
