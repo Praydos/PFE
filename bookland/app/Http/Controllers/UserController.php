@@ -178,23 +178,33 @@ class UserController extends Controller
     }
 
     if ($user->role === 'delegue') {
-        // Delegates: see all zones (many-to-many assignment)
+        // Delegate: all zones
         $allZones = Zone::with('ville')->get();
         $assignedIds = $user->zones->pluck('id')->toArray();
-    } else { // rbo
-        // RBO: see only zones they already supervise + free zones
+
+        // Separate assigned and free
+        $assigned = $allZones->whereIn('id', $assignedIds);
+        $free = $allZones->whereNotIn('id', $assignedIds);
+        $sorted = $assigned->merge($free);
+    } else {
+        // RBO: only zones they supervise or free zones
         $allZones = Zone::with('ville')
             ->where(function ($query) use ($user) {
                 $query->where('rbo_id', $user->id)
                       ->orWhereNull('rbo_id');
             })
             ->get();
-        $assignedIds = $user->zonesAsRbo->pluck('id')->toArray();
+
+        $assigned = $allZones->where('rbo_id', $user->id);
+        $free = $allZones->whereNull('rbo_id');
+        $sorted = $assigned->merge($free);
     }
 
     return response()->json([
-        'all_zones' => $allZones,
-        'assigned_ids' => $assignedIds,
+        'all_zones' => $sorted,
+        'assigned_ids' => $user->role === 'delegue'
+            ? $user->zones->pluck('id')->toArray()
+            : $user->zonesAsRbo->pluck('id')->toArray(),
         'role' => $user->role,
     ]);
 }
@@ -234,17 +244,23 @@ class UserController extends Controller
     if ($user->role !== 'delegue') {
         return response()->json(['error' => 'Invalid user type'], 400);
     }
-    // Get comptes assigned to this user OR unassigned (delegue_id null)
+
+    // Get comptes assigned to this user OR unassigned
     $allComptes = Compte::with(['quartier.zone.ville'])
-        ->where(function($query) use ($user) {
+        ->where(function ($query) use ($user) {
             $query->where('delegue_id', $user->id)
                   ->orWhereNull('delegue_id');
         })
         ->get();
-    $assignedIds = $user->comptes->pluck('id')->toArray(); // these are the ones currently assigned
+
+    $assigned = $allComptes->where('delegue_id', $user->id);
+    $free = $allComptes->whereNull('delegue_id');
+    $sorted = $assigned->merge($free);
+
+    $assignedIds = $user->comptes->pluck('id')->toArray();
 
     return response()->json([
-        'all_comptes' => $allComptes,
+        'all_comptes' => $sorted,
         'assigned_ids' => $assignedIds,
     ]);
 }
@@ -294,8 +310,12 @@ public function getVilles(User $user)
     $allVilles = Ville::all();
     $assignedIds = $user->rboVilles->pluck('id')->toArray();
 
+    $assigned = $allVilles->whereIn('id', $assignedIds);
+    $free = $allVilles->whereNotIn('id', $assignedIds);
+    $sorted = $assigned->merge($free);
+
     return response()->json([
-        'all_villes' => $allVilles,
+        'all_villes' => $sorted,
         'assigned_ids' => $assignedIds,
     ]);
 }

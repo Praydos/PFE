@@ -317,6 +317,49 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     background: var(--blue);
     box-shadow: 0 0 0 3px var(--blue-mid);
 }
+/* ── Search bar (matching villes, zones, users) ────── */
+.dr-search-bar {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+.dr-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+    max-width: 380px;
+}
+.dr-search-wrap svg {
+    position: absolute;
+    left: .85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+    flex-shrink: 0;
+}
+.dr-search-input {
+    width: 100%;
+    padding: .56rem .9rem .56rem 2.35rem;
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    background: var(--bg-card);
+    font-family: var(--font);
+    font-size: .83rem;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-xs);
+    transition: all var(--t);
+    outline: none;
+}
+.dr-search-input::placeholder {
+    color: var(--text-muted);
+}
+.dr-search-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-mid);
+}
 
 /* ── Table ───────────────────────────────────────────── */
 .dr-table { width: 100%; border-collapse: collapse; }
@@ -688,6 +731,13 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 
     {{-- ── Délégués pane ────────────────────────────── --}}
     <div class="dr-tab-pane active" id="pane-delegues">
+        {{-- Search bar for delegates --}}
+        <div class="dr-search-bar" style="margin-bottom: 1rem;">
+            <div class="dr-search-wrap">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="delegue-search" class="dr-search-input" placeholder="Rechercher un délégué (nom, prénom, email)..." autocomplete="off">
+            </div>
+        </div>
         @if($delegues->isEmpty())
             <div class="dr-card">
                 <div class="dr-empty">
@@ -788,6 +838,13 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 
     {{-- ── RBOs pane ────────────────────────────────── --}}
     <div class="dr-tab-pane" id="pane-rbos">
+        {{-- Search bar for RBOs --}}
+        <div class="dr-search-bar" style="margin-bottom: 1rem;">
+            <div class="dr-search-wrap">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="rbo-search" class="dr-search-input" placeholder="Rechercher un RBO (nom, prénom, email)..." autocomplete="off">
+            </div>
+        </div>
         @if($rbos->isEmpty())
             <div class="dr-card">
                 <div class="dr-empty">
@@ -1286,5 +1343,82 @@ document.getElementById('drModalVillesSave')?.addEventListener('click', function
         btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Enregistrer';
     });
 });
+//=======================================================================================================================
+//search functionalities for Delegues and RBOs
+// Search filter for delegates
+const delegueSearch = document.getElementById('delegue-search');
+if (delegueSearch) {
+    delegueSearch.addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#pane-delegues .dr-table tbody tr');
+        let visibleCount = 0;
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        // Show/hide empty state if needed (optional)
+        const table = document.querySelector('#pane-delegues .dr-table');
+        const emptyMsg = document.querySelector('#pane-delegues .dr-empty');
+        if (table) {
+            if (visibleCount === 0 && rows.length > 0) {
+                if (!emptyMsg) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'dr-empty';
+                    emptyDiv.innerHTML = '<div class="dr-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><h3>Aucun délégué trouvé</h3><p>Aucun résultat ne correspond à votre recherche.</p>';
+                    table.parentNode.insertBefore(emptyDiv, table.nextSibling);
+                } else {
+                    emptyMsg.style.display = 'block';
+                }
+                if (table) table.style.display = 'none';
+            } else {
+                if (emptyMsg) emptyMsg.style.display = 'none';
+                if (table) table.style.display = '';
+            }
+        }
+    });
+}
+
+// Search filter for RBOs
+const rboSearch = document.getElementById('rbo-search');
+if (rboSearch) {
+    rboSearch.addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const accordionItems = document.querySelectorAll('#pane-rbos .dr-acc-item');
+        let visibleCount = 0;
+        accordionItems.forEach(item => {
+            const text = item.innerText.toLowerCase();
+            if (text.includes(searchTerm)) {
+                item.style.display = '';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        // Handle empty state for RBOs (optional)
+        const container = document.querySelector('#pane-rbos .dr-accordion');
+        const emptyMsg = document.querySelector('#pane-rbos .dr-empty');
+        if (container) {
+            if (visibleCount === 0 && accordionItems.length > 0) {
+                if (!emptyMsg) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'dr-empty';
+                    emptyDiv.innerHTML = '<div class="dr-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><h3>Aucun RBO trouvé</h3><p>Aucun résultat ne correspond à votre recherche.</p>';
+                    container.parentNode.insertBefore(emptyDiv, container.nextSibling);
+                } else {
+                    emptyMsg.style.display = 'block';
+                }
+                if (container) container.style.display = 'none';
+            } else {
+                if (emptyMsg) emptyMsg.style.display = 'none';
+                if (container) container.style.display = '';
+            }
+        }
+    });
+}
 </script>
 @endpush
