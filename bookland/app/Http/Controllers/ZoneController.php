@@ -124,4 +124,15 @@ class ZoneController extends Controller
         return redirect()->route('zones.index')
             ->with('success', 'Zone supprimée.');
     }
+
+
+    //detach delegue from zone in rbo pane
+    public function detachDelegate(Zone $zone, User $delegate)
+    {
+        if ($zone->delegates->contains($delegate)) {
+            $zone->delegates()->detach($delegate->id);
+            return redirect()->back()->with('success', 'Délégué retiré de la zone.');
+        }
+        return redirect()->back()->with('error', 'Ce délégué n\'est pas assigné à cette zone.');
+    }
 }

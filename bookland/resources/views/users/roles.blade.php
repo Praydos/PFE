@@ -692,7 +692,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             </div>
             <div>
                 <div class="dr-stat-label">Délégués</div>
-                <div class="dr-stat-value">{{ $delegues->count() }}</div>
+                <div class="dr-stat-value">{{ $totalDelegues }}</div>
             </div>
         </div>
         <div class="dr-stat-card">
@@ -701,7 +701,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             </div>
             <div>
                 <div class="dr-stat-label">RBOs</div>
-                <div class="dr-stat-value">{{ $rbos->count() }}</div>
+                <div class="dr-stat-value">{{ $totalRbos }}</div>
             </div>
         </div>
         <div class="dr-stat-card">
@@ -710,7 +710,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             </div>
             <div>
                 <div class="dr-stat-label">Total équipe</div>
-                <div class="dr-stat-value">{{ $delegues->count() + $rbos->count() }}</div>
+                <div class="dr-stat-value">{{ $totalDelegues + $totalRbos }}</div>
             </div>
         </div>
     </div>
@@ -732,12 +732,17 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     {{-- ── Délégués pane ────────────────────────────── --}}
     <div class="dr-tab-pane active" id="pane-delegues">
         {{-- Search bar for delegates --}}
-        <div class="dr-search-bar" style="margin-bottom: 1rem;">
-            <div class="dr-search-wrap">
+        <form method="GET" action="{{ route('users.roles') }}" style="display:flex; gap: .6rem; margin-bottom: 1rem;">
+            <div class="dr-search-wrap" style="flex:1;">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="delegue-search" class="dr-search-input" placeholder="Rechercher un délégué (nom, prénom, email)..." autocomplete="off">
+                <input type="text" name="delegue_search" class="dr-search-input" placeholder="Rechercher un délégué..." value="{{ request('delegue_search') }}" autocomplete="off">
             </div>
-        </div>
+            <button type="submit" class="btn-dr btn-dr-ghost">Filtrer</button>
+            <input type="hidden" name="tab" value="delegues">
+            @if(request('delegue_search'))
+                <a href="{{ route('users.roles') }}?tab=delegues" class="btn-dr btn-dr-danger-ghost">Réinitialiser</a>
+            @endif
+        </form>
         @if($delegues->isEmpty())
             <div class="dr-card">
                 <div class="dr-empty">
@@ -762,8 +767,9 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                         <thead>
                             <tr>
                                 <th>Collaborateur</th>
-                                <th>Ville</th>
+                                <th>Comptes assignés</th>
                                 <th>Zones assignées</th>
+                                <th>RBO superviseur</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -771,6 +777,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                             @php $avs = ['av-a','av-b','av-c','av-d','av-e']; @endphp
                             @foreach($delegues as $i => $delegue)
                             <tr>
+                                {{-- user --}}
                                 <td>
                                     <div class="user-cell">
                                         <div class="user-avatar {{ $avs[$i % count($avs)] }}">
@@ -782,6 +789,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                         </div>
                                     </div>
                                 </td>
+                                {{-- compte assignes --}}
                                 <td>
                                     @php $comptesCount = $delegue->comptes->count(); @endphp
                                     <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
@@ -797,15 +805,23 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                         </button>
                                     </div>
                                 </td>
+                                {{-- zones assignées --}}
                                 <td>
-                                    @if($delegue->zones->isNotEmpty())
-                                        @foreach($delegue->zones as $zone)
-                                            <span class="dr-badge bd-violet">{{ $zone->name }}</span>
-                                        @endforeach
-                                    @else
-                                        <span class="dr-badge bd-none">Aucune zone</span>
-                                    @endif
+                                    <button class="btn-dr btn-dr-sm btn-dr-info view-zones-btn"
+                                            data-user-id="{{ $delegue->id }}"
+                                            data-user-name="{{ $delegue->prenom }} {{ $delegue->nom }}">
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        Voir zones ({{ $delegue->zones->count() }})
+                                    </button>
                                 </td>
+                                {{-- RBO superviseur --}}
+                                <td>
+                                    <span class="dr-badge bd-blue" style="white-space: normal;">
+                                        {{ $delegue->supervising_rbos }}
+                                    </span>
+                                </td>
+
+                                {{-- actions --}}
                                 <td>
                                     <div class="actions-cell">
                                         <a href="{{ route('users.edit', $delegue) }}" class="btn-dr btn-dr-sm btn-dr-warning">
@@ -831,20 +847,31 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+                </div> 
             </div>
+            {{-- pagination --}}
+                    @if($delegues->hasPages())
+                    <div class="dr-pagination">
+                        {{ $delegues->appends(['delegue_search' => request('delegue_search'), 'tab' => 'delegues'])->links('vendor.pagination.custom') }}
+                    </div>
+                    @endif
         @endif
     </div>
 
     {{-- ── RBOs pane ────────────────────────────────── --}}
     <div class="dr-tab-pane" id="pane-rbos">
         {{-- Search bar for RBOs --}}
-        <div class="dr-search-bar" style="margin-bottom: 1rem;">
-            <div class="dr-search-wrap">
+        <form method="GET" action="{{ route('users.roles') }}" style="display:flex; gap: .6rem; margin-bottom: 1rem;">
+            <div class="dr-search-wrap" style="flex:1;">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="rbo-search" class="dr-search-input" placeholder="Rechercher un RBO (nom, prénom, email)..." autocomplete="off">
+                <input type="text" name="rbo_search" class="dr-search-input" placeholder="Rechercher un RBO..." value="{{ request('rbo_search') }}" autocomplete="off">
             </div>
-        </div>
+            <button type="submit" class="btn-dr btn-dr-ghost">Filtrer</button>
+            <input type="hidden" name="tab" value="rbos">
+            @if(request('rbo_search'))
+                <a href="{{ route('users.roles') }}?tab=rbos" class="btn-dr btn-dr-danger-ghost">Réinitialiser</a>
+            @endif
+        </form>
         @if($rbos->isEmpty())
             <div class="dr-card">
                 <div class="dr-empty">
@@ -943,12 +970,15 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                                     </div>
                                                 </div>
                                                 <div class="dlg-actions">
+                                                    {{-- Edit button – unchanged --}}
                                                     <a href="{{ route('users.edit', $delegue) }}" class="btn-dr btn-dr-sm btn-dr-warning">
                                                         <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
                                                     </a>
-                                                    <form action="{{ route('users.destroy', $delegue) }}" method="POST" style="display:inline;">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="btn-dr btn-dr-sm btn-dr-danger" onclick="return confirm('Supprimer ce délégué ?')">
+
+                                                    {{-- Detach from zone – replaces the old delete form --}}
+                                                    <form action="{{ route('zones.detachDelegate', ['zone' => $zone->id, 'delegate' => $delegue->id]) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        <button type="submit" class="btn-dr btn-dr-sm btn-dr-danger" onclick="return confirm('Retirer ce délégué de la zone « {{ $zone->name }} » ?')">
                                                             <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
                                                         </button>
                                                     </form>
@@ -965,6 +995,12 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 </div>
                 @endforeach
             </div>
+            {{-- pagination --}}
+            @if($rbos->hasPages())
+            <div class="dr-pagination">
+                {{ $rbos->appends(['rbo_search' => request('rbo_search'), 'tab' => 'rbos'])->links('vendor.pagination.custom') }}
+            </div>
+            @endif
         @endif
     </div>
 
@@ -1062,23 +1098,71 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         </div>
     </div>
 </div>
+{{-- ── Modal for viewing assigned zones (delegate) ── ===============================================================--}}
+<div class="dr-modal-overlay" id="drModalAssignedZones">
+    <div class="dr-modal" role="dialog" aria-modal="true" aria-labelledby="drModalAssignedZonesTitle">
+        <div class="dr-modal-hd">
+            <div class="modal-icon">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="modal-title-grp">
+                <h2 id="drModalAssignedZonesTitle">Zones assignées</h2>
+                <p id="drModalAssignedZonesSubtitle"></p>
+            </div>
+            <button class="modal-close" id="drModalAssignedZonesClose" aria-label="Fermer">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="dr-modal-body" id="drModalAssignedZonesBody">
+            <div class="dr-loading"><div class="dr-spinner"></div>Chargement…</div>
+        </div>
+        <div class="dr-modal-ft">
+            <button class="btn-dr btn-dr-ghost" id="drModalAssignedZonesCancel">Fermer</button>
+        </div>
+    </div>
+</div>
 @endsection
-
 @push('scripts')
 <script>
 (function () {
-    /* ── Tabs ─────────────────────────── */
-    document.querySelectorAll('.dr-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.dr-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
-            document.querySelectorAll('.dr-tab-pane').forEach(p => p.classList.remove('active'));
-            tab.classList.add('active');
-            tab.setAttribute('aria-selected','true');
-            document.getElementById(tab.dataset.target).classList.add('active');
+    /* ── Tabs with persistence ────────────────────────── */
+    const tabs = document.querySelectorAll('.dr-tab');
+    const setActiveTab = (targetId) => {
+        tabs.forEach(t => {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+        });
+        document.querySelectorAll('.dr-tab-pane').forEach(p => p.classList.remove('active'));
+        const activeTab = Array.from(tabs).find(t => t.dataset.target === targetId);
+        if (activeTab) {
+            activeTab.classList.add('active');
+            activeTab.setAttribute('aria-selected', 'true');
+            document.getElementById(targetId).classList.add('active');
+        }
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = tab.dataset.target;
+            setActiveTab(targetId);
+            // Update URL parameter without reload
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', targetId === 'pane-delegues' ? 'delegues' : 'rbos');
+            window.history.replaceState({}, '', url);
         });
     });
 
-    /* ── Accordion ────────────────────── */
+    // On page load, set active tab based on URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTabParam = urlParams.get('tab');
+    if (activeTabParam === 'rbos') {
+        setActiveTab('pane-rbos');
+    } else {
+        setActiveTab('pane-delegues');
+    }
+
+    /* ── Accordion ───────────────────────────────────── */
     document.querySelectorAll('.dr-acc-trigger').forEach(btn => {
         btn.addEventListener('click', () => {
             const item = btn.closest('.dr-acc-item');
@@ -1087,17 +1171,20 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 i.classList.remove('open');
                 i.querySelector('.dr-acc-trigger').setAttribute('aria-expanded','false');
             });
-            if (!isOpen) { item.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+            if (!isOpen) {
+                item.classList.add('open');
+                btn.setAttribute('aria-expanded','true');
+            }
         });
     });
 
-    /* ── Modal ────────────────────────── */
+    /* ── Modal for Zones ─────────────────────────────── */
     let currentUserId = null;
     const overlay   = document.getElementById('drModalOverlay');
     const modalBody = document.getElementById('drModalBody');
     const subtitle  = document.getElementById('drModalSubtitle');
 
-    const openModal  = () => { overlay.classList.add('visible');    document.body.style.overflow = 'hidden'; };
+    const openModal  = () => { overlay.classList.add('visible'); document.body.style.overflow = 'hidden'; };
     const closeModal = () => { overlay.classList.remove('visible'); document.body.style.overflow = ''; };
 
     document.getElementById('drModalClose').addEventListener('click', closeModal);
@@ -1112,49 +1199,47 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             modalBody.innerHTML = '<div class="dr-loading"><div class="dr-spinner"></div>Chargement des zones…</div>';
             openModal();
 
-            // Inside the fetch response handler for zones (currently around line 150)
-fetch(`/users/${currentUserId}/zones`)
-    .then(r => r.json())
-    .then(data => {
-        if (!data.all_zones.length) {
-            modalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucune zone disponible.</p>';
-            return;
-        }
-        const items = data.all_zones.map(zone => {
-            const checked = data.assigned_ids.includes(zone.id) ? 'checked' : '';
-            return `
-            <label class="zone-check">
-                <input class="zone-checkbox" type="checkbox" value="${zone.id}" ${checked}>
-                <div class="zc-icon">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                </div>
-                <div>
-                    <div class="zc-label">${zone.name}</div>
-                    <div class="zc-sub">${zone.ville.nom}</div>
-                </div>
-            </label>`;
-        }).join('');
-        modalBody.innerHTML = `
-            <div class="dr-search-wrap" style="margin-bottom: 1rem;">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" class="dr-search-input modal-search-input" placeholder="Rechercher une zone..." autocomplete="off">
-            </div>
-            <div id="modal-items-container">${items}</div>
-        `;
-        // Add search filter
-        const searchInput = modalBody.querySelector('.modal-search-input');
-        searchInput.addEventListener('keyup', function() {
-            const term = this.value.toLowerCase();
-            const labels = modalBody.querySelectorAll('#modal-items-container .zone-check');
-            labels.forEach(label => {
-                const text = label.innerText.toLowerCase();
-                label.style.display = text.includes(term) ? '' : 'none';
-            });
-        });
-    })
-    .catch(() => {
-        modalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des zones.</p>';
-    });
+            fetch(`/users/${currentUserId}/zones`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.all_zones.length) {
+                        modalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucune zone disponible.</p>';
+                        return;
+                    }
+                    const items = data.all_zones.map(zone => {
+                        const checked = data.assigned_ids.includes(zone.id) ? 'checked' : '';
+                        return `
+                        <label class="zone-check">
+                            <input class="zone-checkbox" type="checkbox" value="${zone.id}" ${checked}>
+                            <div class="zc-icon">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            </div>
+                            <div>
+                                <div class="zc-label">${zone.name}</div>
+                                <div class="zc-sub">${zone.ville.nom}</div>
+                            </div>
+                        </label>`;
+                    }).join('');
+                    modalBody.innerHTML = `
+                        <div class="dr-search-wrap" style="margin-bottom: 1rem;">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" class="dr-search-input modal-search-input" placeholder="Rechercher une zone..." autocomplete="off">
+                        </div>
+                        <div id="modal-items-container">${items}</div>
+                    `;
+                    const searchInput = modalBody.querySelector('.modal-search-input');
+                    searchInput.addEventListener('keyup', function() {
+                        const term = this.value.toLowerCase();
+                        const labels = modalBody.querySelectorAll('#modal-items-container .zone-check');
+                        labels.forEach(label => {
+                            const text = label.innerText.toLowerCase();
+                            label.style.display = text.includes(term) ? '' : 'none';
+                        });
+                    });
+                })
+                .catch(() => {
+                    modalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des zones.</p>';
+                });
         });
     });
 
@@ -1180,295 +1265,268 @@ fetch(`/users/${currentUserId}/zones`)
             btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Enregistrer';
         });
     });
+
+    /* ── Modal for Comptes ───────────────────────────── */
+    let currentComptesUserId = null;
+    const comptesOverlay = document.getElementById('drModalComptes');
+    const comptesModalBody = document.getElementById('drModalComptesBody');
+    const comptesSubtitle = document.getElementById('drModalComptesSubtitle');
+
+    function openComptesModal() {
+        comptesOverlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeComptesModal() {
+        comptesOverlay.classList.remove('visible');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('drModalComptesClose')?.addEventListener('click', closeComptesModal);
+    document.getElementById('drModalComptesCancel')?.addEventListener('click', closeComptesModal);
+    comptesOverlay?.addEventListener('click', e => { if (e.target === comptesOverlay) closeComptesModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeComptesModal(); });
+
+    document.querySelectorAll('.assign-comptes-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentComptesUserId = btn.dataset.userId;
+            comptesSubtitle.textContent = btn.dataset.userName;
+            comptesModalBody.innerHTML = '<div class="dr-loading"><div class="dr-spinner"></div>Chargement des comptes…</div>';
+            openComptesModal();
+
+            fetch(`/users/${currentComptesUserId}/comptes`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.all_comptes.length) {
+                        comptesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucun compte client disponible.</p>';
+                        return;
+                    }
+                    const items = data.all_comptes.map(compte => {
+                        const checked = data.assigned_ids.includes(compte.id) ? 'checked' : '';
+                        const clientName = compte.etablissement || 'Sans nom';
+                        const type = compte.type ? `(${compte.type})` : '';
+                        let location = '—';
+                        if (compte.quartier) {
+                            const villeName = compte.quartier.zone?.ville?.nom || '?';
+                            location = `${compte.quartier.nom} (${villeName})`;
+                        } else if (compte.ville) {
+                            location = compte.ville.nom;
+                        } else if (compte.zone) {
+                            location = compte.zone.name;
+                        }
+                        return `
+                        <label class="zone-check">
+                            <input class="compte-checkbox" type="checkbox" value="${compte.id}" ${checked}>
+                            <div class="zc-icon">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            </div>
+                            <div>
+                                <div class="zc-label">${clientName} ${type}</div>
+                                <div class="zc-sub">${location}</div>
+                            </div>
+                        </label>`;
+                    }).join('');
+                    comptesModalBody.innerHTML = `
+                        <div class="dr-search-wrap" style="margin-bottom: 1rem;">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" class="dr-search-input modal-search-input" placeholder="Rechercher un compte..." autocomplete="off">
+                        </div>
+                        <div id="modal-items-container">${items}</div>
+                    `;
+                    const searchInput = comptesModalBody.querySelector('.modal-search-input');
+                    searchInput.addEventListener('keyup', function() {
+                        const term = this.value.toLowerCase();
+                        const labels = comptesModalBody.querySelectorAll('#modal-items-container .zone-check');
+                        labels.forEach(label => {
+                            const text = label.innerText.toLowerCase();
+                            label.style.display = text.includes(term) ? '' : 'none';
+                        });
+                    });
+                })
+                .catch(() => {
+                    comptesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des comptes.</p>';
+                });
+        });
+    });
+
+    document.getElementById('drModalComptesSave')?.addEventListener('click', function () {
+        const selected = [...document.querySelectorAll('.compte-checkbox:checked')].map(cb => cb.value);
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<div class="dr-spinner" style="width:13px;height:13px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,.35);"></div> Enregistrement…';
+
+        fetch(`/users/${currentComptesUserId}/comptes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ compte_ids: selected })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                closeComptesModal();
+                location.reload();
+            } else {
+                alert('Erreur : ' + (data.error || 'inconnue'));
+            }
+        })
+        .catch(() => alert('Erreur réseau.'))
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Enregistrer';
+        });
+    });
+
+    /* ── Modal for Villes (RBO) ─────────────────────── */
+    let currentVillesUserId = null;
+    const villesOverlay = document.getElementById('drModalVilles');
+    const villesModalBody = document.getElementById('drModalVillesBody');
+    const villesSubtitle = document.getElementById('drModalVillesSubtitle');
+
+    function openVillesModal() {
+        villesOverlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeVillesModal() {
+        villesOverlay.classList.remove('visible');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('drModalVillesClose')?.addEventListener('click', closeVillesModal);
+    document.getElementById('drModalVillesCancel')?.addEventListener('click', closeVillesModal);
+    villesOverlay?.addEventListener('click', e => { if (e.target === villesOverlay) closeVillesModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVillesModal(); });
+
+    document.querySelectorAll('.assign-villes-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentVillesUserId = btn.dataset.userId;
+            villesSubtitle.textContent = btn.dataset.userName;
+            villesModalBody.innerHTML = '<div class="dr-loading"><div class="dr-spinner"></div>Chargement des villes…</div>';
+            openVillesModal();
+
+            fetch(`/users/${currentVillesUserId}/villes`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.all_villes.length) {
+                        villesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucune ville disponible.</p>';
+                        return;
+                    }
+                    const items = data.all_villes.map(ville => {
+                        const checked = data.assigned_ids.includes(ville.id) ? 'checked' : '';
+                        return `
+                        <label class="zone-check">
+                            <input class="ville-checkbox" type="checkbox" value="${ville.id}" ${checked}>
+                            <div class="zc-icon">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            </div>
+                            <div>
+                                <div class="zc-label">${ville.nom}</div>
+                            </div>
+                        </label>`;
+                    }).join('');
+                    villesModalBody.innerHTML = `
+                        <div class="dr-search-wrap" style="margin-bottom: 1rem;">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" class="dr-search-input modal-search-input" placeholder="Rechercher une ville..." autocomplete="off">
+                        </div>
+                        <div id="modal-items-container">${items}</div>
+                    `;
+                    const searchInput = villesModalBody.querySelector('.modal-search-input');
+                    searchInput.addEventListener('keyup', function() {
+                        const term = this.value.toLowerCase();
+                        const labels = villesModalBody.querySelectorAll('#modal-items-container .zone-check');
+                        labels.forEach(label => {
+                            const text = label.innerText.toLowerCase();
+                            label.style.display = text.includes(term) ? '' : 'none';
+                        });
+                    });
+                })
+                .catch(() => {
+                    villesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des villes.</p>';
+                });
+        });
+    });
+
+    document.getElementById('drModalVillesSave')?.addEventListener('click', function () {
+        const selected = [...document.querySelectorAll('.ville-checkbox:checked')].map(cb => cb.value);
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<div class="dr-spinner" style="width:13px;height:13px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,.35);"></div> Enregistrement…';
+
+        fetch(`/users/${currentVillesUserId}/villes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ ville_ids: selected })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                closeVillesModal();
+                location.reload();
+            } else {
+                alert('Erreur : ' + (data.error || 'inconnue'));
+            }
+        })
+        .catch(() => alert('Erreur réseau.'))
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Enregistrer';
+        });
+    });
+
 })();
 
-////
+// ---- View assigned zones modal (delegate) ----==============================================================
+let currentAssignedZonesUserId = null;
+const assignedZonesOverlay = document.getElementById('drModalAssignedZones');
+const assignedZonesModalBody = document.getElementById('drModalAssignedZonesBody');
+const assignedZonesSubtitle = document.getElementById('drModalAssignedZonesSubtitle');
 
-// ---- Comptes modal logic ----
-let currentComptesUserId = null;
-const comptesOverlay = document.getElementById('drModalComptes');
-const comptesModalBody = document.getElementById('drModalComptesBody');
-const comptesSubtitle = document.getElementById('drModalComptesSubtitle');
-
-function openComptesModal() {
-    comptesOverlay.classList.add('visible');
+function openAssignedZonesModal() {
+    assignedZonesOverlay.classList.add('visible');
     document.body.style.overflow = 'hidden';
 }
-function closeComptesModal() {
-    comptesOverlay.classList.remove('visible');
+function closeAssignedZonesModal() {
+    assignedZonesOverlay.classList.remove('visible');
     document.body.style.overflow = '';
 }
 
-// Close buttons
-document.getElementById('drModalComptesClose')?.addEventListener('click', closeComptesModal);
-document.getElementById('drModalComptesCancel')?.addEventListener('click', closeComptesModal);
-comptesOverlay?.addEventListener('click', e => { if (e.target === comptesOverlay) closeComptesModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeComptesModal(); });
+document.getElementById('drModalAssignedZonesClose')?.addEventListener('click', closeAssignedZonesModal);
+document.getElementById('drModalAssignedZonesCancel')?.addEventListener('click', closeAssignedZonesModal);
+assignedZonesOverlay?.addEventListener('click', e => { if (e.target === assignedZonesOverlay) closeAssignedZonesModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAssignedZonesModal(); });
 
-// Attach click handlers to "Gérer" buttons
-document.querySelectorAll('.assign-comptes-btn').forEach(btn => {
+document.querySelectorAll('.view-zones-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        currentComptesUserId = btn.dataset.userId;
-        comptesSubtitle.textContent = btn.dataset.userName;
-        comptesModalBody.innerHTML = '<div class="dr-loading"><div class="dr-spinner"></div>Chargement des comptes…</div>';
-        openComptesModal();
+        currentAssignedZonesUserId = btn.dataset.userId;
+        assignedZonesSubtitle.textContent = btn.dataset.userName;
+        assignedZonesModalBody.innerHTML = '<div class="dr-loading"><div class="dr-spinner"></div>Chargement des zones…</div>';
+        openAssignedZonesModal();
 
-        fetch(`/users/${currentComptesUserId}/comptes`)
-    .then(r => r.json())
-    .then(data => {
-        if (!data.all_comptes.length) {
-            comptesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucun compte client disponible.</p>';
-            return;
-        }
-        const items = data.all_comptes.map(compte => {
-            const checked = data.assigned_ids.includes(compte.id) ? 'checked' : '';
-            const clientName = compte.etablissement || 'Sans nom';
-            const type = compte.type ? `(${compte.type})` : '';
-            let location = '—';
-            if (compte.quartier) {
-                const villeName = compte.quartier.zone?.ville?.nom || '?';
-                location = `${compte.quartier.nom} (${villeName})`;
-            } else if (compte.ville) {
-                location = compte.ville.nom;
-            } else if (compte.zone) {
-                location = compte.zone.name;
-            }
-            return `
-            <label class="zone-check">
-                <input class="compte-checkbox" type="checkbox" value="${compte.id}" ${checked}>
-                <div class="zc-icon">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                </div>
-                <div>
-                    <div class="zc-label">${clientName} ${type}</div>
-                    <div class="zc-sub">${location}</div>
-                </div>
-            </label>`;
-        }).join('');
-        comptesModalBody.innerHTML = `
-            <div class="dr-search-wrap" style="margin-bottom: 1rem;">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" class="dr-search-input modal-search-input" placeholder="Rechercher un compte..." autocomplete="off">
-            </div>
-            <div id="modal-items-container">${items}</div>
-        `;
-        const searchInput = comptesModalBody.querySelector('.modal-search-input');
-        searchInput.addEventListener('keyup', function() {
-            const term = this.value.toLowerCase();
-            const labels = comptesModalBody.querySelectorAll('#modal-items-container .zone-check');
-            labels.forEach(label => {
-                const text = label.innerText.toLowerCase();
-                label.style.display = text.includes(term) ? '' : 'none';
-            });
-        });
-    })
-    .catch(() => {
-        comptesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des comptes.</p>';
-    });
-    });
-});
-
-// Save comptes
-document.getElementById('drModalComptesSave')?.addEventListener('click', function () {
-    const selected = [...document.querySelectorAll('.compte-checkbox:checked')].map(cb => cb.value);
-    const btn = this;
-    btn.disabled = true;
-    btn.innerHTML = '<div class="dr-spinner" style="width:13px;height:13px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,.35);"></div> Enregistrement…';
-
-    fetch(`/users/${currentComptesUserId}/comptes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify({ compte_ids: selected })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            closeComptesModal();
-            location.reload();
-        } else {
-            alert('Erreur : ' + (data.error || 'inconnue'));
-        }
-    })
-    .catch(() => alert('Erreur réseau.'))
-    .finally(() => {
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Enregistrer';
-    });
-});
-
-//=======================================================================================================================
-// ---- Villes modal logic (RBO) ----
-let currentVillesUserId = null;
-const villesOverlay = document.getElementById('drModalVilles');
-const villesModalBody = document.getElementById('drModalVillesBody');
-const villesSubtitle = document.getElementById('drModalVillesSubtitle');
-
-function openVillesModal() {
-    villesOverlay.classList.add('visible');
-    document.body.style.overflow = 'hidden';
-}
-function closeVillesModal() {
-    villesOverlay.classList.remove('visible');
-    document.body.style.overflow = '';
-}
-
-document.getElementById('drModalVillesClose')?.addEventListener('click', closeVillesModal);
-document.getElementById('drModalVillesCancel')?.addEventListener('click', closeVillesModal);
-villesOverlay?.addEventListener('click', e => { if (e.target === villesOverlay) closeVillesModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVillesModal(); });
-
-document.querySelectorAll('.assign-villes-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        currentVillesUserId = btn.dataset.userId;
-        villesSubtitle.textContent = btn.dataset.userName;
-        villesModalBody.innerHTML = '<div class="dr-loading"><div class="dr-spinner"></div>Chargement des villes…</div>';
-        openVillesModal();
-
-        fetch(`/users/${currentVillesUserId}/villes`)
-    .then(r => r.json())
-    .then(data => {
-        if (!data.all_villes.length) {
-            villesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucune ville disponible.</p>';
-            return;
-        }
-        const items = data.all_villes.map(ville => {
-            const checked = data.assigned_ids.includes(ville.id) ? 'checked' : '';
-            return `
-            <label class="zone-check">
-                <input class="ville-checkbox" type="checkbox" value="${ville.id}" ${checked}>
-                <div class="zc-icon">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                </div>
-                <div>
-                    <div class="zc-label">${ville.nom}</div>
-                </div>
-            </label>`;
-        }).join('');
-        villesModalBody.innerHTML = `
-            <div class="dr-search-wrap" style="margin-bottom: 1rem;">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" class="dr-search-input modal-search-input" placeholder="Rechercher une ville..." autocomplete="off">
-            </div>
-            <div id="modal-items-container">${items}</div>
-        `;
-        const searchInput = villesModalBody.querySelector('.modal-search-input');
-        searchInput.addEventListener('keyup', function() {
-            const term = this.value.toLowerCase();
-            const labels = villesModalBody.querySelectorAll('#modal-items-container .zone-check');
-            labels.forEach(label => {
-                const text = label.innerText.toLowerCase();
-                label.style.display = text.includes(term) ? '' : 'none';
-            });
-        });
-    })
-    .catch(() => {
-        villesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des villes.</p>';
-    });
-    });
-});
-
-document.getElementById('drModalVillesSave')?.addEventListener('click', function () {
-    const selected = [...document.querySelectorAll('.ville-checkbox:checked')].map(cb => cb.value);
-    const btn = this;
-    btn.disabled = true;
-    btn.innerHTML = '<div class="dr-spinner" style="width:13px;height:13px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,.35);"></div> Enregistrement…';
-
-    fetch(`/users/${currentVillesUserId}/villes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify({ ville_ids: selected })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            closeVillesModal();
-            location.reload();
-        } else {
-            alert('Erreur : ' + (data.error || 'inconnue'));
-        }
-    })
-    .catch(() => alert('Erreur réseau.'))
-    .finally(() => {
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Enregistrer';
-    });
-});
-//=======================================================================================================================
-//search functionalities for Delegues and RBOs
-// Search filter for delegates
-const delegueSearch = document.getElementById('delegue-search');
-if (delegueSearch) {
-    delegueSearch.addEventListener('keyup', function() {
-        const searchTerm = this.value.toLowerCase();
-        const rows = document.querySelectorAll('#pane-delegues .dr-table tbody tr');
-        let visibleCount = 0;
-        rows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            if (text.includes(searchTerm)) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-        // Show/hide empty state if needed (optional)
-        const table = document.querySelector('#pane-delegues .dr-table');
-        const emptyMsg = document.querySelector('#pane-delegues .dr-empty');
-        if (table) {
-            if (visibleCount === 0 && rows.length > 0) {
-                if (!emptyMsg) {
-                    const emptyDiv = document.createElement('div');
-                    emptyDiv.className = 'dr-empty';
-                    emptyDiv.innerHTML = '<div class="dr-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><h3>Aucun délégué trouvé</h3><p>Aucun résultat ne correspond à votre recherche.</p>';
-                    table.parentNode.insertBefore(emptyDiv, table.nextSibling);
-                } else {
-                    emptyMsg.style.display = 'block';
+        fetch(`/users/${currentAssignedZonesUserId}/assigned-zones`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.zones.length) {
+                    assignedZonesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucune zone assignée.</p>';
+                    return;
                 }
-                if (table) table.style.display = 'none';
-            } else {
-                if (emptyMsg) emptyMsg.style.display = 'none';
-                if (table) table.style.display = '';
-            }
-        }
+                const items = data.zones.map(zone => {
+                    const rboName = zone.rbo ? `${zone.rbo.prenom} ${zone.rbo.nom}` : '—';
+                    return `
+                    <div class="zone-check" style="cursor:default;">
+                        <div class="zc-icon">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        </div>
+                        <div>
+                            <div class="zc-label">${zone.name}</div>
+                            <div class="zc-sub">${zone.ville.nom} · RBO : ${rboName}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+                assignedZonesModalBody.innerHTML = items;
+            })
+            .catch(() => {
+                assignedZonesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des zones.</p>';
+            });
     });
-}
-
-// Search filter for RBOs
-const rboSearch = document.getElementById('rbo-search');
-if (rboSearch) {
-    rboSearch.addEventListener('keyup', function() {
-        const searchTerm = this.value.toLowerCase();
-        const accordionItems = document.querySelectorAll('#pane-rbos .dr-acc-item');
-        let visibleCount = 0;
-        accordionItems.forEach(item => {
-            const text = item.innerText.toLowerCase();
-            if (text.includes(searchTerm)) {
-                item.style.display = '';
-                visibleCount++;
-            } else {
-                item.style.display = 'none';
-            }
-        });
-        // Handle empty state for RBOs (optional)
-        const container = document.querySelector('#pane-rbos .dr-accordion');
-        const emptyMsg = document.querySelector('#pane-rbos .dr-empty');
-        if (container) {
-            if (visibleCount === 0 && accordionItems.length > 0) {
-                if (!emptyMsg) {
-                    const emptyDiv = document.createElement('div');
-                    emptyDiv.className = 'dr-empty';
-                    emptyDiv.innerHTML = '<div class="dr-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><h3>Aucun RBO trouvé</h3><p>Aucun résultat ne correspond à votre recherche.</p>';
-                    container.parentNode.insertBefore(emptyDiv, container.nextSibling);
-                } else {
-                    emptyMsg.style.display = 'block';
-                }
-                if (container) container.style.display = 'none';
-            } else {
-                if (emptyMsg) emptyMsg.style.display = 'none';
-                if (container) container.style.display = '';
-            }
-        }
-    });
-}
+});
 </script>
 @endpush

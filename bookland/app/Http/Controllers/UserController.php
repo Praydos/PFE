@@ -154,21 +154,53 @@ class UserController extends Controller
             ->with('success', 'Utilisateur supprimé.');
     }
 
+    //====================================================================================================================
+    // New method to show roles and assignments for delegates and RBOs, with search functionality
+    public function roles(Request $request)
+{
+    $delegueSearch = $request->get('delegue_search');
+    $rboSearch = $request->get('rbo_search');
 
-    // New method to show roles and assignments
-    public function roles()
-    {
-        $delegues = User::with(['ville', 'zones.ville', 'comptes'])
-            ->where('role', 'delegue')
-            ->get();
+    $totalDelegues = User::where('role', 'delegue')->count();
+    $totalRbos = User::where('role', 'rbo')->count();
 
-        $rbos = User::with(['ville', 'zonesAsRbo.ville', 'zonesAsRbo.delegates', 'rboVilles'])
-        ->where('role', 'rbo')
-        ->get();
+    // Delegates – eager load zones with RBOs
+    $delegues = User::with(['ville', 'zones.ville', 'zones.rbo', 'comptes'])
+        ->where('role', 'delegue')
+        ->when($delegueSearch, function ($query, $search) {
+            return $query->where(function($q) use ($search) {
+                $q->where('nom', 'like', "%{$search}%")
+                  ->orWhere('prenom', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        })
+        ->paginate(10, ['*'], 'delegue_page')
+        ->withQueryString();
 
-        return view('users.roles', compact('delegues', 'rbos'));
+    // Add a computed attribute for supervising RBOs
+    foreach ($delegues as $delegue) {
+        $rbos = $delegue->zones->pluck('rbo')->filter()->unique('id');
+        $delegue->supervising_rbos = $rbos->map(function($rbo) {
+            return $rbo->prenom . ' ' . $rbo->nom;
+        })->implode(', ') ?: '—';
     }
-  // fetch zones for a user (delegue or rbo) for AJAX requests
+
+    // RBOs – unchanged
+    $rbos = User::with(['ville', 'zonesAsRbo.ville', 'zonesAsRbo.delegates', 'rboVilles'])
+        ->where('role', 'rbo')
+        ->when($rboSearch, function ($query, $search) {
+            return $query->where(function($q) use ($search) {
+                $q->where('nom', 'like', "%{$search}%")
+                  ->orWhere('prenom', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        })
+        ->paginate(5, ['*'], 'rbo_page')
+        ->withQueryString();
+
+    return view('users.roles', compact('delegues', 'rbos', 'totalDelegues', 'totalRbos'));
+}
+  // fetch zones for a user (delegue or rbo) for AJAX requests ========================================================
   
 
     public function getZones(User $user)
@@ -235,10 +267,17 @@ class UserController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function getAssignedZones(User $user)
+    {
+        if ($user->role !== 'delegue') {
+            return response()->json(['error' => 'Invalid user type'], 400);
+        }
+        $zones = $user->zones()->with(['ville', 'rbo'])->get();
+        return response()->json(['zones' => $zones]);
+    }
 
 
-
-
+    // New methods for delegate compte assignments =====================================================
     public function getComptes(User $user)
 {
     if ($user->role !== 'delegue') {

@@ -32,3 +32,7 @@ Route::post('/users/{user}/villes', [UserController::class, 'updateVilles']);
 
 //
 Route::post('/villes/{ville}/assign-zone', [VilleController::class, 'assignZone'])->name('villes.assignZone');
+Route::get('/users/{user}/assigned-zones', [UserController::class, 'getAssignedZones'])->name('users.assigned-zones');
+
+//detach delegue from zones in rbo pane 
+Route::post('/zones/{zone}/detach-delegate/{delegate}', [ZoneController::class, 'detachDelegate'])->name('zones.detachDelegate');
