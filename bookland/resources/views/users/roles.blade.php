@@ -1112,31 +1112,49 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             modalBody.innerHTML = '<div class="dr-loading"><div class="dr-spinner"></div>Chargement des zones…</div>';
             openModal();
 
-            fetch(`/users/${currentUserId}/zones`)
-                .then(r => r.json())
-                .then(data => {
-                    if (!data.all_zones.length) {
-                        modalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucune zone disponible.</p>';
-                        return;
-                    }
-                    modalBody.innerHTML = data.all_zones.map(zone => {
-                        const checked = data.assigned_ids.includes(zone.id) ? 'checked' : '';
-                        return `
-                        <label class="zone-check">
-                            <input class="zone-checkbox" type="checkbox" value="${zone.id}" ${checked}>
-                            <div class="zc-icon">
-                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                            </div>
-                            <div>
-                                <div class="zc-label">${zone.name}</div>
-                                <div class="zc-sub">${zone.ville.nom}</div>
-                            </div>
-                        </label>`;
-                    }).join('');
-                })
-                .catch(() => {
-                    modalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des zones.</p>';
-                });
+            // Inside the fetch response handler for zones (currently around line 150)
+fetch(`/users/${currentUserId}/zones`)
+    .then(r => r.json())
+    .then(data => {
+        if (!data.all_zones.length) {
+            modalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucune zone disponible.</p>';
+            return;
+        }
+        const items = data.all_zones.map(zone => {
+            const checked = data.assigned_ids.includes(zone.id) ? 'checked' : '';
+            return `
+            <label class="zone-check">
+                <input class="zone-checkbox" type="checkbox" value="${zone.id}" ${checked}>
+                <div class="zc-icon">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <div>
+                    <div class="zc-label">${zone.name}</div>
+                    <div class="zc-sub">${zone.ville.nom}</div>
+                </div>
+            </label>`;
+        }).join('');
+        modalBody.innerHTML = `
+            <div class="dr-search-wrap" style="margin-bottom: 1rem;">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="dr-search-input modal-search-input" placeholder="Rechercher une zone..." autocomplete="off">
+            </div>
+            <div id="modal-items-container">${items}</div>
+        `;
+        // Add search filter
+        const searchInput = modalBody.querySelector('.modal-search-input');
+        searchInput.addEventListener('keyup', function() {
+            const term = this.value.toLowerCase();
+            const labels = modalBody.querySelectorAll('#modal-items-container .zone-check');
+            labels.forEach(label => {
+                const text = label.innerText.toLowerCase();
+                label.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+    })
+    .catch(() => {
+        modalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des zones.</p>';
+    });
         });
     });
 
@@ -1196,41 +1214,57 @@ document.querySelectorAll('.assign-comptes-btn').forEach(btn => {
         openComptesModal();
 
         fetch(`/users/${currentComptesUserId}/comptes`)
-            .then(r => r.json())
-            .then(data => {
-                if (!data.all_comptes.length) {
-                    comptesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucun compte client disponible.</p>';
-                    return;
-                }
-                comptesModalBody.innerHTML = data.all_comptes.map(compte => {
-    const checked = data.assigned_ids.includes(compte.id) ? 'checked' : '';
-    const clientName = compte.etablissement || 'Sans nom';
-    const type = compte.type ? `(${compte.type})` : '';
-    let location = '—';
-    if (compte.quartier) {
-        const villeName = compte.quartier.zone?.ville?.nom || '?';
-        location = `${compte.quartier.nom} (${villeName})`;
-    } else if (compte.ville) {
-        location = compte.ville.nom;
-    } else if (compte.zone) {
-        location = compte.zone.name;
-    }
-    return `
-    <label class="zone-check">
-        <input class="compte-checkbox" type="checkbox" value="${compte.id}" ${checked}>
-        <div class="zc-icon">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </div>
-        <div>
-            <div class="zc-label">${clientName} ${type}</div>
-            <div class="zc-sub">${location}</div>
-        </div>
-    </label>`;
-}).join('');
-            })
-            .catch(() => {
-                comptesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des comptes.</p>';
+    .then(r => r.json())
+    .then(data => {
+        if (!data.all_comptes.length) {
+            comptesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucun compte client disponible.</p>';
+            return;
+        }
+        const items = data.all_comptes.map(compte => {
+            const checked = data.assigned_ids.includes(compte.id) ? 'checked' : '';
+            const clientName = compte.etablissement || 'Sans nom';
+            const type = compte.type ? `(${compte.type})` : '';
+            let location = '—';
+            if (compte.quartier) {
+                const villeName = compte.quartier.zone?.ville?.nom || '?';
+                location = `${compte.quartier.nom} (${villeName})`;
+            } else if (compte.ville) {
+                location = compte.ville.nom;
+            } else if (compte.zone) {
+                location = compte.zone.name;
+            }
+            return `
+            <label class="zone-check">
+                <input class="compte-checkbox" type="checkbox" value="${compte.id}" ${checked}>
+                <div class="zc-icon">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div>
+                    <div class="zc-label">${clientName} ${type}</div>
+                    <div class="zc-sub">${location}</div>
+                </div>
+            </label>`;
+        }).join('');
+        comptesModalBody.innerHTML = `
+            <div class="dr-search-wrap" style="margin-bottom: 1rem;">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="dr-search-input modal-search-input" placeholder="Rechercher un compte..." autocomplete="off">
+            </div>
+            <div id="modal-items-container">${items}</div>
+        `;
+        const searchInput = comptesModalBody.querySelector('.modal-search-input');
+        searchInput.addEventListener('keyup', function() {
+            const term = this.value.toLowerCase();
+            const labels = comptesModalBody.querySelectorAll('#modal-items-container .zone-check');
+            labels.forEach(label => {
+                const text = label.innerText.toLowerCase();
+                label.style.display = text.includes(term) ? '' : 'none';
             });
+        });
+    })
+    .catch(() => {
+        comptesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des comptes.</p>';
+    });
     });
 });
 
@@ -1291,29 +1325,45 @@ document.querySelectorAll('.assign-villes-btn').forEach(btn => {
         openVillesModal();
 
         fetch(`/users/${currentVillesUserId}/villes`)
-            .then(r => r.json())
-            .then(data => {
-                if (!data.all_villes.length) {
-                    villesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucune ville disponible.</p>';
-                    return;
-                }
-                villesModalBody.innerHTML = data.all_villes.map(ville => {
-                    const checked = data.assigned_ids.includes(ville.id) ? 'checked' : '';
-                    return `
-                    <label class="zone-check">
-                        <input class="ville-checkbox" type="checkbox" value="${ville.id}" ${checked}>
-                        <div class="zc-icon">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                        </div>
-                        <div>
-                            <div class="zc-label">${ville.nom}</div>
-                        </div>
-                    </label>`;
-                }).join('');
-            })
-            .catch(() => {
-                villesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des villes.</p>';
+    .then(r => r.json())
+    .then(data => {
+        if (!data.all_villes.length) {
+            villesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucune ville disponible.</p>';
+            return;
+        }
+        const items = data.all_villes.map(ville => {
+            const checked = data.assigned_ids.includes(ville.id) ? 'checked' : '';
+            return `
+            <label class="zone-check">
+                <input class="ville-checkbox" type="checkbox" value="${ville.id}" ${checked}>
+                <div class="zc-icon">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div>
+                    <div class="zc-label">${ville.nom}</div>
+                </div>
+            </label>`;
+        }).join('');
+        villesModalBody.innerHTML = `
+            <div class="dr-search-wrap" style="margin-bottom: 1rem;">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="dr-search-input modal-search-input" placeholder="Rechercher une ville..." autocomplete="off">
+            </div>
+            <div id="modal-items-container">${items}</div>
+        `;
+        const searchInput = villesModalBody.querySelector('.modal-search-input');
+        searchInput.addEventListener('keyup', function() {
+            const term = this.value.toLowerCase();
+            const labels = villesModalBody.querySelectorAll('#modal-items-container .zone-check');
+            labels.forEach(label => {
+                const text = label.innerText.toLowerCase();
+                label.style.display = text.includes(term) ? '' : 'none';
             });
+        });
+    })
+    .catch(() => {
+        villesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des villes.</p>';
+    });
     });
 });
 
