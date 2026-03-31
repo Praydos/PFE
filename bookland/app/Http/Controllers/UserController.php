@@ -406,4 +406,13 @@ class UserController extends Controller
             return response()->json(['error' => 'Erreur serveur: ' . $e->getMessage()], 500);
         }
     }
+
+    public function getAssignedComptes(User $user)
+    {
+        if ($user->role !== 'delegue') {
+            return response()->json(['error' => 'Invalid user type'], 400);
+        }
+        $comptes = $user->comptes()->with(['quartier.zone.ville'])->get();
+        return response()->json(['comptes' => $comptes]);
+    }
 }

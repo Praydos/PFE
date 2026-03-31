@@ -47,6 +47,11 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('comptes', CompteController::class)
         ->middleware('role:admin,rbo,delegue');
+    
+
+    Route::get('/users/{user}/assigned-zones',[UserController::class, 'getAssignedZones'])
+    ->name('users.assigned-zones')
+    ->middleware('role:admin,rbo,delegue');
 
     // ── Admin only ─────────────────────────────────────────────────────────
     Route::middleware('role:admin')->group(function () {
@@ -70,8 +75,7 @@ Route::middleware('auth')->group(function () {
             [UserController::class, 'getZones'])->name('users.zones.get');
         Route::post('/users/{user}/zones',
             [UserController::class, 'updateZones'])->name('users.zones.update');
-        Route::get('/users/{user}/assigned-zones',
-            [UserController::class, 'getAssignedZones'])->name('users.assigned-zones');
+        
 
         // RBO ↔ Ville assignments (AJAX)
         Route::get('/users/{user}/villes',
@@ -86,3 +90,7 @@ Route::middleware('auth')->group(function () {
             [UserController::class, 'updateComptes']);
     });
 });
+
+
+Route::get('/users/{user}/assigned-comptes', [UserController::class, 'getAssignedComptes'])->name('users.assigned-comptes');
+

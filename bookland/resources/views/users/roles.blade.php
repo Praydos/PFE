@@ -768,9 +768,14 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                             <tr>
                                 <th>Collaborateur</th>
                                 <th>Comptes assignés</th>
-                                <th>Zones assignées</th>
+                                @if (auth()->user()->role !== 'admin')
+                                    <th>Zones assignées</th>
+                                @endif
+                                
                                 <th>RBO superviseur</th>
-                                <th>Actions</th>
+                                @if (auth()->user()->role === 'admin')
+                                    <th>Actions</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -793,19 +798,24 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                 <td>
                                     @php $comptesCount = $delegue->comptes->count(); @endphp
                                     <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
-                                        <span class="dr-badge bd-teal">
+                                        @if (auth()->user()->role !== 'admin')
+                                            <span class="dr-badge bd-teal view-comptes-btn" style="cursor:pointer;" data-user-id="{{ $delegue->id }}" data-user-name="{{ $delegue->prenom }} {{ $delegue->nom }}">
                                             <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                                             {{ $comptesCount }} compte{{ $comptesCount > 1 ? 's' : '' }}
                                         </span>
-                                        <button class="btn-dr btn-dr-sm btn-dr-info assign-comptes-btn"
+                                        @endif
+                                        @if (auth()->user()->role == 'admin')
+                                            <button class="btn-dr btn-dr-sm btn-dr-info assign-comptes-btn"
                                                 data-user-id="{{ $delegue->id }}"
                                                 data-user-name="{{ $delegue->prenom }} {{ $delegue->nom }}">
                                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                                             Gérer
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                                 {{-- zones assignées --}}
+                                @if(auth()->user()->role !== 'admin')
                                 <td>
                                     <button class="btn-dr btn-dr-sm btn-dr-info view-zones-btn"
                                             data-user-id="{{ $delegue->id }}"
@@ -814,6 +824,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                         Voir zones ({{ $delegue->zones->count() }})
                                     </button>
                                 </td>
+
+                                @endif
                                 {{-- RBO superviseur --}}
                                 <td>
                                     <span class="dr-badge bd-blue" style="white-space: normal;">
@@ -822,6 +834,9 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                 </td>
 
                                 {{-- actions --}}
+                                
+
+                                @if (auth()->user()->role == 'admin')
                                 <td>
                                     <div class="actions-cell">
                                         <a href="{{ route('users.edit', $delegue) }}" class="btn-dr btn-dr-sm btn-dr-warning">
@@ -843,6 +858,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                         </form>
                                     </div>
                                 </td>
+                                    
+                                @endif
                             </tr>
                             @endforeach
                         </tbody>
@@ -907,6 +924,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                     </button>
 
                     <div class="dr-acc-body">
+                        @if (auth()->user()->role == 'admin')
                         <div class="dr-acc-actions">
                             <a href="{{ route('users.edit', $rbo) }}" class="btn-dr btn-dr-sm btn-dr-warning">
                                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
@@ -933,6 +951,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                 </button>
                             </form>
                         </div>
+                            
+                        @endif
 
                         <div class="dr-zones-wrap">
                             @if($rbo->zonesAsRbo->isEmpty())
@@ -948,10 +968,13 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                             </div>
                                             <div class="zone-name">{{ $zone->name }}</div>
                                         </div>
+                                        @if (auth()->user()->role == 'admin')
                                         <div style="display:flex;align-items:center;gap:.5rem;">
                                             <span class="dr-badge bd-blue">{{ $zone->ville->nom }}</span>
                                             <a href="{{ route('zones.edit', $zone) }}" class="btn-dr btn-dr-sm btn-dr-ghost">Gérer</a>
                                         </div>
+                                            
+                                        @endif
                                     </div>
                                     <div class="dr-zone-dlg">
                                         <div class="sec-label" style="font-size:.65rem;margin:.6rem 0 .4rem;">
@@ -969,20 +992,22 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                                         <div class="dlg-email">{{ $delegue->email }}</div>
                                                     </div>
                                                 </div>
-                                                <div class="dlg-actions">
-                                                    {{-- Edit button – unchanged --}}
-                                                    <a href="{{ route('users.edit', $delegue) }}" class="btn-dr btn-dr-sm btn-dr-warning">
-                                                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
-                                                    </a>
+                                                @if(auth()->user()->role == 'admin')
+                                                    <div class="dlg-actions">
+                                                        {{-- Edit button – unchanged --}}
+                                                        <a href="{{ route('users.edit', $delegue) }}" class="btn-dr btn-dr-sm btn-dr-warning">
+                                                            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+                                                        </a>
 
-                                                    {{-- Detach from zone – replaces the old delete form --}}
-                                                    <form action="{{ route('zones.detachDelegate', ['zone' => $zone->id, 'delegate' => $delegue->id]) }}" method="POST" style="display:inline;">
-                                                        @csrf
-                                                        <button type="submit" class="btn-dr btn-dr-sm btn-dr-danger" onclick="return confirm('Retirer ce délégué de la zone « {{ $zone->name }} » ?')">
-                                                            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-                                                        </button>
-                                                    </form>
-                                                </div>
+                                                        {{-- Detach from zone – replaces the old delete form --}}
+                                                        <form action="{{ route('zones.detachDelegate', ['zone' => $zone->id, 'delegate' => $delegue->id]) }}" method="POST" style="display:inline;">
+                                                            @csrf
+                                                            <button type="submit" class="btn-dr btn-dr-sm btn-dr-danger" onclick="return confirm('Retirer ce délégué de la zone « {{ $zone->name }} » ?')">
+                                                                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                @endif
                                             </div>
                                             @endforeach
                                         @endif
@@ -1067,6 +1092,31 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                 Enregistrer
             </button>
+        </div>
+    </div>
+</div>
+
+
+{{-- ── Modal for viewing assigned comptes (delegate) ── --}}
+<div class="dr-modal-overlay" id="drModalAssignedComptes">
+    <div class="dr-modal" role="dialog" aria-modal="true" aria-labelledby="drModalAssignedComptesTitle">
+        <div class="dr-modal-hd">
+            <div class="modal-icon">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div class="modal-title-grp">
+                <h2 id="drModalAssignedComptesTitle">Comptes assignés</h2>
+                <p id="drModalAssignedComptesSubtitle"></p>
+            </div>
+            <button class="modal-close" id="drModalAssignedComptesClose" aria-label="Fermer">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="dr-modal-body" id="drModalAssignedComptesBody">
+            <div class="dr-loading"><div class="dr-spinner"></div>Chargement…</div>
+        </div>
+        <div class="dr-modal-ft">
+            <button class="btn-dr btn-dr-ghost" id="drModalAssignedComptesCancel">Fermer</button>
         </div>
     </div>
 </div>
@@ -1525,6 +1575,73 @@ document.querySelectorAll('.view-zones-btn').forEach(btn => {
             })
             .catch(() => {
                 assignedZonesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des zones.</p>';
+            });
+    });
+});
+
+
+
+// ---- View assigned comptes modal (delegate) ----
+let currentAssignedComptesUserId = null;
+const assignedComptesOverlay = document.getElementById('drModalAssignedComptes');
+const assignedComptesModalBody = document.getElementById('drModalAssignedComptesBody');
+const assignedComptesSubtitle = document.getElementById('drModalAssignedComptesSubtitle');
+
+function openAssignedComptesModal() {
+    assignedComptesOverlay.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+}
+function closeAssignedComptesModal() {
+    assignedComptesOverlay.classList.remove('visible');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('drModalAssignedComptesClose')?.addEventListener('click', closeAssignedComptesModal);
+document.getElementById('drModalAssignedComptesCancel')?.addEventListener('click', closeAssignedComptesModal);
+assignedComptesOverlay?.addEventListener('click', e => { if (e.target === assignedComptesOverlay) closeAssignedComptesModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAssignedComptesModal(); });
+
+document.querySelectorAll('.view-comptes-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        currentAssignedComptesUserId = btn.dataset.userId;
+        assignedComptesSubtitle.textContent = btn.dataset.userName;
+        assignedComptesModalBody.innerHTML = '<div class="dr-loading"><div class="dr-spinner"></div>Chargement des comptes…</div>';
+        openAssignedComptesModal();
+
+        fetch(`/users/${currentAssignedComptesUserId}/assigned-comptes`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.comptes.length) {
+                    assignedComptesModalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2.5rem;font-size:.84rem;">Aucun compte assigné.</p>';
+                    return;
+                }
+                const items = data.comptes.map(compte => {
+                    const clientName = compte.etablissement || 'Sans nom';
+                    const type = compte.type ? `(${compte.type})` : '';
+                    let location = '—';
+                    if (compte.quartier) {
+                        const villeName = compte.quartier.zone?.ville?.nom || '?';
+                        location = `${compte.quartier.nom} (${villeName})`;
+                    } else if (compte.ville) {
+                        location = compte.ville.nom;
+                    } else if (compte.zone) {
+                        location = compte.zone.name;
+                    }
+                    return `
+                    <div class="zone-check" style="cursor:default;">
+                        <div class="zc-icon">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        </div>
+                        <div>
+                            <div class="zc-label">${clientName} ${type}</div>
+                            <div class="zc-sub">${location}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+                assignedComptesModalBody.innerHTML = items;
+            })
+            .catch(() => {
+                assignedComptesModalBody.innerHTML = '<p style="color:var(--rose);text-align:center;padding:2rem;font-size:.84rem;">Erreur lors du chargement des comptes.</p>';
             });
     });
 });
