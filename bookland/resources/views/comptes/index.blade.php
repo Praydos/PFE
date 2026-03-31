@@ -609,26 +609,28 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                         </td>
 
                         <td>
-    @php
-        $villeName = $compte->ville?->nom ?? '—';
-        $zoneName = $compte->zone?->name ?? '—';
-        $quartierName = $compte->quartier?->nom ?? '—';
-        $hasLocation = $compte->ville || $compte->zone || $compte->quartier;
-    @endphp
-    <div class="loc-cell" style="cursor:pointer;" 
-         data-ville="{{ $villeName }}"
-         data-zone="{{ $zoneName }}"
-         data-quartier="{{ $quartierName }}"
-         data-etablissement="{{ $compte->etablissement }}">
-        <span class="loc-dot"></span>
-        <span style="font-size:.81rem;color:var(--text-secondary);">
-            {{ $hasLocation ? ($quartierName != '—' ? $quartierName : ($zoneName != '—' ? $zoneName : $villeName)) : '—' }}
-        </span>
-        @if($hasLocation)
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-        @endif
-    </div>
-</td>
+                            @php
+                                $villeName = $compte->ville?->nom ?? '—';
+                                $zoneName = $compte->zone?->name ?? '—';
+                                $quartierName = $compte->quartier?->nom ?? '—';
+                                $address = $compte->adresse ?? '—';
+                                $hasLocation = $compte->ville || $compte->zone || $compte->quartier;
+                            @endphp
+                            <div class="loc-cell" style="cursor:pointer;" 
+                                data-ville="{{ $villeName }}"
+                                data-zone="{{ $zoneName }}"
+                                data-quartier="{{ $quartierName }}"
+                                data-address="{{ $address }}"
+                                data-etablissement="{{ $compte->etablissement }}">
+                                <span class="loc-dot"></span>
+                                <span style="font-size:.81rem;color:var(--text-secondary);">
+                                    {{ $hasLocation ? ($quartierName != '—' ? $quartierName : ($zoneName != '—' ? $zoneName : $villeName)) : '—' }}
+                                </span>
+                                @if($hasLocation)
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                                @endif
+                            </div>
+                        </td>
 
                         {{-- Délégué --}}
                         <td>
@@ -752,6 +754,13 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <div class="loc-detail-label">Ville</div>
                 <div class="loc-detail-value" id="geo-ville">—</div>
             </div>
+            <div class="loc-detail-row">
+    <div class="loc-detail-icon">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 4 8 12 8 12s8-8 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+    </div>
+    <div class="loc-detail-label">Adresse</div>
+    <div class="loc-detail-value" id="geo-address">—</div>
+</div>
         </div>
         <div class="dr-modal-ft">
             <button class="btn-cp btn-cp-ghost" id="drModalGeoCancel">Fermer</button>
@@ -782,12 +791,14 @@ const geoTitle = document.getElementById('drModalGeoSubtitle');
 const geoQuartier = document.getElementById('geo-quartier');
 const geoZone = document.getElementById('geo-zone');
 const geoVille = document.getElementById('geo-ville');
+const geoAddress = document.getElementById('geo-address');
 
-function openGeoModal(etablissement, quartier, zone, ville) {
+function openGeoModal(etablissement, quartier, zone, ville, address) {
     geoTitle.textContent = etablissement;
     geoQuartier.textContent = quartier !== '—' ? quartier : 'Non renseigné';
     geoZone.textContent = zone !== '—' ? zone : 'Non renseigné';
     geoVille.textContent = ville !== '—' ? ville : 'Non renseigné';
+    geoAddress.textContent = address !== '—' ? address : 'Non renseigné';
     geoModal.classList.add('visible');
     document.body.style.overflow = 'hidden';
 }
@@ -809,7 +820,8 @@ document.querySelectorAll('.loc-cell').forEach(cell => {
         const quartier = cell.dataset.quartier;
         const zone = cell.dataset.zone;
         const ville = cell.dataset.ville;
-        openGeoModal(etablissement, quartier, zone, ville);
+        const address = cell.dataset.address;
+        openGeoModal(etablissement, quartier, zone, ville, address);
     });
 });
 </script>
