@@ -260,9 +260,10 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 
 @push('scripts')
 <script>
-    // Same JavaScript as in create view – copy it here exactly
+(function () {
+    // Status ↔ motif toggle (runs for all roles)
     const statusSelect = document.getElementById('status');
-    const motifGroup = document.getElementById('motif_fermeture_group');
+    const motifGroup   = document.getElementById('motif_fermeture_group');
 
     function toggleMotif() {
         motifGroup.style.display = statusSelect.value === 'ferme' ? 'block' : 'none';
@@ -270,8 +271,11 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     statusSelect.addEventListener('change', toggleMotif);
     toggleMotif();
 
+    // These selects only exist for admin / rbo — skip for delegues who see read-only fields
     const villeSelect = document.getElementById('ville_id');
-    const zoneSelect = document.getElementById('zone_id');
+    const zoneSelect  = document.getElementById('zone_id');
+    if (!villeSelect || !zoneSelect) return; // exit early for delegues
+
     const zoneOptions = zoneSelect.querySelectorAll('option');
 
     function filterZones() {
@@ -327,5 +331,6 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     }
     zoneSelect.addEventListener('change', filterDelegates);
     filterDelegates();
+})();
 </script>
 @endpush

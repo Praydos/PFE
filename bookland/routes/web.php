@@ -1,38 +1,88 @@
 <?php
 
+/**
+ * ── Breeze setup (run once in terminal) ─────────────────────────────────────
+ *
+ *   composer require laravel/breeze --dev
+ *   php artisan breeze:install blade   # or 'react' / 'vue'
+ *   npm install && npm run build
+ *   php artisan migrate
+ *
+ * Then add 'role' middleware alias (see RoleMiddleware.php for instructions).
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ * Access matrix
+ * ┌────────────────────────────┬───────┬─────┬─────────┐
+ * │ Resource                   │ Admin │ RBO │ Délégué │
+ * ├────────────────────────────┼───────┼─────┼─────────┤
+ * │ Villes / Zones / Quartiers │  ✓    │  ✗  │   ✗     │
+ * │ Users CRUD                 │  ✓    │  ✗  │   ✗     │
+ * │ Users › roles page         │  ✓    │  ✓* │   ✓*    │
+ * │ Zone / Compte assignments  │  ✓    │  ✗  │   ✗     │
+ * │ Comptes CRUD               │  ✓    │  ✓* │   ✓*    │
+ * └────────────────────────────┴───────┴─────┴─────────┘
+ *  * scoped in the controller to their own data
+ */
+
 use App\Http\Controllers\VilleController;
 use App\Http\Controllers\ZoneController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CompteController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\QuartierController;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => redirect()->route('comptes.index'));
-Route::get('/users/roles', [UserController::class, 'roles'])->name('users.roles');
+// Breeze auth routes (login, register, password reset, etc.)
+require __DIR__.'/auth.php';
 
-Route::resource('villes', VilleController::class);
-Route::resource('zones', ZoneController::class);
-Route::resource('users', UserController::class);
-Route::resource('comptes', CompteController::class);
-Route::resource('quartiers', QuartierController::class);
+Route::middleware('auth')->group(function () {
 
+    Route::get('/', fn () => redirect()->route('comptes.index'));
 
+    // ── Shared: all three authenticated roles ──────────────────────────────
+    // Declared BEFORE the users resource so "roles" is not swallowed by {user}.
 
-// fetch and zone asignemnt for delegue and rbo
-Route::get('/users/{user}/zones', [UserController::class, 'getZones'])->name('users.zones.get');
-Route::post('/users/{user}/zones', [UserController::class, 'updateZones'])->name('users.zones.update');
+    Route::get('/users/roles', [UserController::class, 'roles'])
+        ->name('users.roles')
+        ->middleware('role:admin,rbo,delegue');
 
-//fetch comptes for a given delegue 
-Route::get('/users/{user}/comptes', [UserController::class, 'getComptes'])->name('users.comptes');
-Route::post('/users/{user}/comptes', [UserController::class, 'updateComptes']);
+    Route::resource('comptes', CompteController::class)
+        ->middleware('role:admin,rbo,delegue');
 
-//fetch villes for rbos 
-Route::get('/users/{user}/villes', [UserController::class, 'getVilles'])->name('users.villes');
-Route::post('/users/{user}/villes', [UserController::class, 'updateVilles']);
+    // ── Admin only ─────────────────────────────────────────────────────────
+    Route::middleware('role:admin')->group(function () {
 
-//
-Route::post('/villes/{ville}/assign-zone', [VilleController::class, 'assignZone'])->name('villes.assignZone');
-Route::get('/users/{user}/assigned-zones', [UserController::class, 'getAssignedZones'])->name('users.assigned-zones');
+        // Core resources
+        Route::resource('villes',    VilleController::class);
+        Route::resource('zones',     ZoneController::class);
+        Route::resource('quartiers', QuartierController::class);
+        Route::resource('users',     UserController::class);
 
-//detach delegue from zones in rbo pane 
-Route::post('/zones/{zone}/detach-delegate/{delegate}', [ZoneController::class, 'detachDelegate'])->name('zones.detachDelegate');
+        // Ville ↔ Zone assignment
+        Route::post('/villes/{ville}/assign-zone',
+            [VilleController::class, 'assignZone'])->name('villes.assignZone');
+
+        // Zone ↔ Delegate detachment
+        Route::post('/zones/{zone}/detach-delegate/{delegate}',
+            [ZoneController::class, 'detachDelegate'])->name('zones.detachDelegate');
+
+        // User ↔ Zone assignments (AJAX)
+        Route::get('/users/{user}/zones',
+            [UserController::class, 'getZones'])->name('users.zones.get');
+        Route::post('/users/{user}/zones',
+            [UserController::class, 'updateZones'])->name('users.zones.update');
+        Route::get('/users/{user}/assigned-zones',
+            [UserController::class, 'getAssignedZones'])->name('users.assigned-zones');
+
+        // RBO ↔ Ville assignments (AJAX)
+        Route::get('/users/{user}/villes',
+            [UserController::class, 'getVilles'])->name('users.villes');
+        Route::post('/users/{user}/villes',
+            [UserController::class, 'updateVilles']);
+
+        // Delegué ↔ Compte assignments (AJAX — admin only, RBOs cannot self-assign)
+        Route::get('/users/{user}/comptes',
+            [UserController::class, 'getComptes'])->name('users.comptes');
+        Route::post('/users/{user}/comptes',
+            [UserController::class, 'updateComptes']);
+    });
+});

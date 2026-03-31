@@ -260,6 +260,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 @push('scripts')
 <script>
     // Show/hide motif field based on status selection
+    // (this runs for all roles; the remaining filters only apply when select elements exist)
     const statusSelect = document.getElementById('status');
     const motifGroup = document.getElementById('motif_fermeture_group');
 

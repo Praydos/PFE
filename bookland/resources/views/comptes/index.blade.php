@@ -335,9 +335,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     font-size: .76rem; font-weight: 600;
 }
 
-/* Pagination wrapper */
-/* ── Pagination fix ──────────────────────────────────── */
-/* ── Modal (reused from roles view) ─────────────────── */
+/* ── Modal ─────────────────────────────────────────── */
 .dr-modal-overlay {
     position: fixed; inset: 0;
     background: rgba(26,31,54,.42);
@@ -356,7 +354,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     border: 1px solid var(--border-md);
     border-radius: var(--r-xl);
     width: 100%; max-width: 480px;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
     overflow: hidden;
     animation: mIn .28s cubic-bezier(.34,1.4,.64,1) both;
 }
@@ -364,88 +362,46 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     from { opacity: 0; transform: scale(.94) translateY(8px); }
     to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-
 .dr-modal-hd {
     padding: 1.35rem 1.6rem 1.2rem;
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
     background: linear-gradient(to bottom, #fafbff, #fff);
 }
 .modal-icon {
-    width: 40px; height: 40px;
-    border-radius: var(--r-md);
-    background: var(--blue-light);
-    border: 1px solid var(--blue-mid);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--blue);
-    flex-shrink: 0;
+    width: 40px; height: 40px; border-radius: var(--r-md);
+    background: var(--blue-light); border: 1px solid var(--blue-mid);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--blue); flex-shrink: 0;
 }
 .modal-title-grp { flex: 1; }
 .modal-title-grp h2 { font-size: 1rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
 .modal-title-grp p  { font-size: .78rem; color: var(--text-muted); margin-top: .2rem; }
-
 .modal-close {
-    width: 30px; height: 30px;
-    border-radius: var(--r-xs);
-    background: var(--bg-subtle);
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all var(--t);
-    flex-shrink: 0;
+    width: 30px; height: 30px; border-radius: var(--r-xs);
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    color: var(--text-muted); display: flex; align-items: center;
+    justify-content: center; cursor: pointer; transition: all var(--t); flex-shrink: 0;
 }
 .modal-close:hover { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.2); }
-
 .dr-modal-body {
-    padding: 1.25rem 1.6rem;
-    max-height: 60vh;
-    overflow-y: auto;
+    padding: 1.25rem 1.6rem; max-height: 60vh; overflow-y: auto;
 }
 .dr-modal-body::-webkit-scrollbar { width: 4px; }
 .dr-modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
 .loc-detail-row {
-    display: flex;
-    align-items: baseline;
-    gap: .75rem;
-    padding: .85rem 0;
-    border-bottom: 1px solid var(--border);
+    display: flex; align-items: baseline; gap: .75rem;
+    padding: .85rem 0; border-bottom: 1px solid var(--border);
 }
-.loc-detail-icon {
-    width: 28px;
-    flex-shrink: 0;
-    color: var(--text-muted);
-}
-.loc-detail-label {
-    width: 80px;
-    font-size: .78rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: .05em;
-}
-.loc-detail-value {
-    flex: 1;
-    font-size: .85rem;
-    color: var(--text-primary);
-    font-weight: 500;
-}
+.loc-detail-icon { width: 28px; flex-shrink: 0; color: var(--text-muted); }
+.loc-detail-label { width: 80px; font-size: .78rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; }
+.loc-detail-value { flex: 1; font-size: .85rem; color: var(--text-primary); font-weight: 500; }
 .dr-modal-ft {
-    padding: 1rem 1.6rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: flex-end;
-    gap: .6rem;
+    padding: 1rem 1.6rem; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: .6rem;
     background: var(--bg-base);
 }
+
 /* ── Responsive ────────────────────────────────────── */
 @media (max-width: 768px) {
     .cp-page { padding: 1.25rem 1rem 2rem; }
@@ -478,13 +434,24 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     <div class="cp-header">
         <div class="cp-header-left">
             <h1>Comptes clients</h1>
-            <p>Gérez l'ensemble de vos établissements et clients référencés</p>
+            <p>
+                @if(auth()->user()->role === 'delegue')
+                    Vos établissements assignés
+                @elseif(auth()->user()->role === 'rbo')
+                    Comptes des délégués que vous supervisez
+                @else
+                    Gérez l'ensemble de vos établissements et clients référencés
+                @endif
+            </p>
         </div>
         <div class="cp-header-actions">
-            <a href="{{ route('comptes.create') }}" class="btn-cp btn-cp-primary">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Nouveau compte
-            </a>
+            {{-- Only admin and rbo can create comptes --}}
+            @if(in_array(auth()->user()->role, ['admin', 'rbo']))
+                <a href="{{ route('comptes.create') }}" class="btn-cp btn-cp-primary">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Nouveau compte
+                </a>
+            @endif
         </div>
     </div>
 
@@ -579,7 +546,10 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                         <th>#</th>
                         <th>Établissement</th>
                         <th>Géographie</th>
-                        <th>Délégué</th>
+                        {{-- Hide delegue column for delegues (they only see their own comptes) --}}
+                        @if(auth()->user()->role !== 'delegue')
+                            <th>Délégué</th>
+                        @endif
                         <th>Téléphone</th>
                         <th>Email</th>
                         <th>Statut</th>
@@ -608,15 +578,16 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                             </div>
                         </td>
 
+                        {{-- Géographie --}}
                         <td>
                             @php
-                                $villeName = $compte->ville?->nom ?? '—';
-                                $zoneName = $compte->zone?->name ?? '—';
+                                $villeName    = $compte->ville?->nom ?? '—';
+                                $zoneName     = $compte->zone?->name ?? '—';
                                 $quartierName = $compte->quartier?->nom ?? '—';
-                                $address = $compte->adresse ?? '—';
-                                $hasLocation = $compte->ville || $compte->zone || $compte->quartier;
+                                $address      = $compte->adresse ?? '—';
+                                $hasLocation  = $compte->ville || $compte->zone || $compte->quartier;
                             @endphp
-                            <div class="loc-cell" style="cursor:pointer;" 
+                            <div class="loc-cell" style="cursor:pointer;"
                                 data-ville="{{ $villeName }}"
                                 data-zone="{{ $zoneName }}"
                                 data-quartier="{{ $quartierName }}"
@@ -632,21 +603,23 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                             </div>
                         </td>
 
-                        {{-- Délégué --}}
-                        <td>
-                            @if($compte->delegue)
-                                <div class="dlg-cell">
-                                    <div class="dlg-mini-av">
-                                        {{ strtoupper(substr($compte->delegue->prenom,0,1).substr($compte->delegue->nom,0,1)) }}
+                        {{-- Délégué (hidden for delegues) --}}
+                        @if(auth()->user()->role !== 'delegue')
+                            <td>
+                                @if($compte->delegue)
+                                    <div class="dlg-cell">
+                                        <div class="dlg-mini-av">
+                                            {{ strtoupper(substr($compte->delegue->prenom,0,1).substr($compte->delegue->nom,0,1)) }}
+                                        </div>
+                                        <span style="font-size:.82rem;font-weight:500;color:var(--text-primary);">
+                                            {{ $compte->delegue->prenom }} {{ $compte->delegue->nom }}
+                                        </span>
                                     </div>
-                                    <span style="font-size:.82rem;font-weight:500;color:var(--text-primary);">
-                                        {{ $compte->delegue->prenom }} {{ $compte->delegue->nom }}
-                                    </span>
-                                </div>
-                            @else
-                                <span style="color:var(--text-hint);">—</span>
-                            @endif
-                        </td>
+                                @else
+                                    <span style="color:var(--text-hint);">—</span>
+                                @endif
+                            </td>
+                        @endif
 
                         {{-- Téléphone --}}
                         <td>
@@ -684,34 +657,39 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                         {{-- Actions --}}
                         <td>
                             <div class="actions-cell">
+                                {{-- Edit: visible to all roles (controller scopes what they can change) --}}
                                 <a href="{{ route('comptes.edit', $compte) }}" class="btn-cp btn-cp-sm btn-cp-warning">
                                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
                                 </a>
-                                <form action="{{ route('comptes.destroy', $compte) }}" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer ce compte ?');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn-cp btn-cp-sm btn-cp-danger">
-                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-                                    </button>
-                                </form>
+
+                                {{-- Delete: admin and rbo only, not delegues --}}
+                                @if(in_array(auth()->user()->role, ['admin', 'rbo']))
+                                    <form action="{{ route('comptes.destroy', $compte) }}" method="POST"
+                                          style="display:inline;" onsubmit="return confirm('Supprimer ce compte ?');">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn-cp btn-cp-sm btn-cp-danger">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10">
+                        <td colspan="{{ auth()->user()->role === 'delegue' ? 7 : 8 }}">
                             <div class="cp-empty">
                                 <div class="cp-empty-icon">
                                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                                 </div>
                                 <h3>Aucun compte trouvé</h3>
-                                <p>{{ request('search') ? 'Aucun résultat pour «&nbsp;'.request('search').'&nbsp;». Essayez un autre terme.' : 'Commencez par créer votre premier compte client.' }}</p>
+                                <p>{{ request('search') ? 'Aucun résultat pour «&nbsp;'.request('search').'&nbsp;». Essayez un autre terme.' : 'Aucun compte ne vous est assigné pour le moment.' }}</p>
                             </div>
                         </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
-            
         </div>
 
         {{-- Pagination --}}
@@ -723,7 +701,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     </div>
 
 </div>
-{{-- ── Modal for Geography details ─────────────────────── --}}
+
+{{-- Geography modal --}}
 <div class="dr-modal-overlay" id="drModalGeo">
     <div class="dr-modal" role="dialog" aria-modal="true" aria-labelledby="drModalGeoTitle">
         <div class="dr-modal-hd">
@@ -755,73 +734,62 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <div class="loc-detail-value" id="geo-ville">—</div>
             </div>
             <div class="loc-detail-row">
-    <div class="loc-detail-icon">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 4 8 12 8 12s8-8 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
-    </div>
-    <div class="loc-detail-label">Adresse</div>
-    <div class="loc-detail-value" id="geo-address">—</div>
-</div>
+                <div class="loc-detail-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 4 8 12 8 12s8-8 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg></div>
+                <div class="loc-detail-label">Adresse</div>
+                <div class="loc-detail-value" id="geo-address">—</div>
+            </div>
         </div>
         <div class="dr-modal-ft">
             <button class="btn-cp btn-cp-ghost" id="drModalGeoCancel">Fermer</button>
         </div>
     </div>
 </div>
-
 @endsection
 
 @push('scripts')
 <script>
-// Auto-submit search on clear
 (function () {
     const input = document.querySelector('.cp-search-input');
     if (!input) return;
     input.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            input.value = '';
-            input.closest('form').submit();
-        }
+        if (e.key === 'Escape') { input.value = ''; input.closest('form').submit(); }
     });
 })();
 
-
-// Geography modal logic
-const geoModal = document.getElementById('drModalGeo');
-const geoTitle = document.getElementById('drModalGeoSubtitle');
+const geoModal    = document.getElementById('drModalGeo');
+const geoTitle    = document.getElementById('drModalGeoSubtitle');
 const geoQuartier = document.getElementById('geo-quartier');
-const geoZone = document.getElementById('geo-zone');
-const geoVille = document.getElementById('geo-ville');
-const geoAddress = document.getElementById('geo-address');
+const geoZone     = document.getElementById('geo-zone');
+const geoVille    = document.getElementById('geo-ville');
+const geoAddress  = document.getElementById('geo-address');
 
 function openGeoModal(etablissement, quartier, zone, ville, address) {
-    geoTitle.textContent = etablissement;
+    geoTitle.textContent    = etablissement;
     geoQuartier.textContent = quartier !== '—' ? quartier : 'Non renseigné';
-    geoZone.textContent = zone !== '—' ? zone : 'Non renseigné';
-    geoVille.textContent = ville !== '—' ? ville : 'Non renseigné';
-    geoAddress.textContent = address !== '—' ? address : 'Non renseigné';
+    geoZone.textContent     = zone     !== '—' ? zone     : 'Non renseigné';
+    geoVille.textContent    = ville    !== '—' ? ville    : 'Non renseigné';
+    geoAddress.textContent  = address  !== '—' ? address  : 'Non renseigné';
     geoModal.classList.add('visible');
     document.body.style.overflow = 'hidden';
 }
-
 function closeGeoModal() {
     geoModal.classList.remove('visible');
     document.body.style.overflow = '';
 }
-
 document.getElementById('drModalGeoClose').addEventListener('click', closeGeoModal);
 document.getElementById('drModalGeoCancel').addEventListener('click', closeGeoModal);
 geoModal.addEventListener('click', e => { if (e.target === geoModal) closeGeoModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGeoModal(); });
 
-// Attach click handlers to geography cells
 document.querySelectorAll('.loc-cell').forEach(cell => {
     cell.addEventListener('click', () => {
-        const etablissement = cell.dataset.etablissement;
-        const quartier = cell.dataset.quartier;
-        const zone = cell.dataset.zone;
-        const ville = cell.dataset.ville;
-        const address = cell.dataset.address;
-        openGeoModal(etablissement, quartier, zone, ville, address);
+        openGeoModal(
+            cell.dataset.etablissement,
+            cell.dataset.quartier,
+            cell.dataset.zone,
+            cell.dataset.ville,
+            cell.dataset.address
+        );
     });
 });
 </script>

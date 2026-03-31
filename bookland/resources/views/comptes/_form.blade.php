@@ -1,182 +1,181 @@
 @php
-    $isEdit = isset($compte);
-    $selectedVilleId = $isEdit ? $compte->ville_id : old('ville_id');
-    $selectedZoneId = $isEdit ? $compte->zone_id : old('zone_id');
+    $isEdit        = isset($compte);
+    $isDelegue     = auth()->user()->role === 'delegue';
+    $isAdmin       = auth()->user()->role === 'admin';
+    $isRbo         = auth()->user()->role === 'rbo';
+
+    $selectedVilleId    = $isEdit ? $compte->ville_id    : old('ville_id');
+    $selectedZoneId     = $isEdit ? $compte->zone_id     : old('zone_id');
     $selectedQuartierId = $isEdit ? $compte->quartier_id : old('quartier_id');
-    $selectedDelegueId = $isEdit ? $compte->delegue_id : old('delegue_id');
-    $selectedStatus = old('status', $isEdit ? $compte->status : 'actif');
+    $selectedDelegueId  = $isEdit ? $compte->delegue_id  : old('delegue_id');
+    $selectedStatus     = old('status', $isEdit ? $compte->status : 'actif');
 @endphp
 
+{{-- ══════════════════════════════════════════════════════════════════════════
+     LOCKED FIELDS — shown as read-only info for délégués,
+                     shown as full inputs for admin / rbo.
+     The controller ignores these fields for délégués on update,
+     so no hidden inputs are needed for security.
+     ══════════════════════════════════════════════════════════════════════════ --}}
+
 {{-- Établissement --}}
-<div class="frm-group">
-    <label class="frm-label" for="etablissement">
-        Nom de l'établissement <span class="req">*</span>
-    </label>
-    <div class="frm-input-wrap">
-        <span class="frm-icon">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-        </span>
-        <input type="text" id="etablissement" name="etablissement"
-               class="frm-input {{ $errors->has('etablissement') ? 'is-invalid' : '' }}"
-               value="{{ old('etablissement', $compte->etablissement ?? '') }}"
-               placeholder="Ex : Lycée Mohammed V"
-               required autocomplete="off">
+@if($isDelegue && $isEdit)
+    {{-- Read-only display --}}
+    <div class="frm-group">
+        <label class="frm-label">Nom de l'établissement</label>
+        <div class="frm-readonly">{{ $compte->etablissement }}</div>
     </div>
-    @error('etablissement')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
-    @enderror
-</div>
+@else
+    <div class="frm-group">
+        <label class="frm-label" for="etablissement">
+            Nom de l'établissement <span class="req">*</span>
+        </label>
+        <div class="frm-input-wrap">
+            <span class="frm-icon">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </span>
+            <input type="text" id="etablissement" name="etablissement"
+                   class="frm-input {{ $errors->has('etablissement') ? 'is-invalid' : '' }}"
+                   value="{{ old('etablissement', $compte->etablissement ?? '') }}"
+                   placeholder="Ex : Lycée Mohammed V"
+                   required autocomplete="off">
+        </div>
+        @error('etablissement')
+            <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
+        @enderror
+    </div>
+@endif
 
-<div class="frm-group">
-    <label class="frm-label" for="type">
-        Type <span class="req">*</span>
-    </label>
-    <div class="frm-select-wrap">
-        <select id="type" name="type"
-                class="frm-select {{ $errors->has('type') ? 'is-invalid' : '' }}"
-                required>
-            @foreach($types as $typeOption)
-                <option value="{{ $typeOption }}" {{ (old('type', $compte->type ?? '') == $typeOption) ? 'selected' : '' }}>
-                    {{ ucfirst(str_replace('_', ' ', $typeOption)) }}
-                </option>
-            @endforeach
-        </select>
+{{-- Type --}}
+@if($isDelegue && $isEdit)
+    <div class="frm-group">
+        <label class="frm-label">Type</label>
+        <div class="frm-readonly">{{ ucfirst(str_replace('_', ' ', $compte->type)) }}</div>
     </div>
-    @error('type')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
-    @enderror
-</div>
+@else
+    <div class="frm-group">
+        <label class="frm-label" for="type">Type <span class="req">*</span></label>
+        <div class="frm-select-wrap">
+            <select id="type" name="type" class="frm-select {{ $errors->has('type') ? 'is-invalid' : '' }}" required>
+                @foreach($types as $typeOption)
+                    <option value="{{ $typeOption }}" {{ (old('type', $compte->type ?? '') == $typeOption) ? 'selected' : '' }}>
+                        {{ ucfirst(str_replace('_', ' ', $typeOption)) }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        @error('type')
+            <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
+        @enderror
+    </div>
+@endif
 
-<div class="frm-group">
-    <label class="frm-label" for="cycle">
-        Cycle
-    </label>
-    <div class="frm-select-wrap">
-        <select id="cycle" name="cycle"
-                class="frm-select {{ $errors->has('cycle') ? 'is-invalid' : '' }}">
-            <option value="">— Non spécifié —</option>
-            @foreach($cycles as $cycleOption)
-                <option value="{{ $cycleOption }}" {{ (old('cycle', $compte->cycle ?? '') == $cycleOption) ? 'selected' : '' }}>
-                    {{ $cycleOption }}
-                </option>
-            @endforeach
-        </select>
+{{-- Cycle --}}
+@if($isDelegue && $isEdit)
+    <div class="frm-group">
+        <label class="frm-label">Cycle</label>
+        <div class="frm-readonly">{{ $compte->cycle ?? '—' }}</div>
     </div>
-    @error('cycle')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
-    @enderror
-</div>
+@else
+    <div class="frm-group">
+        <label class="frm-label" for="cycle">Cycle</label>
+        <div class="frm-select-wrap">
+            <select id="cycle" name="cycle" class="frm-select {{ $errors->has('cycle') ? 'is-invalid' : '' }}">
+                <option value="">— Non spécifié —</option>
+                @foreach($cycles as $cycleOption)
+                    <option value="{{ $cycleOption }}" {{ (old('cycle', $compte->cycle ?? '') == $cycleOption) ? 'selected' : '' }}>
+                        {{ $cycleOption }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        @error('cycle')
+            <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
+        @enderror
+    </div>
+@endif
 
 {{-- Ville --}}
-<div class="frm-group">
-    <label class="frm-label" for="ville_id">
-        Ville <span class="req">*</span>
-    </label>
-    <div class="frm-select-wrap">
-        <select id="ville_id" name="ville_id"
-                class="frm-select {{ $errors->has('ville_id') ? 'is-invalid' : '' }}"
-                required>
-            <option value="">— Sélectionnez une ville —</option>
-            @foreach($villes as $ville)
-                <option value="{{ $ville->id }}" {{ $selectedVilleId == $ville->id ? 'selected' : '' }}>
-                    {{ $ville->nom }}
-                </option>
-            @endforeach
-        </select>
+@if($isDelegue && $isEdit)
+    <div class="frm-group">
+        <label class="frm-label">Ville</label>
+        <div class="frm-readonly">{{ $compte->ville?->nom ?? '—' }}</div>
     </div>
-    @error('ville_id')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
-    @enderror
-</div>
+@else
+    <div class="frm-group">
+        <label class="frm-label" for="ville_id">Ville <span class="req">*</span></label>
+        <div class="frm-select-wrap">
+            <select id="ville_id" name="ville_id" class="frm-select {{ $errors->has('ville_id') ? 'is-invalid' : '' }}" required>
+                <option value="">— Sélectionnez une ville —</option>
+                @foreach($villes as $ville)
+                    <option value="{{ $ville->id }}" {{ $selectedVilleId == $ville->id ? 'selected' : '' }}>
+                        {{ $ville->nom }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        @error('ville_id')
+            <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
+        @enderror
+    </div>
+@endif
 
 {{-- Zone --}}
-<div class="frm-group">
-    <label class="frm-label" for="zone_id">
-        Zone <span class="req">*</span>
-    </label>
-    <div class="frm-select-wrap">
-        <select id="zone_id" name="zone_id"
-                class="frm-select {{ $errors->has('zone_id') ? 'is-invalid' : '' }}"
-                required>
-            <option value="">— Sélectionnez une zone —</option>
-            @foreach($zones as $zone)
-                <option value="{{ $zone->id }}" data-ville="{{ $zone->ville_id }}" {{ $selectedZoneId == $zone->id ? 'selected' : '' }}>
-                    {{ $zone->name }}
-                </option>
-            @endforeach
-        </select>
+@if($isDelegue && $isEdit)
+    <div class="frm-group">
+        <label class="frm-label">Zone</label>
+        <div class="frm-readonly">{{ $compte->zone?->name ?? '—' }}</div>
     </div>
-    @error('zone_id')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
-    @enderror
-</div>
+@else
+    <div class="frm-group">
+        <label class="frm-label" for="zone_id">Zone <span class="req">*</span></label>
+        <div class="frm-select-wrap">
+            <select id="zone_id" name="zone_id" class="frm-select {{ $errors->has('zone_id') ? 'is-invalid' : '' }}" required>
+                <option value="">— Sélectionnez une zone —</option>
+                @foreach($zones as $zone)
+                    <option value="{{ $zone->id }}" data-ville="{{ $zone->ville_id }}" {{ $selectedZoneId == $zone->id ? 'selected' : '' }}>
+                        {{ $zone->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        @error('zone_id')
+            <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
+        @enderror
+    </div>
+@endif
 
 {{-- Quartier --}}
-<div class="frm-group">
-    <label class="frm-label" for="quartier_id">
-        Quartier <span class="req">*</span>
-    </label>
-    <div class="frm-select-wrap">
-        <select id="quartier_id" name="quartier_id"
-                class="frm-select {{ $errors->has('quartier_id') ? 'is-invalid' : '' }}"
-                required>
-            <option value="">— Sélectionnez un quartier —</option>
-            @foreach($quartiers as $quartier)
-                <option value="{{ $quartier->id }}" data-zone="{{ $quartier->zone_id }}" {{ $selectedQuartierId == $quartier->id ? 'selected' : '' }}>
-                    {{ $quartier->nom }} ({{ $quartier->zone->nom }})
-                </option>
-            @endforeach
-        </select>
+@if($isDelegue && $isEdit)
+    <div class="frm-group">
+        <label class="frm-label">Quartier</label>
+        <div class="frm-readonly">{{ $compte->quartier?->nom ?? '—' }}</div>
     </div>
-    @error('quartier_id')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
-    @enderror
-</div>
+@else
+    <div class="frm-group">
+        <label class="frm-label" for="quartier_id">Quartier</label>
+        <div class="frm-select-wrap">
+            <select id="quartier_id" name="quartier_id" class="frm-select {{ $errors->has('quartier_id') ? 'is-invalid' : '' }}">
+                <option value="">— Sélectionnez un quartier —</option>
+                @foreach($quartiers as $quartier)
+                    <option value="{{ $quartier->id }}" data-zone="{{ $quartier->zone_id }}" {{ $selectedQuartierId == $quartier->id ? 'selected' : '' }}>
+                        {{ $quartier->nom }} ({{ $quartier->zone->name ?? '' }})
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        @error('quartier_id')
+            <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
+        @enderror
+    </div>
+@endif
+
+{{-- ══════════════════════════════════════════════════════════════════════════
+     EDITABLE FIELDS — available to all roles
+     ══════════════════════════════════════════════════════════════════════════ --}}
 
 {{-- Adresse --}}
 <div class="frm-group">
@@ -196,47 +195,39 @@
                   required>{{ old('adresse', $compte->adresse ?? '') }}</textarea>
     </div>
     @error('adresse')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
+        <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
     @enderror
 </div>
 
 {{-- Délégué pédagogique --}}
-<div class="frm-group">
-    <label class="frm-label" for="delegue_id">
-        Délégué pédagogique
-    </label>
-    <div class="frm-select-wrap">
-        <select id="delegue_id" name="delegue_id"
-                class="frm-select {{ $errors->has('delegue_id') ? 'is-invalid' : '' }}">
-            <option value="">— Sélectionnez un délégué —</option>
-            @foreach($delegues as $delegue)
-                @php
-                    $zoneIds = $delegue->zones->pluck('id')->toArray();
-                @endphp
-                <option value="{{ $delegue->id }}" data-zones='@json($zoneIds)' {{ $selectedDelegueId == $delegue->id ? 'selected' : '' }}>
-                    {{ $delegue->prenom }} {{ $delegue->nom }}
-                </option>
-            @endforeach
-        </select>
+@if($isDelegue && $isEdit)
+    <div class="frm-group">
+        <label class="frm-label">Délégué pédagogique</label>
+        <div class="frm-readonly">
+            {{ $compte->delegue ? $compte->delegue->prenom . ' ' . $compte->delegue->nom : '—' }}
+        </div>
     </div>
-    @error('delegue_id')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
-    @enderror
-</div>
+@else
+    <div class="frm-group">
+        <label class="frm-label" for="delegue_id">Délégué pédagogique</label>
+        <div class="frm-select-wrap">
+            <select id="delegue_id" name="delegue_id"
+                    class="frm-select {{ $errors->has('delegue_id') ? 'is-invalid' : '' }}">
+                <option value="">— Sélectionnez un délégué —</option>
+                @foreach($delegues as $delegue)
+                    @php $zoneIds = $delegue->zones->pluck('id')->toArray(); @endphp
+                    <option value="{{ $delegue->id }}" data-zones='@json($zoneIds)'
+                            {{ $selectedDelegueId == $delegue->id ? 'selected' : '' }}>
+                        {{ $delegue->prenom }} {{ $delegue->nom }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        @error('delegue_id')
+            <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
+        @enderror
+    </div>
+@endif
 
 {{-- Statut --}}
 <div class="frm-group">
@@ -255,22 +246,13 @@
         </select>
     </div>
     @error('status')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
+        <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
     @enderror
 </div>
 
 {{-- Motif de fermeture (conditional) --}}
 <div class="frm-group" id="motif_fermeture_group" style="{{ $selectedStatus == 'ferme' ? '' : 'display:none;' }}">
-    <label class="frm-label" for="motif_fermeture">
-        Motif de fermeture
-    </label>
+    <label class="frm-label" for="motif_fermeture">Motif de fermeture</label>
     <div class="frm-input-wrap">
         <span class="frm-icon">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -284,22 +266,13 @@
                   placeholder="Indiquez la raison de la fermeture...">{{ old('motif_fermeture', $compte->motif_fermeture ?? '') }}</textarea>
     </div>
     @error('motif_fermeture')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
+        <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
     @enderror
 </div>
 
 {{-- Téléphone bureau --}}
 <div class="frm-group">
-    <label class="frm-label" for="tel_bureau_1">
-        Téléphone bureau
-    </label>
+    <label class="frm-label" for="tel_bureau_1">Téléphone bureau</label>
     <div class="frm-input-wrap">
         <span class="frm-icon">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -313,22 +286,13 @@
                autocomplete="off">
     </div>
     @error('tel_bureau_1')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
+        <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
     @enderror
 </div>
 
 {{-- Email --}}
 <div class="frm-group">
-    <label class="frm-label" for="email">
-        Email
-    </label>
+    <label class="frm-label" for="email">Email</label>
     <div class="frm-input-wrap">
         <span class="frm-icon">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -343,13 +307,24 @@
                autocomplete="off">
     </div>
     @error('email')
-        <span class="frm-error">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ $message }}
-        </span>
+        <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
     @enderror
 </div>
+
+{{-- Read-only field style (injected once per form render) --}}
+@once
+<style>
+.frm-readonly {
+    padding: .62rem .9rem;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    font-size: .84rem;
+    color: var(--text-secondary);
+    font-family: var(--font);
+    min-height: 2.4rem;
+    display: flex;
+    align-items: center;
+}
+</style>
+@endonce

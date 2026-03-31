@@ -8,7 +8,7 @@
     @stack('styles')
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    {{-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="{{ route('comptes.index') }}">CRM Bookland</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -25,18 +25,11 @@
                 </ul>
             </div>
         </div>
-    </nav>
+    </nav> --}}
+
+    @include('layouts.navigation')
 
     <main class="container">
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
