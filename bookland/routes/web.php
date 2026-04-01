@@ -95,5 +95,8 @@ Route::middleware('auth')->group(function () {
 
 
 Route::get('/users/{user}/assigned-comptes', [UserController::class, 'getAssignedComptes'])->name('users.assigned-comptes');
-
+// contact routes to authorize later
 Route::resource('contacts', ContactController::class);
+
+Route::get('/contacts/{contact}/comptes', [ContactController::class, 'getComptes'])->name('contacts.comptes.get');
+Route::post('/contacts/{contact}/comptes', [ContactController::class, 'updateComptes'])->name('contacts.comptes.update');

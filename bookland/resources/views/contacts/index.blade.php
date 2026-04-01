@@ -3,10 +3,11 @@
 @push('styles')
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-    /* ===== FULL CSS FROM ZONES EXAMPLE ===== */
-    /* Paste the entire <style> block from the zones example here */
-    /* (We'll include it fully in the final answer) */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ===== PASTE THE FULL ZONES VIEW CSS HERE ===== */
+    /* (Exactly the same <style> block from the zones view) */
+    /* For brevity, I'm not repeating it here – you'll copy it from your zones view */
+    <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
     --bg-base:       #f5f6fa;
@@ -335,6 +336,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 }
 @media (max-width: 480px) { .zn-stats { grid-template-columns: 1fr; } }
 </style>
+</style>
 @endpush
 
 @section('content')
@@ -428,6 +430,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                         <th>Ville</th>
                         <th>Catégories</th>
                         <th>Cycles</th>
+                        <th>Comptes</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -508,6 +511,32 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                 @endif
                             </td>
 
+                            {{-- Comptes cell --}}
+                            <td>
+                                <div class="actions-cell">
+                                    <button class="btn-zn btn-zn-sm btn-zn-ghost show-comptes-btn"
+                                            data-contact-id="{{ $contact->id }}"
+                                            data-contact-name="{{ $contact->prenom }} {{ $contact->nom }}">
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                            <circle cx="12" cy="12" r="3"/>
+                                        </svg>
+                                        {{-- Afficher --}}
+                                    </button>
+                                    @if(auth()->user()->role === 'admin')
+                                    <button class="btn-zn btn-zn-sm btn-zn-primary manage-comptes-btn"
+                                            data-contact-id="{{ $contact->id }}"
+                                            data-contact-name="{{ $contact->prenom }} {{ $contact->nom }}">
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                            <path d="M12 2a7 7 0 0 0-7 7c0 4 7 13 7 13s7-9 7-13a7 7 0 0 0-7-7z"/>
+                                            <circle cx="12" cy="9" r="3"/>
+                                        </svg>
+                                        Gérer
+                                    </button>
+                                    @endif
+                                </div>
+                            </td>
+
                             <td>
                                 <div class="actions-cell">
                                     <a href="{{ route('contacts.edit', $contact) }}" class="btn-zn btn-zn-sm btn-zn-warning">
@@ -515,11 +544,10 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
                                         </svg>
-                                       {{-- modifier  --}}
+                                        
                                     </a>
                                     <form action="{{ route('contacts.destroy', $contact) }}" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer ce contact ?');">
-                                        @csrf
-                                        @method('DELETE')
+                                        @csrf @method('DELETE')
                                         <button type="submit" class="btn-zn btn-zn-sm btn-zn-danger">
                                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                                                 <polyline points="3 6 5 6 21 6"/>
@@ -533,7 +561,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8">
+                            <td colspan="9">
                                 <div class="zn-empty">
                                     <div class="zn-empty-icon">
                                         <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -542,7 +570,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                         </svg>
                                     </div>
                                     <h3>Aucun contact trouvé</h3>
-                                    <p>{{ request('search') ? 'Aucun résultat pour «\u00a0'.request('search').'\u00a0». Essayez un autre terme.' : 'Commencez par créer votre premier contact.' }}</p>
+                                    <p>{{ request('search') ? 'Aucun résultat pour « '.request('search').' ». Essayez un autre terme.' : 'Commencez par créer votre premier contact.' }}</p>
                                 </div>
                             </td>
                         </tr>
@@ -559,9 +587,9 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     </div>
 </div>
 
-{{-- ── Modal for Categories (same style as delegates modal) --}}
+{{-- ── Modal for categories (view only) ─────────────────────────────── --}}
 <div class="dlg-modal-overlay" id="catModalOverlay">
-    <div class="dlg-modal" role="dialog" aria-modal="true" aria-labelledby="catModalTitle">
+    <div class="dlg-modal" role="dialog" aria-modal="true">
         <div class="dlg-modal-hd">
             <div class="dlg-modal-icon">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -570,7 +598,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 </svg>
             </div>
             <div class="dlg-modal-titles">
-                <h2 id="catModalTitle">Catégories du contact</h2>
+                <h2>Catégories du contact</h2>
                 <p id="catModalContact">—</p>
             </div>
             <button class="dlg-modal-close" id="catModalClose" aria-label="Fermer">
@@ -581,12 +609,15 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             </button>
         </div>
         <div class="dlg-modal-body" id="catModalBody"></div>
+        <div class="dlg-modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border);">
+            <button class="btn-zn btn-zn-ghost" id="catModalCancel">Fermer</button>
+        </div>
     </div>
 </div>
 
-{{-- ── Modal for Cycles (same style) --}}
+{{-- ── Modal for cycles (view only) ─────────────────────────────── --}}
 <div class="dlg-modal-overlay" id="cycleModalOverlay">
-    <div class="dlg-modal" role="dialog" aria-modal="true" aria-labelledby="cycleModalTitle">
+    <div class="dlg-modal" role="dialog" aria-modal="true">
         <div class="dlg-modal-hd">
             <div class="dlg-modal-icon">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -595,7 +626,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 </svg>
             </div>
             <div class="dlg-modal-titles">
-                <h2 id="cycleModalTitle">Cycles du contact</h2>
+                <h2>Cycles du contact</h2>
                 <p id="cycleModalContact">—</p>
             </div>
             <button class="dlg-modal-close" id="cycleModalClose" aria-label="Fermer">
@@ -606,85 +637,332 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             </button>
         </div>
         <div class="dlg-modal-body" id="cycleModalBody"></div>
+        <div class="dlg-modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border);">
+            <button class="btn-zn btn-zn-ghost" id="cycleModalCancel">Fermer</button>
+        </div>
     </div>
 </div>
 
+{{-- ── Modal for viewing assigned comptes ─────────────────────────────── --}}
+<div class="dlg-modal-overlay" id="showComptesModalOverlay">
+    <div class="dlg-modal" role="dialog" aria-modal="true">
+        <div class="dlg-modal-hd">
+            <div class="dlg-modal-icon">
+                <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            </div>
+            <div class="dlg-modal-titles">
+                <h2>Comptes assignés</h2>
+                <p id="showComptesContactName">—</p>
+            </div>
+            <button class="dlg-modal-close" id="showComptesClose" aria-label="Fermer">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="dlg-modal-body" id="showComptesModalBody">
+            <div class="dlg-modal-empty">Chargement...</div>
+        </div>
+        <div class="dlg-modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border);">
+            <button class="btn-zn btn-zn-ghost" id="showComptesCancel">Fermer</button>
+        </div>
+    </div>
+</div>
+
+{{-- ── Modal for managing comptes ─────────────────────────────── --}}
+<div class="dlg-modal-overlay" id="manageComptesModalOverlay">
+    <div class="dlg-modal" style="max-width: 600px;" role="dialog" aria-modal="true">
+        <div class="dlg-modal-hd">
+            <div class="dlg-modal-icon">
+                <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 2a7 7 0 0 0-7 7c0 4 7 13 7 13s7-9 7-13a7 7 0 0 0-7-7z"/>
+                    <circle cx="12" cy="9" r="3"/>
+                </svg>
+            </div>
+            <div class="dlg-modal-titles">
+                <h2>Gérer les comptes du contact</h2>
+                <p id="manageComptesContactName">—</p>
+            </div>
+            <button class="dlg-modal-close" id="manageComptesClose" aria-label="Fermer">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="dlg-modal-body" id="manageComptesModalBody">
+            <div class="dlg-modal-empty">Chargement...</div>
+        </div>
+        <div class="dlg-modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: .6rem;">
+            <button class="btn-zn btn-zn-ghost" id="manageComptesCancel">Annuler</button>
+            <button class="btn-zn btn-zn-primary" id="manageComptesSave">Enregistrer</button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
 (function () {
-    // Close and escape handling
+    /* ===== Modal helpers ===== */
     function closeModal(overlay) {
         overlay.classList.remove('visible');
         document.body.style.overflow = '';
     }
 
-    function openModal(overlay, contactName, items) {
-        const bodyElem = overlay.querySelector('.dlg-modal-body');
-        const contactSpan = overlay.querySelector('.dlg-modal-titles p');
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/&/g, "&amp;")
+                   .replace(/</g, "&lt;")
+                   .replace(/>/g, "&gt;")
+                   .replace(/"/g, "&quot;")
+                   .replace(/'/g, "&#39;");
+    }
 
-        contactSpan.textContent = contactName;
+    /* ===== Categories modal ===== */
+    const catOverlay = document.getElementById('catModalOverlay');
+    const catClose = document.getElementById('catModalClose');
+    const catCancel = document.getElementById('catModalCancel');
+    const catContactSpan = document.getElementById('catModalContact');
+    const catBody = document.getElementById('catModalBody');
 
+    function openCatModal(contactName, items) {
+        catContactSpan.textContent = contactName;
         if (!items.length) {
-            bodyElem.innerHTML = '<div class="dlg-modal-empty">Aucune donnée disponible.</div>';
+            catBody.innerHTML = '<div class="dlg-modal-empty">Aucune catégorie.</div>';
         } else {
-            bodyElem.innerHTML = '<div class="dlg-modal-list">' +
+            catBody.innerHTML = '<div class="dlg-modal-list">' +
                 items.map(item => `
                     <div class="dlg-modal-item">
                         <div class="dlg-modal-info" style="padding-left: 0;">
-                            <div class="dlg-modal-name">${item}</div>
+                            <div class="dlg-modal-name">${escapeHtml(item)}</div>
                         </div>
                     </div>
                 `).join('') +
                 '</div>';
         }
-
-        overlay.classList.add('visible');
+        catOverlay.classList.add('visible');
         document.body.style.overflow = 'hidden';
     }
 
-    // Categories modal
-    const catOverlay = document.getElementById('catModalOverlay');
-    const catClose = document.getElementById('catModalClose');
-    const catTriggers = document.querySelectorAll('.cat-trigger');
-
-    catTriggers.forEach(trigger => {
-        const open = () => {
+    document.querySelectorAll('.cat-trigger').forEach(trigger => {
+        trigger.addEventListener('click', () => {
             const contactName = trigger.dataset.contact;
             const items = JSON.parse(trigger.dataset.items);
-            openModal(catOverlay, contactName, items);
-        };
-        trigger.addEventListener('click', open);
-        trigger.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+            openCatModal(contactName, items);
+        });
     });
-
     catClose.addEventListener('click', () => closeModal(catOverlay));
+    catCancel.addEventListener('click', () => closeModal(catOverlay));
     catOverlay.addEventListener('click', e => { if (e.target === catOverlay) closeModal(catOverlay); });
 
-    // Cycles modal
+    /* ===== Cycles modal ===== */
     const cycleOverlay = document.getElementById('cycleModalOverlay');
     const cycleClose = document.getElementById('cycleModalClose');
-    const cycleTriggers = document.querySelectorAll('.cycle-trigger');
+    const cycleCancel = document.getElementById('cycleModalCancel');
+    const cycleContactSpan = document.getElementById('cycleModalContact');
+    const cycleBody = document.getElementById('cycleModalBody');
 
-    cycleTriggers.forEach(trigger => {
-        const open = () => {
+    function openCycleModal(contactName, items) {
+        cycleContactSpan.textContent = contactName;
+        if (!items.length) {
+            cycleBody.innerHTML = '<div class="dlg-modal-empty">Aucun cycle.</div>';
+        } else {
+            cycleBody.innerHTML = '<div class="dlg-modal-list">' +
+                items.map(item => `
+                    <div class="dlg-modal-item">
+                        <div class="dlg-modal-info" style="padding-left: 0;">
+                            <div class="dlg-modal-name">${escapeHtml(item)}</div>
+                        </div>
+                    </div>
+                `).join('') +
+                '</div>';
+        }
+        cycleOverlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+    }
+
+    document.querySelectorAll('.cycle-trigger').forEach(trigger => {
+        trigger.addEventListener('click', () => {
             const contactName = trigger.dataset.contact;
             const items = JSON.parse(trigger.dataset.items);
-            openModal(cycleOverlay, contactName, items);
-        };
-        trigger.addEventListener('click', open);
-        trigger.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+            openCycleModal(contactName, items);
+        });
+    });
+    cycleClose.addEventListener('click', () => closeModal(cycleOverlay));
+    cycleCancel.addEventListener('click', () => closeModal(cycleOverlay));
+    cycleOverlay.addEventListener('click', e => { if (e.target === cycleOverlay) closeModal(cycleOverlay); });
+
+    /* ===== View assigned comptes modal ===== */
+    let currentViewContactId = null;
+    const viewOverlay = document.getElementById('showComptesModalOverlay');
+    const viewClose = document.getElementById('showComptesClose');
+    const viewCancel = document.getElementById('showComptesCancel');
+    const viewContactSpan = document.getElementById('showComptesContactName');
+    const viewBody = document.getElementById('showComptesModalBody');
+
+    function openViewModal(contactId, contactName) {
+    currentViewContactId = contactId;
+    viewContactSpan.textContent = contactName;
+    viewBody.innerHTML = '<div class="dlg-modal-empty">Chargement...</div>';
+    viewOverlay.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+
+    fetch(`/contacts/${contactId}/comptes`)
+        .then(r => r.json())
+        .then(data => {
+            // Data format: { all_comptes: [...], assigned_ids: [...] }
+            const allComptes = data.all_comptes || [];
+            const assigned = allComptes.filter(c => c.assigned === true);
+            if (!assigned.length) {
+                viewBody.innerHTML = '<div class="dlg-modal-empty">Aucun compte assigné.</div>';
+            } else {
+                viewBody.innerHTML = '<div class="dlg-modal-list">' +
+                    assigned.map(c => `
+                        <div class="dlg-modal-item">
+                            <div class="dlg-modal-info" style="padding-left: 0;">
+                                <div class="dlg-modal-name">${escapeHtml(c.name)}</div>
+                            </div>
+                        </div>
+                    `).join('') +
+                    '</div>';
+            }
+        })
+        .catch(() => {
+            viewBody.innerHTML = '<div class="dlg-modal-empty" style="color:var(--rose);">Erreur de chargement.</div>';
+        });
+}
+
+    document.querySelectorAll('.show-comptes-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const contactId = btn.dataset.contactId;
+            const contactName = btn.dataset.contactName;
+            openViewModal(contactId, contactName);
+        });
+    });
+    viewClose.addEventListener('click', () => closeModal(viewOverlay));
+    viewCancel.addEventListener('click', () => closeModal(viewOverlay));
+    viewOverlay.addEventListener('click', e => { if (e.target === viewOverlay) closeModal(viewOverlay); });
+
+    /* ===== Manage comptes modal ===== */
+    let currentManageContactId = null;
+    const manageOverlay = document.getElementById('manageComptesModalOverlay');
+    const manageClose = document.getElementById('manageComptesClose');
+    const manageCancel = document.getElementById('manageComptesCancel');
+    const manageSave = document.getElementById('manageComptesSave');
+    const manageContactSpan = document.getElementById('manageComptesContactName');
+    const manageBody = document.getElementById('manageComptesModalBody');
+
+    function openManageModal(contactId, contactName) {
+        currentManageContactId = contactId;
+        manageContactSpan.textContent = contactName;
+        manageBody.innerHTML = '<div class="dlg-modal-empty">Chargement…</div>';
+        manageOverlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+
+        fetch(`/contacts/${contactId}/comptes`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.all_comptes.length) {
+                    manageBody.innerHTML = '<div class="dlg-modal-empty">Aucun compte disponible.</div>';
+                    return;
+                }
+                const itemsHtml = data.all_comptes.map(compte => {
+                    const checked = compte.assigned ? 'checked' : '';
+                    return `
+                        <label class="dlg-modal-item" style="cursor: pointer; display: flex; align-items: center; gap: .85rem;">
+                            <input class="compte-checkbox" type="checkbox" value="${compte.id}" ${checked} style="width: 1rem; height: 1rem;">
+                            <div class="dlg-modal-info" style="padding-left: 0;">
+                                <div class="dlg-modal-name">${escapeHtml(compte.name)}</div>
+                            </div>
+                        </label>
+                    `;
+                }).join('');
+                manageBody.innerHTML = `
+                    <div class="zn-search-wrap" style="margin-bottom: 1rem;">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="text" class="zn-search-input modal-search-input" placeholder="Rechercher un compte..." autocomplete="off">
+                    </div>
+                    <div id="modal-items-container">${itemsHtml}</div>
+                `;
+                const searchInput = manageBody.querySelector('.modal-search-input');
+                searchInput.addEventListener('keyup', function() {
+                    const term = this.value.toLowerCase();
+                    const items = manageBody.querySelectorAll('#modal-items-container .dlg-modal-item');
+                    items.forEach(item => {
+                        const text = item.innerText.toLowerCase();
+                        item.style.display = text.includes(term) ? '' : 'none';
+                    });
+                });
+            })
+            .catch(() => {
+                manageBody.innerHTML = '<div class="dlg-modal-empty" style="color:var(--rose);">Erreur de chargement.</div>';
+            });
+    }
+
+    document.querySelectorAll('.manage-comptes-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const contactId = btn.dataset.contactId;
+            const contactName = btn.dataset.contactName;
+            openManageModal(contactId, contactName);
+        });
     });
 
-    cycleClose.addEventListener('click', () => closeModal(cycleOverlay));
-    cycleOverlay.addEventListener('click', e => { if (e.target === cycleOverlay) closeModal(cycleOverlay); });
+    manageSave.addEventListener('click', () => {
+    const selectedIds = Array.from(manageBody.querySelectorAll('.compte-checkbox:checked')).map(cb => cb.value);
+    const btn = manageSave;
+    btn.disabled = true;
+    btn.innerHTML = 'Enregistrement…';
+
+    fetch(`/contacts/${currentManageContactId}/comptes`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ compte_ids: selectedIds })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => { throw new Error(`HTTP ${response.status}: ${text}`); });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            closeModal(manageOverlay);
+            location.reload();
+        } else {
+            alert('Erreur : ' + (data.error || 'inconnue'));
+        }
+    })
+    .catch(error => {
+        console.error('Save error:', error);
+        alert('Erreur réseau : ' + error.message);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Enregistrer';
+    });
+});
+
+    manageClose.addEventListener('click', () => closeModal(manageOverlay));
+    manageCancel.addEventListener('click', () => closeModal(manageOverlay));
+    manageOverlay.addEventListener('click', e => { if (e.target === manageOverlay) closeModal(manageOverlay); });
 
     // Escape key closes any open modal
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
             if (catOverlay.classList.contains('visible')) closeModal(catOverlay);
             if (cycleOverlay.classList.contains('visible')) closeModal(cycleOverlay);
+            if (viewOverlay.classList.contains('visible')) closeModal(viewOverlay);
+            if (manageOverlay.classList.contains('visible')) closeModal(manageOverlay);
         }
     });
 })();

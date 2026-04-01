@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Compte;
 use App\Models\Ville;
 use Illuminate\Http\Request;
 
@@ -134,4 +135,37 @@ class ContactController extends Controller
         return redirect()->route('contacts.index')
             ->with('success', 'Contact supprimé.');
     }
+
+
+    // New methods
+public function getComptes(Contact $contact)
+{
+    $allComptes = Compte::with('ville')->orderBy('etablissement')->get();
+    $assignedIds = $contact->comptes->pluck('id')->toArray();
+
+    $comptesList = $allComptes->map(function ($compte) use ($assignedIds) {
+        return [
+            'id' => $compte->id,
+            'name' => $compte->etablissement . ' (' . ($compte->ville->nom ?? '') . ')',
+            'assigned' => in_array($compte->id, $assignedIds)
+        ];
+    });
+
+    return response()->json([
+        'all_comptes' => $comptesList->values(),
+        'assigned_ids' => $assignedIds
+    ]);
+}
+
+public function updateComptes(Request $request, Contact $contact)
+{
+    $request->validate([
+        'compte_ids' => 'array',
+        'compte_ids.*' => 'exists:comptes,id'
+    ]);
+
+    $contact->comptes()->sync($request->compte_ids ?? []);
+
+    return response()->json(['success' => true]);
+}
 }
