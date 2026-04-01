@@ -8,11 +8,27 @@ use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $contacts = Contact::with('ville')->paginate(15);
+        $query = Contact::with(['ville', 'comptes' => function ($q) {
+            $q->with('ville')->withPivot('fonction', 'decideur', 'date_debut', 'date_fin');
+        }]);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nom', 'like', "%{$search}%")
+                ->orWhere('prenom', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('telephone', 'like', "%{$search}%");
+            });
+        }
+
+        $contacts = $query->paginate(15);
         return view('contacts.index', compact('contacts'));
     }
+
+    //create, store, edit, update, destroy methods...
 
     public function create()
     {
@@ -29,7 +45,7 @@ class ContactController extends Controller
             'Creche', 'Maternelle', 'Primaire', 'Collège', 'Lycée', 'Supérieur',
             'Very Young Learners', 'Kids', 'Pre-teens', 'Teens', 'Adults'
         ];
-        
+
         return view('contacts.create', compact('villes', 'categoriesOptions', 'cyclesOptions'));
     }
 
