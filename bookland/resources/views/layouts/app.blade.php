@@ -14,6 +14,7 @@
 
     :root {
         --sidebar-w:     260px;
+        --sidebar-w-collapsed: 68px;
 
         /* Page surfaces */
         --bg-base:       #f5f6fa;
@@ -218,6 +219,91 @@
     }
     .sb-item:hover  .sb-item-icon,
     .sb-item.active .sb-item-icon { opacity: 1; }
+
+    /* ── Collapse toggle button ── */
+    .sb-collapse-btn {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: .5rem .9rem .5rem 1.35rem;
+        margin-bottom: .25rem;
+    }
+    .sb-collapse-trigger {
+        width: 26px; height: 26px;
+        border-radius: var(--r-xs);
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.1);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--sb-text);
+        cursor: pointer;
+        transition: all var(--t);
+        flex-shrink: 0;
+    }
+    .sb-collapse-trigger:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .sb-collapse-trigger svg { transition: transform var(--t); }
+
+    /* ── Collapsed state ── */
+    .sidebar.collapsed {
+        width: var(--sidebar-w-collapsed);
+    }
+
+    /* hide text labels when collapsed */
+    .sidebar.collapsed .sb-logo-info,
+    .sidebar.collapsed .sb-section-label,
+    .sidebar.collapsed .sb-item-label,
+    .sidebar.collapsed .sb-user-info,
+    .sidebar.collapsed .sb-user-chevron,
+    .sidebar.collapsed .sb-dd-panel { display: none !important; }
+
+    /* center icons when collapsed */
+    .sidebar.collapsed .sb-logo {
+        justify-content: center;
+        padding: 1.5rem .75rem 1.3rem;
+    }
+    .sidebar.collapsed .sb-item {
+        justify-content: center;
+        padding: .6rem 0;
+        margin: .1rem .55rem;
+    }
+    .sidebar.collapsed .sb-item-icon { opacity: .75; width: 19px; height: 19px; }
+    .sidebar.collapsed .sb-item:hover .sb-item-icon,
+    .sidebar.collapsed .sb-item.active .sb-item-icon { opacity: 1; }
+    .sidebar.collapsed .sb-item.active::before { display: none; }
+    .sidebar.collapsed .sb-collapse-btn { justify-content: center; padding: .5rem; }
+    .sidebar.collapsed .sb-footer { padding: .85rem .55rem; }
+    .sidebar.collapsed .sb-user-btn {
+        justify-content: center;
+        padding: .65rem .35rem;
+    }
+
+    /* rotate arrow when collapsed */
+    .sidebar.collapsed .sb-collapse-trigger svg { transform: rotate(180deg); }
+
+    /* tooltip on hover when collapsed */
+    .sidebar.collapsed .sb-item { position: relative; }
+    .sidebar.collapsed .sb-item::after {
+        content: attr(data-label);
+        position: absolute;
+        left: calc(100% + .75rem);
+        top: 50%; transform: translateY(-50%);
+        background: #2d3352;
+        color: #fff;
+        font-size: .78rem;
+        font-weight: 600;
+        padding: .3rem .75rem;
+        border-radius: var(--r-sm);
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .15s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,.3);
+        z-index: 300;
+        border: 1px solid rgba(255,255,255,.1);
+    }
+    .sidebar.collapsed .sb-item:hover::after { opacity: 1; }
+
+    /* main wrap adjusts */
+    .main-wrap.expanded { margin-left: var(--sidebar-w-collapsed); }
 
     /* ── Sidebar footer (user) ── */
     .sb-footer {
@@ -508,24 +594,33 @@
         {{-- Navigation --}}
         <nav class="sb-nav" aria-label="Navigation principale">
 
+            {{-- Collapse toggle --}}
+            <div class="sb-collapse-btn">
+                <button class="sb-collapse-trigger" id="sbCollapseBtn" aria-label="Réduire le menu" title="Réduire">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+            </div>
+
             {{-- ── Commercial ───────────────────────────── --}}
             <div class="sb-section">
                 <div class="sb-section-label">Commercial</div>
 
                 <a href="{{ route('comptes.index') }}"
-                   class="sb-item {{ request()->routeIs('comptes.*') ? 'active' : '' }}">
+                   class="sb-item {{ request()->routeIs('comptes.*') ? 'active' : '' }}"
+                   data-label="Comptes">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     </span>
-                    Comptes
+                    <span class="sb-item-label">Comptes</span>
                 </a>
 
                 <a href="{{ route('contacts.index') }}"
-                   class="sb-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
+                   class="sb-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}"
+                   data-label="Contacts">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </span>
-                    Contacts
+                    <span class="sb-item-label">Contacts</span>
                 </a>
             </div>
 
@@ -534,23 +629,23 @@
             <div class="sb-section">
                 <div class="sb-section-label">Équipe</div>
 
-                {{-- Rôles: admin, rbo, delegue --}}
                 <a href="{{ route('users.roles') }}"
-                   class="sb-item {{ request()->routeIs('users.roles') ? 'active' : '' }}">
+                   class="sb-item {{ request()->routeIs('users.roles') ? 'active' : '' }}"
+                   data-label="Rôles">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 3.5a4 4 0 0 1 0 7"/><path d="M20 20c0-3-2-5-4-6"/></svg>
                     </span>
-                    Rôles
+                    <span class="sb-item-label">Rôles</span>
                 </a>
 
-                {{-- Utilisateurs: admin only --}}
                 @if(auth()->user()->role === 'admin')
                 <a href="{{ route('users.index') }}"
-                   class="sb-item {{ request()->routeIs('users.index', 'users.create', 'users.edit') ? 'active' : '' }}">
+                   class="sb-item {{ request()->routeIs('users.index', 'users.create', 'users.edit') ? 'active' : '' }}"
+                   data-label="Utilisateurs">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     </span>
-                    Utilisateurs
+                    <span class="sb-item-label">Utilisateurs</span>
                 </a>
                 @endif
             </div>
@@ -562,27 +657,30 @@
                 <div class="sb-section-label">Géographie</div>
 
                 <a href="{{ route('villes.index') }}"
-                   class="sb-item {{ request()->routeIs('villes.*') ? 'active' : '' }}">
+                   class="sb-item {{ request()->routeIs('villes.*') ? 'active' : '' }}"
+                   data-label="Villes">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                     </span>
-                    Villes
+                    <span class="sb-item-label">Villes</span>
                 </a>
 
                 <a href="{{ route('zones.index') }}"
-                   class="sb-item {{ request()->routeIs('zones.*') ? 'active' : '' }}">
+                   class="sb-item {{ request()->routeIs('zones.*') ? 'active' : '' }}"
+                   data-label="Zones">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
                     </span>
-                    Zones
+                    <span class="sb-item-label">Zones</span>
                 </a>
 
                 <a href="{{ route('quartiers.index') }}"
-                   class="sb-item {{ request()->routeIs('quartiers.*') ? 'active' : '' }}">
+                   class="sb-item {{ request()->routeIs('quartiers.*') ? 'active' : '' }}"
+                   data-label="Quartiers">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="9" y1="22" x2="9" y2="12"/><line x1="15" y1="12" x2="15" y2="22"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
                     </span>
-                    Quartiers
+                    <span class="sb-item-label">Quartiers</span>
                 </a>
             </div>
             @endif
@@ -735,52 +833,76 @@
 @stack('scripts')
 <script>
 (function () {
-    /* ── Sidebar toggle (mobile) ──────────────── */
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sbOverlay');
-    const toggle  = document.getElementById('sidebarToggle');
+    const sidebar   = document.getElementById('sidebar');
+    const mainWrap  = document.querySelector('.main-wrap');
+    const overlay   = document.getElementById('sbOverlay');
+    const toggle    = document.getElementById('sidebarToggle');
+    const collapseBtn = document.getElementById('sbCollapseBtn');
 
-    function open()  {
+    /* ── Mobile open/close ───────────────── */
+    function openMobile()  {
         sidebar.classList.add('open');
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
     }
-    function close() {
+    function closeMobile() {
         sidebar.classList.remove('open');
         overlay.classList.remove('open');
         document.body.style.overflow = '';
     }
 
-    if (toggle)  toggle.addEventListener('click', open);
-    if (overlay) overlay.addEventListener('click', close);
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') { close(); closeDropdown(); } });
+    if (toggle)  toggle.addEventListener('click', openMobile);
+    if (overlay) overlay.addEventListener('click', closeMobile);
 
-    /* ── User dropdown ────────────────────────── */
+    /* ── Desktop collapse ────────────────── */
+    const STORAGE_KEY = 'crm_sidebar_collapsed';
+
+    function setCollapsed(collapsed) {
+        if (collapsed) {
+            sidebar.classList.add('collapsed');
+            mainWrap.classList.add('expanded');
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainWrap.classList.remove('expanded');
+        }
+        try { localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0'); } catch(e) {}
+    }
+
+    // Restore state on load
+    try {
+        if (localStorage.getItem(STORAGE_KEY) === '1') setCollapsed(true);
+    } catch(e) {}
+
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', () => {
+            setCollapsed(!sidebar.classList.contains('collapsed'));
+        });
+    }
+
+    /* ── Shared Escape ───────────────────── */
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeMobile(); closeDropdown(); }
+    });
+
+    /* ── User dropdown ───────────────────── */
     const userBtn = document.getElementById('sbUserBtn');
     const ddPanel = document.getElementById('sbDdPanel');
 
-    function openDropdown() {
-        ddPanel.classList.add('open');
-        userBtn.setAttribute('aria-expanded', 'true');
-    }
+    function openDropdown()  { ddPanel.classList.add('open');    userBtn.setAttribute('aria-expanded', 'true'); }
     function closeDropdown() {
-        ddPanel.classList.remove('open');
-        userBtn.setAttribute('aria-expanded', 'false');
+        if (ddPanel) { ddPanel.classList.remove('open'); }
+        if (userBtn) userBtn.setAttribute('aria-expanded', 'false');
     }
-    function toggleDropdown() {
+
+    if (userBtn) userBtn.addEventListener('click', e => {
+        e.stopPropagation();
         ddPanel.classList.contains('open') ? closeDropdown() : openDropdown();
-    }
-
-    if (userBtn) userBtn.addEventListener('click', e => { e.stopPropagation(); toggleDropdown(); });
-
-    /* Close when clicking anywhere outside */
+    });
     document.addEventListener('click', e => {
-        if (ddPanel && !ddPanel.contains(e.target) && e.target !== userBtn) {
-            closeDropdown();
-        }
+        if (ddPanel && !ddPanel.contains(e.target) && userBtn && e.target !== userBtn) closeDropdown();
     });
 
-    /* ── Auto-dismiss flash messages after 5 s ── */
+    /* ── Auto-dismiss flash after 5 s ────── */
     document.querySelectorAll('.flash').forEach(el => {
         setTimeout(() => {
             el.style.transition = 'opacity .35s ease, transform .35s ease';
