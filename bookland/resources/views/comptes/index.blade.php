@@ -674,6 +674,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                 @endif
                             </div>
                         </td>
+                        
+
                     </tr>
                     @empty
                     <tr>

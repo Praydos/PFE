@@ -29,6 +29,7 @@ use App\Http\Controllers\ZoneController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CompteController;
 use App\Http\Controllers\QuartierController;
+use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
 
 // Breeze auth routes (login, register, password reset, etc.)
@@ -37,6 +38,7 @@ require __DIR__.'/auth.php';
 Route::middleware('auth')->group(function () {
 
     Route::get('/', fn () => redirect()->route('comptes.index'));
+    
 
     // ── Shared: all three authenticated roles ──────────────────────────────
     // Declared BEFORE the users resource so "roles" is not swallowed by {user}.
@@ -94,3 +96,4 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/users/{user}/assigned-comptes', [UserController::class, 'getAssignedComptes'])->name('users.assigned-comptes');
 
+Route::resource('contacts', ContactController::class);

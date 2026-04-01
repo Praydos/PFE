@@ -53,6 +53,15 @@
                 </a>
             @endif
 
+
+            <a href="{{ route('contacts.index') }}" class="nav-link {{ request()->routeIs('contacts.*') ? 'nav-link-active' : '' }}">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Contacts
+            </a>
+
             {{-- Admin-only: Villes, Zones, Quartiers --}}
             @if(auth()->user()->role === 'admin')
                 <a href="{{ route('villes.index') }}"
@@ -63,6 +72,7 @@
                     </svg>
                     Villes
                 </a>
+                
 
                 <a href="{{ route('zones.index') }}"
                    class="nav-link {{ request()->routeIs('zones.*') ? 'nav-link-active' : '' }}">

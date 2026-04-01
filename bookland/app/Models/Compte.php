@@ -61,4 +61,12 @@ class Compte extends Model
         // Placeholder: will depend on effectifs table (Phase 2)
         return 'Non calculé';
     }
+
+
+    public function contacts()
+    {
+        return $this->belongsToMany(Contact::class, 'compte_contact')
+                    ->withPivot('date_debut', 'date_fin', 'fonction', 'decideur')
+                    ->withTimestamps();
+    }
 }
