@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             VilleZoneSeeder::class, // depends on users (rbos) and villes
             CompteSeeder::class,    // depends on zones and delegates
+            ContactSeeder::class,   // depends on comptes
+            ProductSeeder::class,
         ]);
     }
 }

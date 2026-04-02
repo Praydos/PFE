@@ -65,8 +65,6 @@ class Compte extends Model
 
     public function contacts()
     {
-        return $this->belongsToMany(Contact::class, 'compte_contact')
-                    ->withPivot('date_debut', 'date_fin', 'fonction', 'decideur')
-                    ->withTimestamps();
+        return $this->belongsToMany(Contact::class, 'compte_contact');
     }
 }

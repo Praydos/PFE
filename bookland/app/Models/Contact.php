@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Contact extends Model
@@ -26,8 +27,11 @@ class Contact extends Model
 
     public function comptes()
     {
-        return $this->belongsToMany(Compte::class, 'compte_contact')
-                    ->withPivot('date_debut', 'date_fin', 'fonction', 'decideur')
-                    ->withTimestamps();
+        return $this->belongsToMany(Compte::class, 'compte_contact');
+                    
     }
+
+
+    //is affected by the pivot table
+    
 }

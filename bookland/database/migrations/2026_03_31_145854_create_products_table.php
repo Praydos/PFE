@@ -6,43 +6,46 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->enum('source', ['bookland', 'esprit du livre'])->default('bookland');
-            $table->enum('rayon', ['primaire', 'secondaire', 'universitaire'])->default('primaire');
-            $table->enum('categorie',['categorie 1', 'categorie 2', 'categorie 3'])->default('categorie 1');
-            $table->enum('langaue', ['français', 'anglais'])->default('français');
-            $table->enum('editeur', ['éditeur 1', 'éditeur 2', 'éditeur 3'])->default('éditeur 1');
-            $table->enum('collection', ['collection 1', 'collection 2', 'collection 3'])->default('collection 1');  
+
+            $table->enum('source', ['bookland', 'esprit_du_livre'])->default('bookland');
+
+            $table->string('isbn_13')->unique()->nullable();
+            $table->string('isbn_10')->unique()->nullable();
+            $table->string('reference_interne')->nullable();
 
             $table->string('titre');
-            $table->String('sous_titre')->nullable();
-            $table->string("niveau")->nullable();
-            $table->string('isbn')->unique();
-            $table->decimal('prix', 8, 2)->nullable();
-            $table->integer('nbr_pages')->default(0);
+            $table->string('sous_titre')->nullable();
+            $table->string('niveau')->nullable();
             $table->string('type');
             $table->string('edition')->nullable();
             $table->string('auteur')->nullable();
-            $table->string('description')->nullable();
-            
+            $table->text('description')->nullable();
 
-            $table->enum('support',['support 1', 'support 2', 'support 3'])->default('support 1');
+            $table->string('langue')->nullable();
+            $table->string('rayon')->nullable();
+            $table->string('sous_rayon')->nullable();
+            $table->string('categorie')->nullable();
+            $table->string('sous_categorie')->nullable();
+            $table->string('editeur')->nullable();
+            $table->string('collection')->nullable();
+            $table->string('support')->nullable();
 
+            $table->integer('nbr_pages')->default(0);
+            $table->decimal('prix', 10, 2)->nullable();
+            $table->date('date_parution')->nullable();
+            $table->string('image')->nullable();
 
             $table->timestamps();
+
+            $table->unique(['titre', 'sous_titre', 'niveau', 'type', 'edition'], 'article_unique');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('products');
     }

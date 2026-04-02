@@ -72,6 +72,20 @@
         --font-mono: 'DM Mono', monospace;
         --ease: cubic-bezier(.4,0,.2,1);
         --t: .2s var(--ease);
+
+
+        /* new addition  */
+         --bg-base: #f5f6fa;
+        --bg-card: #ffffff;
+        --border: #e4e7f0;
+        --blue: #5b8dee;
+        --blue-mid: #dce8fb;
+        --rose: #e8506a;
+        --text-primary: #1a1f36;
+        --text-muted: #9ba8c5;
+        --font: 'DM Sans', sans-serif;
+        --r-sm: 8px;
+        --t: .18s ease;
     }
 
     html, body {
@@ -622,6 +636,17 @@
                     </span>
                     <span class="sb-item-label">Contacts</span>
                 </a>
+
+                <a href="{{ route('products.index') }}"
+                   class="sb-item {{ request()->routeIs('products.*') ? 'active' : '' }}"
+                   data-label="Produits">
+                    <span class="sb-item-icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </span>
+                    <span class="sb-item-label">Produits</span>
+                </a>
+
+                
             </div>
 
             {{-- ── Équipe ───────────────────────────────── --}}

@@ -6,14 +6,30 @@ use App\Models\Contact;
 use App\Models\Compte;
 use App\Models\Ville;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ContactController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Contact::with(['ville', 'comptes' => function ($q) {
-            $q->with('ville')->withPivot('fonction', 'decideur', 'date_debut', 'date_fin');
-        }]);
+        $user = Auth::user();
+        $query = Contact::with(['ville', 'comptes']);
+
+        // Role-based scoping
+        if ($user->role === 'delegue') {
+            // Delegate sees contacts linked to comptes they manage
+            $query->whereHas('comptes', function ($q) use ($user) {
+                $q->where('delegue_id', $user->id);
+            });
+        } elseif ($user->role === 'rbo') {
+            // RBO sees contacts linked to comptes of delegates they supervise
+            // A RBO supervises zones → zones have delegates → comptes have delegue_id in that set
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            $query->whereHas('comptes', function ($q) use ($delegateIds) {
+                $q->whereIn('delegue_id', $delegateIds);
+            });
+        }
+        // Admin sees all, no extra condition
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -28,7 +44,6 @@ class ContactController extends Controller
         $contacts = $query->paginate(15);
         return view('contacts.index', compact('contacts'));
     }
-
     //create, store, edit, update, destroy methods...
 
     public function create()
@@ -46,6 +61,7 @@ class ContactController extends Controller
             'Creche', 'Maternelle', 'Primaire', 'Collège', 'Lycée', 'Supérieur',
             'Very Young Learners', 'Kids', 'Pre-teens', 'Teens', 'Adults'
         ];
+        
 
         return view('contacts.create', compact('villes', 'categoriesOptions', 'cyclesOptions'));
     }
@@ -168,4 +184,22 @@ public function updateComptes(Request $request, Contact $contact)
 
     return response()->json(['success' => true]);
 }
+
+
+// helper methdes  
+        private function getAvailableComptes()
+        {
+            $user = Auth::user();
+            if ($user->role === 'admin') {
+                return Compte::with('ville')->orderBy('etablissement')->get();
+            }
+            if ($user->role === 'delegue') {
+                return Compte::where('delegue_id', $user->id)->with('ville')->orderBy('etablissement')->get();
+            }
+            if ($user->role === 'rbo') {
+                $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+                return Compte::whereIn('delegue_id', $delegateIds)->with('ville')->orderBy('etablissement')->get();
+            }
+            return collect(); // fallback
+        }
 }

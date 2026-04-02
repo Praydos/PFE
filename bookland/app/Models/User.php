@@ -78,6 +78,14 @@ class User extends Authenticatable
     }
 
 
+    public function supervisedDelegates()
+    {
+        return User::whereHas('zones', function ($query) {
+            $query->where('rbo_id', $this->id);
+        })->where('role', 'delegue');
+    }
+
+
 
 
 

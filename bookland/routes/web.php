@@ -30,6 +30,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CompteController;
 use App\Http\Controllers\QuartierController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 // Breeze auth routes (login, register, password reset, etc.)
@@ -50,6 +51,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('comptes', CompteController::class)
         ->middleware('role:admin,rbo,delegue');
     
+    Route::resource('products', ProductController::class)
+        ->middleware('role:admin,rbo,delegue');
 
     Route::get('/users/{user}/assigned-zones',[UserController::class, 'getAssignedZones'])
     ->name('users.assigned-zones')
@@ -100,3 +103,6 @@ Route::resource('contacts', ContactController::class);
 
 Route::get('/contacts/{contact}/comptes', [ContactController::class, 'getComptes'])->name('contacts.comptes.get');
 Route::post('/contacts/{contact}/comptes', [ContactController::class, 'updateComptes'])->name('contacts.comptes.update');
+
+
+// Product routes (to be authorized later)
