@@ -718,50 +718,75 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             <div class="dr-card-title"><span class="title-pip"></span> Liste des produits</div>
             <span class="dr-badge bd-blue">{{ $products->total() }} produit(s)</span>
         </div>
-        <div style="overflow-x:auto;">
+        <div class="dr-table-scroll">
             <table class="dr-table">
                 <thead>
                     <tr>
-                        {{-- <th>ID</th> --}}
-                        <th>Titre</th>
-                        <th>ISBN-13</th>
-                        <th>Type</th>
-                        <th>Niveau</th>
-                        <th>Prix (€)</th>
-                        <th>Source</th>
+                        <th>CODE</th>
+                        <th>ARTICLE</th>
+                        <th>RAYON</th>
+                        <th>SOUS-RAYON</th>
+                        <th>CATÉGORIE</th>
+                        <th>SOUS-CATÉGORIE</th>
+                        <th>EDITEUR</th>
+                        <th>COLLECTION</th>
+                        <th>SOURCE</th>
                         @if (auth()->user()->role == "admin")
-                            <th>Actions</th>
+                            <th>ACTIONS</th>
                         @endif
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($products as $product)
                     <tr>
-                        {{-- <td><span class="id-pill">{{ $product->id }}</span></td> --}}
-                        <td><strong>{{ $product->titre }}</strong><br><small class="text-muted">{{ $product->sous_titre }}</small></td>
-                        <td>{{ $product->isbn_13 ?? $product->isbn_10 ?? '-' }}</td>
-                        <td>{{ $product->type }}</td>
-                        <td>{{ $product->niveau ?? '-' }}</td>
-                        <td>{{ $product->prix ? number_format($product->prix, 2) : '-' }} €</td>
-                        <td><span class="dr-badge bd-{{ $product->source === 'bookland' ? 'blue' : 'teal' }}">{{ ucfirst(str_replace('_', ' ', $product->source)) }}</span></td>
+                        <td>
+                            @php
+                                $code = $product->isbn_13 ?? $product->isbn_10 ?? '-';
+                            @endphp
+                            <span class="id-pill">{{ $code }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ $product->titre }}</strong>
+                            @if($product->sous_titre)
+                                <br><small class="text-muted" style="font-size:0.75rem;">{{ $product->sous_titre }}</small>
+                            @endif
+                        </td>
+                        <td>{{ $product->rayon ?? '-' }}</td>
+                        <td>{{ $product->sous_rayon ?? '-' }}</td>
+                        <td>{{ $product->categorie ?? '-' }}</td>
+                        <td>{{ $product->sous_categorie ?? '-' }}</td>
+                        <td>{{ $product->editeur ?? '-' }}</td>
+                        <td>{{ $product->collection ?? '-' }}</td>
+                        <td>
+                            <span class="dr-badge bd-{{ $product->source === 'bookland' ? 'blue' : 'teal' }}">
+                                {{ ucfirst(str_replace('_', ' ', $product->source)) }}
+                            </span>
+                        </td>
                         @if (auth()->user()->role == 'admin')
-                            <td>
-                                <div class="actions-cell">
-                                    <a href="{{ route('products.edit', $product) }}" class="btn-dr btn-dr-sm btn-dr-warning">
-                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
-                                    </a>
-                                    <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('Supprimer ce produit ?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn-dr btn-dr-sm btn-dr-danger">
-                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
+                        <td>
+                            <div class="actions-cell">
+                                <a href="{{ route('products.edit', $product) }}" class="btn-dr btn-dr-sm btn-dr-warning">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+                                </a>
+                                <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('Supprimer ce produit ?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn-dr btn-dr-sm btn-dr-danger">
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                         @endif
                     </tr>
                     @empty
-                        <tr><td colspan="8"><div class="dr-empty">Aucun produit trouvé.</div></td></tr>
+                    <tr>
+                        @php
+                            $colspan = auth()->user()->role == 'admin' ? 10 : 9;
+                        @endphp
+                        <td colspan="{{ $colspan }}">
+                            <div class="dr-empty">Aucun produit trouvé.</div>
+                        </td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>

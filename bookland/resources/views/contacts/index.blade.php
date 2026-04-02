@@ -713,7 +713,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <div class="dr-stat-value">{{ $contacts->total() }}</div>
             </div>
         </div>
-        <div class="dr-stat-card">
+        {{-- <div class="dr-stat-card">
             <div class="dr-stat-icon si-teal">
                 <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             </div>
@@ -721,7 +721,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <div class="dr-stat-label">Page actuelle</div>
                 <div class="dr-stat-value">{{ $contacts->currentPage() }}/{{ $contacts->lastPage() }}</div>
             </div>
-        </div>
+        </div> --}}
     </div>
 
     {{-- Search bar --}}

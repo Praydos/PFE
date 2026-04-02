@@ -61,7 +61,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 
 /* ── Page ──────────────────────────────────────────── */
 .cp-page {
-    padding: 0rem 1rem 0rem;
+    padding: 2rem 1.5rem 0rem;
     animation: pageIn .4s var(--ease) both;
 }
 @keyframes pageIn {
