@@ -32,6 +32,7 @@ use App\Http\Controllers\QuartierController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AnneScolaireController;
+use App\Http\Controllers\ConsignationController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -59,6 +60,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/{user}/assigned-zones',[UserController::class, 'getAssignedZones'])
     ->name('users.assigned-zones')
     ->middleware('role:admin,rbo,delegue');
+
+    Route::get('/consignations', [ConsignationController::class, 'index'])
+    ->name('consignations.index')->middleware('role:admin,rbo,delegue');
+    Route::get('/consignations/{consignation}/create-bss', [ConsignationController::class, 'createBss'])
+    ->name('consignations.create-bss')->middleware('role:admin,delegue');
+
+
+
 
     // ── Admin only ─────────────────────────────────────────────────────────
     Route::middleware('role:admin')->group(function () {
@@ -103,6 +112,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/annees-scolaires/{annees_scolaire}/set-active', [AnneScolaireController::class, 'setActive'])->name('annees-scolaires.set-active');
         Route::post('/annees-scolaires/{annees_scolaire}/close', [AnneScolaireController::class, 'close'])->name('annees-scolaires.close');
 
+        //consignation routes for admin only
+        Route::get('/consignations/create', [ConsignationController::class, 'create'])->name('consignations.create');
+        Route::post('/consignations', [ConsignationController::class, 'store'])->name('consignations.store');
+        Route::get('/consignations/{consignation}/edit', [ConsignationController::class, 'edit'])->name('consignations.edit');
+        Route::put('/consignations/{consignation}', [ConsignationController::class, 'update'])->name('consignations.update');
+        Route::delete('/consignations/{consignation}', [ConsignationController::class, 'destroy'])->name('consignations.destroy');
 
     });
 });
@@ -116,4 +131,17 @@ Route::get('/contacts/{contact}/comptes', [ContactController::class, 'getComptes
 Route::post('/contacts/{contact}/comptes', [ContactController::class, 'updateComptes'])->name('contacts.comptes.update');
 
 
-// anne scolaires routes (to be authorized later)
+// consignation routes (to be authorized and updated later)
+Route::resource('consignations', ConsignationController::class);
+Route::resource('consignations/index', ConsignationController::class);
+Route::get('/consignations/{consignation}/create-bss', [ConsignationController::class, 'createBss'])->name('consignations.create-bss');
+
+
+
+/// 
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    
+});
+
+
