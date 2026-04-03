@@ -25,4 +25,5 @@ class Ville extends Model
     {
         return $this->hasMany(Compte::class);
     }
+    
 }

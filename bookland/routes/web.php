@@ -33,6 +33,8 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AnneScolaireController;
 use App\Http\Controllers\ConsignationController;
+use App\Http\Controllers\BssController;
+use App\Http\Controllers\RetourController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -131,17 +133,32 @@ Route::get('/contacts/{contact}/comptes', [ContactController::class, 'getComptes
 Route::post('/contacts/{contact}/comptes', [ContactController::class, 'updateComptes'])->name('contacts.comptes.update');
 
 
-// consignation routes (to be authorized and updated later)
-Route::resource('consignations', ConsignationController::class);
-Route::resource('consignations/index', ConsignationController::class);
-Route::get('/consignations/{consignation}/create-bss', [ConsignationController::class, 'createBss'])->name('consignations.create-bss');
+// bss routes (to be authorized and updated later)
+    Route::resource('bss', BssController::class);
+    Route::post('/bss/{bss}/validate', [BssController::class, 'validateBss'])->name('bss.validate');
+    Route::post('/bss/{bss}/delivered', [BssController::class, 'markDelivered'])->name('bss.delivered');
+    Route::post('/bss/{bss}/control', [BssController::class, 'updateControl'])->name('bss.control');
+    Route::post('/bss/{bss}/feedback', [BssController::class, 'updateFeedback'])->name('bss.feedback');
+
+    // Returns (separate controller)
+    Route::get('/bss/{bss}/retour/create', [RetourController::class, 'create'])->name('retours.create');
+    Route::post('/bss/{bss}/retour', [RetourController::class, 'store'])->name('retours.store');
+
+
+    // API for dynamic contact loading (used in BSS create)
+    Route::middleware(['auth'])->get('/api/comptes/{compte}/contacts', function ($compteId) {
+        $compte = App\Models\Compte::findOrFail($compteId);
+        return response()->json($compte->contacts);
+    });
+
+// Route::resource('consignations', ConsignationController::class);
+// Route::resource('consignations/index', ConsignationController::class);
+// Route::get('/consignations/{consignation}/create-bss', [ConsignationController::class, 'createBss'])->name('consignations.create-bss');
 
 
 
 /// 
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    
-});
+
 
 

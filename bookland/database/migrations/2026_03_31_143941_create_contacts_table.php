@@ -22,6 +22,7 @@ return new class extends Migration
             $table->enum('civilite', ['M.', 'Mme', 'Mlle'])->nullable();
             $table->enum('fonction', ['Directeur', 'Responsable', 'Enseignant', 'Autre'])->nullable();
             $table->json('cycles')->nullable(); // store multiple values
+            $table->boolean('status')->default(false); // active/inactive status
             $table->timestamps();
         });
     }
