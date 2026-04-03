@@ -27,4 +27,12 @@ class Product extends Model
     // Later: specimens, adoptions relationships
     // public function specimens() { return $this->hasMany(Specimen::class); }
     // public function adoptions() { return $this->hasMany(Adoption::class); }
+
+
+
+    //product has many consignations
+    public function consignations()
+    {
+        return $this->hasMany(Consignation::class);
+    }
 }

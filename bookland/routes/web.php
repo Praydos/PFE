@@ -31,7 +31,9 @@ use App\Http\Controllers\CompteController;
 use App\Http\Controllers\QuartierController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\AnneScolaireController;
 use Illuminate\Support\Facades\Route;
+
 
 // Breeze auth routes (login, register, password reset, etc.)
 require __DIR__.'/auth.php';
@@ -93,6 +95,15 @@ Route::middleware('auth')->group(function () {
             [UserController::class, 'getComptes'])->name('users.comptes');
         Route::post('/users/{user}/comptes',
             [UserController::class, 'updateComptes']);
+
+
+
+        // annees scolaires routes (crud)
+        Route::resource('annees-scolaires', AnneScolaireController::class);
+        Route::post('/annees-scolaires/{annees_scolaire}/set-active', [AnneScolaireController::class, 'setActive'])->name('annees-scolaires.set-active');
+        Route::post('/annees-scolaires/{annees_scolaire}/close', [AnneScolaireController::class, 'close'])->name('annees-scolaires.close');
+
+
     });
 });
 
@@ -105,4 +116,4 @@ Route::get('/contacts/{contact}/comptes', [ContactController::class, 'getComptes
 Route::post('/contacts/{contact}/comptes', [ContactController::class, 'updateComptes'])->name('contacts.comptes.update');
 
 
-// Product routes (to be authorized later)
+// anne scolaires routes (to be authorized later)

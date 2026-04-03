@@ -646,6 +646,17 @@
                     <span class="sb-item-label">Produits</span>
                 </a>
 
+                @if (auth()->user()->role == 'admin')
+                    <a href="{{ route('annees-scolaires.index') }}"
+                    class="sb-item {{ request()->routeIs('annees-scolaires.*') ? 'active' : '' }}"
+                    data-label="Années scolaires">
+                        <span class="sb-item-icon">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </span>
+                        <span class="sb-item-label">Années scolaires</span>
+                    </a>
+                @endif
+
                 
             </div>
 

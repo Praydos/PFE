@@ -58,6 +58,13 @@ class User extends Authenticatable
         return $this->hasMany(Compte::class, 'delegue_id');
     }
 
+
+    // a delegue has many consignations through comptes
+    public function consignations()
+    {
+        return $this->hasMany(Consignation::class, 'delegate_id');
+    }
+
     // a rbo has many cities
     public function rboVilles()
     {
