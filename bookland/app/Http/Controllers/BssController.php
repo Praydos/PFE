@@ -98,7 +98,6 @@ class BssController extends Controller
         'products.*.quantity' => 'required|integer|min:1',
     ];
 
-    // Conditionally add validation rules based on recupere_par_type
     if ($request->recupere_par_type === 'contact') {
         $rules['recupere_par_nom_contact'] = 'required|string|max:255';
     } else {
@@ -112,13 +111,8 @@ class BssController extends Controller
         return redirect()->back()->withErrors(['error' => 'Année scolaire active non trouvée.']);
     }
 
-    // Determine the value to store in recupere_par_nom
-    $recupereParNom = $validated['recupere_par_type'] === 'contact'
-        ? $validated['recupere_par_nom_contact']
-        : $validated['numero_expedition'];
-
-    // Check for already delivered products (warning only)
-    $warnings = [];
+    // 🔒 Strict check: already delivered products
+    $alreadyDelivered = [];
     foreach ($validated['products'] as $item) {
         $already = BssLigne::whereHas('bss', function ($q) use ($validated, $currentYear) {
             $q->where('compte_id', $validated['compte_id'])
@@ -126,12 +120,19 @@ class BssController extends Controller
               ->where('statut', '!=', 'refuse');
         })->where('product_id', $item['product_id'])->exists();
         if ($already) {
-            $warnings[] = Product::find($item['product_id'])->titre;
+            $product = Product::find($item['product_id']);
+            $alreadyDelivered[] = $product->titre . ' (' . ($product->isbn_13 ?? $product->isbn_10) . ')';
         }
     }
-    if (!empty($warnings)) {
-        session()->flash('warning', 'Attention, ces produits ont déjà été livrés cette année : ' . implode(', ', $warnings));
+    if (!empty($alreadyDelivered)) {
+        return redirect()->back()
+            ->withErrors(['products' => 'Ces produits ont déjà été livrés à ce compte cette année : ' . implode(', ', $alreadyDelivered) . '. Veuillez les retirer du BSS.'])
+            ->withInput();
     }
+
+    $recupereParNom = $validated['recupere_par_type'] === 'contact'
+        ? $validated['recupere_par_nom_contact']
+        : $validated['numero_expedition'];
 
     $bss = Bss::create([
         'numero' => $validated['numero'],
@@ -192,23 +193,24 @@ class BssController extends Controller
 
     // Update feedback and document control
     public function update(Request $request, Bss $bss)
-    {
-        $user = Auth::user();
-        if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'valide') {
-            abort(403);
-        }
-        $validated = $request->validate([
-            'feedback' => 'nullable|string',
-            'controle_document' => 'nullable|in:OK,Absence signature,Absence cachet,Absence Document',
-        ]);
-        $bss->update($validated);
-        // Optionally update ligne statuses to 'livree'
-        foreach ($bss->lignes as $ligne) {
-            $ligne->update(['statut_ligne' => 'livree']);
-        }
-        $bss->update(['statut' => 'livre']);
-        return redirect()->route('bss.show', $bss)->with('success', 'Feedback enregistré.');
+{
+    $user = Auth::user();
+    if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'valide') {
+        abort(403);
     }
+    $validated = $request->validate([
+        'feedback' => 'nullable|string',
+        'controle_document' => 'nullable|in:OK,Absence signature,Absence cachet,Absence Document',
+        'date_feedback' => 'nullable|date',
+    ]);
+    $bss->update($validated);
+    // Update all lines to 'livree'
+    foreach ($bss->lignes as $ligne) {
+        $ligne->update(['statut_ligne' => 'livree']);
+    }
+    $bss->update(['statut' => 'livre']);
+    return redirect()->route('bss.show', $bss)->with('success', 'Feedback enregistré.');
+}
 
     // Validation by RBO/Admin
     public function validateBss(Request $request, Bss $bss)

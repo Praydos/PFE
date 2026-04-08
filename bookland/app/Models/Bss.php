@@ -16,7 +16,7 @@ class Bss extends Model
         'date_bss', 'date_livraison_prevue', 'moyen_contact',
         'recupere_par_type', 'recupere_par_nom', 'statut', 'motif_refus',
         'is_validated_by_rbo', 'validated_at', 'validated_by',
-        'feedback', 'controle_document'
+        'feedback', 'controle_document', 'date_feedback'
     ];
 
     protected $casts = [

@@ -27,6 +27,7 @@ return new class extends Migration
             $table->foreignId('validated_by')->nullable()->constrained('users')->onDelete('set null');
             // Feedback fields (editable by delegate after validation)
             $table->text('feedback')->nullable();
+            $table->date('date_feedback')->nullable()->after('feedback');
             $table->enum('controle_document', ['OK', 'Absence signature', 'Absence cachet', 'Absence Document'])->nullable();
             $table->timestamps();
 
