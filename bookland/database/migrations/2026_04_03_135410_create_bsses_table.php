@@ -10,39 +10,35 @@ return new class extends Migration
     {
         Schema::create('bsses', function (Blueprint $table) {
             $table->id();
-            $table->string('numero')->unique();
+            $table->string('numero')->unique(); // e.g., BSS-2025-0001
             $table->foreignId('compte_id')->constrained()->onDelete('restrict');
-            $table->foreignId('contact_id')->constrained()->onDelete('restrict');
-            $table->enum('moyen_contact', ['telephone', 'email'])->nullable();
+            $table->foreignId('contact_id')->constrained()->onDelete('restrict'); // required
             $table->foreignId('delegate_id')->constrained('users')->onDelete('restrict');
             $table->foreignId('annee_scolaire_id')->constrained('annees_scolaires')->onDelete('restrict');
-            $table->enum('source', ['consignation', 'magasin', 'transport'])->default('consignation');
-            $table->date('date_bss');
-            $table->date('date_livraison')->nullable();
-            $table->date('date_recuperation')->nullable();
+            $table->date('date_bss'); // creation date
+            $table->date('date_livraison_prevue')->nullable();
+            $table->enum('moyen_contact', ['telephone', 'email'])->nullable();
             $table->enum('recupere_par_type', ['contact', 'transport'])->nullable();
-            $table->foreignId('recupere_par_contact_id')->nullable()->constrained('contacts');
-            $table->string('numero_expedition')->nullable();
-            $table->enum('statut', ['brouillon', 'en_attente', 'valide', 'livre', 'partiel', 'retourne'])->default('brouillon');
-            $table->foreignId('validated_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->boolean('is_active')->default(false);
-            $table->text('motif_validation')->nullable();
-            $table->enum('controle', ['OK', 'absence_signature', 'absence_cachet', 'absence_document'])->nullable();
-            $table->enum('feedback_statut', ['confirme', 'defavorable'])->nullable();
-            $table->date('feedback_date')->nullable();
-            $table->foreignId('feedback_contact_id')->nullable()->constrained('contacts');
-            $table->enum('feedback_moyen', ['email', 'telephone', 'sms', 'courrier'])->nullable();
-            $table->text('observation')->nullable();
+            $table->string('recupere_par_nom')->nullable(); // contact name or expedition number
+            $table->enum('statut', ['brouillon', 'soumis', 'valide', 'livre', 'refuse'])->default('brouillon');
+            $table->text('motif_refus')->nullable();
+            $table->boolean('is_validated_by_rbo')->default(false);
+            $table->timestamp('validated_at')->nullable();
+            $table->foreignId('validated_by')->nullable()->constrained('users')->onDelete('set null');
+            // Feedback fields (editable by delegate after validation)
+            $table->text('feedback')->nullable();
+            $table->enum('controle_document', ['OK', 'Absence signature', 'Absence cachet', 'Absence Document'])->nullable();
             $table->timestamps();
 
             $table->index('compte_id');
             $table->index('delegate_id');
+            $table->index('annee_scolaire_id');
             $table->index('statut');
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('bss');
+        Schema::dropIfExists('bsses');
     }
 };

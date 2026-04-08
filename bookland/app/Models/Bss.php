@@ -12,19 +12,18 @@ class Bss extends Model
     protected $table = 'bsses';
 
     protected $fillable = [
-        'numero', 'compte_id', 'contact_id', 'moyen_contact', 'delegate_id', 'annee_scolaire_id',
-        'source', 'date_bss', 'date_livraison', 'date_recuperation', 'recupere_par_type',
-        'recupere_par_contact_id', 'numero_expedition', 'statut', 'validated_by', 'is_active',
-        'motif_validation', 'controle', 'feedback_statut', 'feedback_date', 'feedback_contact_id',
-        'feedback_moyen', 'observation'
+        'numero', 'compte_id', 'contact_id', 'delegate_id', 'annee_scolaire_id',
+        'date_bss', 'date_livraison_prevue', 'moyen_contact',
+        'recupere_par_type', 'recupere_par_nom', 'statut', 'motif_refus',
+        'is_validated_by_rbo', 'validated_at', 'validated_by',
+        'feedback', 'controle_document'
     ];
 
     protected $casts = [
         'date_bss' => 'date',
-        'date_livraison' => 'date',
-        'date_recuperation' => 'date',
-        'feedback_date' => 'date',
-        'is_active' => 'boolean',
+        'date_livraison_prevue' => 'date',
+        'validated_at' => 'datetime',
+        'is_validated_by_rbo' => 'boolean',
     ];
 
     public function compte()
@@ -34,7 +33,7 @@ class Bss extends Model
 
     public function contact()
     {
-        return $this->belongsTo(Contact::class, 'contact_id');
+        return $this->belongsTo(Contact::class);
     }
 
     public function delegate()
@@ -52,18 +51,8 @@ class Bss extends Model
         return $this->belongsTo(User::class, 'validated_by');
     }
 
-    public function feedbackContact()
-    {
-        return $this->belongsTo(Contact::class, 'feedback_contact_id');
-    }
-
     public function lignes()
     {
         return $this->hasMany(BssLigne::class);
-    }
-
-    public function retours()
-    {
-        return $this->hasMany(Retour::class);
     }
 }

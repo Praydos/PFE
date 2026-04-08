@@ -5,159 +5,187 @@
     <h1>Nouveau BSS</h1>
     <form method="POST" action="{{ route('bss.store') }}" id="bssForm">
         @csrf
-        @if(auth()->user()->role !== 'delegue')
-        <div class="row">
-            <div class="col-md-6">
-                <div class="frm-group">
-                    <label>Délégué *</label>
-                    <select name="delegate_id" class="frm-select" id="delegateSelect" required>
-                        <option value="">-- Sélectionnez --</option>
-                        @foreach($delegates as $del)
-                            <option value="{{ $del->id }}" {{ $delegateId == $del->id ? 'selected' : '' }}>{{ $del->prenom }} {{ $del->nom }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-        </div>
-        @else
-            <input type="hidden" name="delegate_id" value="{{ auth()->user()->id }}">
-        @endif
+        <input type="hidden" name="numero" value="{{ $numero }}">
 
         <div class="row">
-            <div class="col-md-6">
-                <div class="frm-group">
-                    <label>Compte *</label>
-                    <select name="compte_id" class="frm-select" id="compteSelect" required>
-                        <option value="">-- Sélectionnez --</option>
-                        @foreach($comptes as $c)
-                            <option value="{{ $c->id }}">{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="col-md-6 mb-3">
+                <label>Compte *</label>
+                <select name="compte_id" id="compte_id" class="form-select" required>
+                    <option value="">-- Sélectionnez --</option>
+                    @foreach($comptes as $c)
+                        <option value="{{ $c->id }}">{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
+                    @endforeach
+                </select>
             </div>
-            <div class="col-md-6">
-                <div class="frm-group">
-                    <label>Contact *</label>
-                    <select name="contact_id" class="frm-select" id="contactSelect" required>
-                        <option value="">-- Choisissez un compte d'abord --</option>
-                    </select>
-                </div>
+            <div class="col-md-6 mb-3">
+                <label>Contact *</label>
+                <select name="contact_id" id="contact_id" class="form-select" required>
+                    <option value="">-- D'abord choisir un compte --</option>
+                </select>
             </div>
         </div>
 
         <div class="row">
-            <div class="col-md-4">
-                <div class="frm-group">
-                    <label>Source</label>
-                    <select name="source" class="frm-select">
-                        <option value="consignation">Consignation</option>
-                        <option value="magasin">Magasin</option>
-                        <option value="transport">Transport</option>
-                    </select>
-                </div>
+            <div class="col-md-4 mb-3">
+                <label>Date livraison prévue</label>
+                <input type="date" name="date_livraison_prevue" class="form-control">
             </div>
-            <div class="col-md-4">
-                <div class="frm-group">
-                    <label>Date BSS *</label>
-                    <input type="date" name="date_bss" class="frm-input" value="{{ date('Y-m-d') }}" required>
-                </div>
+            <div class="col-md-4 mb-3">
+                <label>Moyen de contact</label>
+                <select name="moyen_contact" class="form-select">
+                    <option value="">--</option>
+                    <option value="telephone">Téléphone</option>
+                    <option value="email">Email</option>
+                </select>
             </div>
-            <div class="col-md-4">
-                <div class="frm-group">
-                    <label>Date livraison prévue</label>
-                    <input type="date" name="date_livraison" class="frm-input">
+            <div class="col-md-4 mb-3">
+                <label>Date de création</label>
+                <input type="text" class="form-control" value="{{ now()->format('d/m/Y') }}" readonly disabled>
+                <small class="text-muted">Date automatique</small>
+            </div>
+        </div>
+
+        {{-- Récupéré par --}}
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <label>Récupéré par *</label>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="recupere_par_type" id="radio_contact" value="contact" required>
+                        <label class="form-check-label" for="radio_contact">Contact (nom)</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="recupere_par_type" id="radio_transport" value="transport">
+                        <label class="form-check-label" for="radio_transport">Transport (numéro d'expédition)</label>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="frm-group">
-            <label>Produits (depuis votre consignation)</label>
-            <table class="table" id="productsTable">
-                <thead>
-                    <tr><th>Produit</th><th>Quantité</th><th>Stock dispo</th><th></th></tr>
-                </thead>
-                <tbody id="productsTbody">
-                    <tr><td colspan="4" class="text-center">Cliquez sur "Ajouter un produit"</td></tr>
-                </tbody>
-            </table>
-            <button type="button" class="btn-dr btn-dr-sm btn-dr-ghost" id="addProductBtn">Ajouter un produit</button>
+        <div class="row mb-3" id="contact_field" style="display: none;">
+            <div class="col-md-6">
+                <label>Nom du contact *</label>
+                <input type="text" name="recupere_par_nom_contact" id="recupere_par_nom_contact" class="form-control" placeholder="Nom complet">
+            </div>
         </div>
 
-        <div class="frm-group">
-            <label>Observation</label>
-            <textarea name="observation" class="frm-textarea" rows="2"></textarea>
+        <div class="row mb-3" id="transport_field" style="display: none;">
+            <div class="col-md-6">
+                <label>Numéro d'expédition *</label>
+                <input type="text" name="numero_expedition" id="numero_expedition" class="form-control" placeholder="Ex: EXP-12345">
+            </div>
         </div>
 
-        <button type="submit" class="btn-dr btn-dr-primary">Créer le BSS</button>
-        <a href="{{ route('bss.index') }}" class="btn-dr btn-dr-ghost">Annuler</a>
+        {{-- Contrôle document --}}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label>Contrôle document physique</label>
+                <select name="controle_document" class="form-select">
+                    <option value="">-- Non spécifié --</option>
+                    <option value="OK">OK</option>
+                    <option value="Absence signature">Absence signature</option>
+                    <option value="Absence cachet">Absence cachet</option>
+                    <option value="Absence Document">Absence Document</option>
+                </select>
+            </div>
+        </div>
+
+        <hr>
+        <h3>Produits</h3>
+        <div id="products-container">
+            <div class="product-row mb-2" style="display:flex; gap:1rem;">
+                <select name="products[0][product_id]" class="form-select product-select" style="flex:2" required>
+                    <option value="">-- Produit --</option>
+                    @foreach($consignations as $cons)
+                        <option value="{{ $cons->product_id }}" data-stock="{{ $cons->quantity }}">{{ $cons->product->titre }} (stock: {{ $cons->quantity }})</option>
+                    @endforeach
+                </select>
+                <input type="number" name="products[0][quantity]" class="form-control" placeholder="Quantité" style="flex:1" required>
+                <button type="button" class="btn-dr btn-dr-danger remove-product" style="display:none;">X</button>
+            </div>
+        </div>
+        <button type="button" id="add-product" class="btn-dr btn-dr-sm btn-dr-ghost mt-2">+ Ajouter un produit</button>
+
+        <div class="mt-4">
+            <button type="submit" class="btn-dr btn-dr-primary">Soumettre BSS</button>
+            <a href="{{ route('bss.index') }}" class="btn-dr btn-dr-ghost">Annuler</a>
+        </div>
     </form>
 </div>
+@endsection
 
 @push('scripts')
 <script>
-    // Load contacts when compte changes
-    document.getElementById('compteSelect').addEventListener('change', function() {
-        const compteId = this.value;
-        const contactSelect = document.getElementById('contactSelect');
+    // Contact dropdown based on compte
+    document.getElementById('compte_id').addEventListener('change', function() {
+        let compteId = this.value;
+        let contactSelect = document.getElementById('contact_id');
         if (!compteId) {
-            contactSelect.innerHTML = '<option value="">-- Sélectionnez un compte d\'abord --</option>';
+            contactSelect.innerHTML = '<option value="">-- D\'abord choisir un compte --</option>';
             return;
         }
         fetch(`/api/comptes/${compteId}/contacts`)
-            .then(res => res.json())
+            .then(r => r.json())
             .then(data => {
-                contactSelect.innerHTML = '<option value="">-- Sélectionnez --</option>';
+                let html = '<option value="">-- Sélectionnez --</option>';
                 data.forEach(c => {
-                    contactSelect.innerHTML += `<option value="${c.id}">${c.prenom} ${c.nom}</option>`;
+                    html += `<option value="${c.id}">${c.prenom} ${c.nom} (${c.fonction || ''})</option>`;
                 });
+                contactSelect.innerHTML = html;
             });
     });
 
-    // Dynamic product rows with stock info
-    let productIndex = 0;
-    const productsData = @json($products);
-    const stockData = @json($stock);
+    // Toggle fields for "Récupéré par"
+    const radioContact = document.getElementById('radio_contact');
+    const radioTransport = document.getElementById('radio_transport');
+    const contactField = document.getElementById('contact_field');
+    const transportField = document.getElementById('transport_field');
+    const contactInput = document.getElementById('recupere_par_nom_contact');
+    const transportInput = document.getElementById('numero_expedition');
 
-    document.getElementById('addProductBtn').addEventListener('click', function() {
-        const tbody = document.getElementById('productsTbody');
-        if (tbody.children.length === 1 && tbody.children[0].innerText.includes('Aucun produit')) {
-            tbody.innerHTML = '';
+    function toggleRecuperePar() {
+        if (radioContact.checked) {
+            contactField.style.display = 'flex';
+            transportField.style.display = 'none';
+            contactInput.required = true;
+            transportInput.required = false;
+        } else if (radioTransport.checked) {
+            contactField.style.display = 'none';
+            transportField.style.display = 'flex';
+            contactInput.required = false;
+            transportInput.required = true;
+        } else {
+            contactField.style.display = 'none';
+            transportField.style.display = 'none';
+            contactInput.required = false;
+            transportInput.required = false;
         }
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>
-                <select name="products[${productIndex}][product_id]" class="frm-select product-select" required>
-                    <option value="">-- Produit --</option>
-                    ${Object.values(productsData).map(p => `<option value="${p.id}" data-stock="${stockData[p.id] || 0}">${p.titre} (${p.isbn_13 || p.isbn_10})</option>`).join('')}
-                </select>
-            </td>
-            <td><input type="number" name="products[${productIndex}][quantite]" class="frm-input qty" min="1" value="1" required></td>
-            <td class="stock-display">-</td>
-            <td><button type="button" class="btn-dr btn-dr-sm btn-dr-danger remove-row">×</button></td>
-        `;
-        tbody.appendChild(row);
+    }
 
-        const productSelect = row.querySelector('.product-select');
-        const stockCell = row.querySelector('.stock-display');
-        productSelect.addEventListener('change', function() {
-            const selected = this.options[this.selectedIndex];
-            const stock = selected.dataset.stock || 0;
-            stockCell.innerHTML = `<span class="dr-badge">${stock}</span>`;
-        });
-        row.querySelector('.remove-row').addEventListener('click', () => row.remove());
-        productIndex++;
-    });
+    radioContact.addEventListener('change', toggleRecuperePar);
+    radioTransport.addEventListener('change', toggleRecuperePar);
 
-    // If delegate changes (for admin/RBO), reload page with selected delegate to refresh stock
-    const delegateSelect = document.getElementById('delegateSelect');
-    if (delegateSelect) {
-        delegateSelect.addEventListener('change', function() {
-            const delegateId = this.value;
-            if (delegateId) {
-                window.location.href = `{{ route('bss.create') }}?delegate_id=${delegateId}`;
+    // Dynamic product rows
+    let productIndex = 1;
+    document.getElementById('add-product').addEventListener('click', function() {
+        const container = document.getElementById('products-container');
+        const newRow = container.children[0].cloneNode(true);
+        newRow.querySelectorAll('select, input').forEach(el => {
+            let name = el.name;
+            if (name) {
+                el.name = name.replace(/\[\d+\]/, `[${productIndex}]`);
+                el.value = '';
             }
         });
+        newRow.querySelector('.remove-product').style.display = 'inline-block';
+        container.appendChild(newRow);
+        productIndex++;
+        attachRemoveEvent(newRow);
+    });
+
+    function attachRemoveEvent(row) {
+        row.querySelector('.remove-product')?.addEventListener('click', () => row.remove());
     }
+    document.querySelectorAll('.product-row').forEach(row => attachRemoveEvent(row));
 </script>
 @endpush
-@endsection

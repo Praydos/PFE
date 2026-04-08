@@ -10,7 +10,6 @@
                 <div class="frm-group">
                     <label>Compte *</label>
                     <select name="compte_id" class="frm-select" required>
-                        <option value="">-- Sélectionnez --</option>
                         @foreach($comptes as $c)
                             <option value="{{ $c->id }}" {{ $bss->compte_id == $c->id ? 'selected' : '' }}>{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
                         @endforeach
@@ -21,7 +20,6 @@
                 <div class="frm-group">
                     <label>Contact *</label>
                     <select name="contact_id" class="frm-select" required>
-                        <option value="">-- Sélectionnez --</option>
                         @foreach($contacts as $c)
                             <option value="{{ $c->id }}" {{ $bss->contact_id == $c->id ? 'selected' : '' }}>{{ $c->prenom }} {{ $c->nom }}</option>
                         @endforeach

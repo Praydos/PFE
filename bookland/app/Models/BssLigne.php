@@ -9,14 +9,14 @@ class BssLigne extends Model
 {
     use HasFactory;
 
+    protected $table = 'bss_lignes';
+
     protected $fillable = [
-        'bss_id', 'product_id', 'quantite', 'quantite_n', 'quantite_n_1',
-        'statut_ligne', 'date_retour', 'converted_to_adoption', 'adoption_id'
+        'bss_id', 'product_id', 'quantity', 'source', 'statut_ligne', 'date_retour'
     ];
 
     protected $casts = [
         'date_retour' => 'date',
-        'converted_to_adoption' => 'boolean',
     ];
 
     public function bss()
@@ -27,15 +27,5 @@ class BssLigne extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
-    }
-
-    // public function adoption()
-    // {
-    //     return $this->belongsTo(Adoption::class);
-    // }
-
-    public function retourLines()
-    {
-        return $this->hasMany(Retour::class, 'bss_ligne_id');
     }
 }

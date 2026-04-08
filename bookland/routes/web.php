@@ -133,23 +133,23 @@ Route::get('/contacts/{contact}/comptes', [ContactController::class, 'getComptes
 Route::post('/contacts/{contact}/comptes', [ContactController::class, 'updateComptes'])->name('contacts.comptes.update');
 
 
-// bss routes (to be authorized and updated later)
-    Route::resource('bss', BssController::class);
-    Route::post('/bss/{bss}/validate', [BssController::class, 'validateBss'])->name('bss.validate');
-    Route::post('/bss/{bss}/delivered', [BssController::class, 'markDelivered'])->name('bss.delivered');
-    Route::post('/bss/{bss}/control', [BssController::class, 'updateControl'])->name('bss.control');
-    Route::post('/bss/{bss}/feedback', [BssController::class, 'updateFeedback'])->name('bss.feedback');
+// // bss routes (to be authorized and updated later)
+//     Route::resource('bss', BssController::class);
+//     Route::post('/bss/{bss}/validate', [BssController::class, 'validateBss'])->name('bss.validate');
+//     Route::post('/bss/{bss}/delivered', [BssController::class, 'markDelivered'])->name('bss.delivered');
+//     Route::post('/bss/{bss}/control', [BssController::class, 'updateControl'])->name('bss.control');
+//     Route::post('/bss/{bss}/feedback', [BssController::class, 'updateFeedback'])->name('bss.feedback');
 
-    // Returns (separate controller)
-    Route::get('/bss/{bss}/retour/create', [RetourController::class, 'create'])->name('retours.create');
-    Route::post('/bss/{bss}/retour', [RetourController::class, 'store'])->name('retours.store');
+//     // Returns (separate controller)
+//     Route::get('/bss/{bss}/retour/create', [RetourController::class, 'create'])->name('retours.create');
+//     Route::post('/bss/{bss}/retour', [RetourController::class, 'store'])->name('retours.store');
 
 
-    // API for dynamic contact loading (used in BSS create)
-    Route::middleware(['auth'])->get('/api/comptes/{compte}/contacts', function ($compteId) {
-        $compte = App\Models\Compte::findOrFail($compteId);
-        return response()->json($compte->contacts);
-    });
+//     // API for dynamic contact loading (used in BSS create)
+//     Route::middleware(['auth'])->get('/api/comptes/{compte}/contacts', function ($compteId) {
+//         $compte = App\Models\Compte::findOrFail($compteId);
+//         return response()->json($compte->contacts);
+//     });
 
 // Route::resource('consignations', ConsignationController::class);
 // Route::resource('consignations/index', ConsignationController::class);
@@ -157,8 +157,32 @@ Route::post('/contacts/{contact}/comptes', [ContactController::class, 'updateCom
 
 
 
-/// 
+///
 
 
 
 
+
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/bss', [BssController::class, 'index'])->name('bss.index');
+
+    // CREATE MUST BE BEFORE {bss}
+    Route::get('/bss/create', [BssController::class, 'create'])->name('bss.create');
+    Route::post('/bss', [BssController::class, 'store'])->name('bss.store');
+
+    Route::get('/bss/{bss}', [BssController::class, 'show'])->name('bss.show');
+
+    Route::get('/bss/{bss}/edit', [BssController::class, 'edit'])->name('bss.edit');
+    Route::put('/bss/{bss}', [BssController::class, 'update'])->name('bss.update');
+
+    Route::post('/bss/{bss}/validate', [BssController::class, 'validateBss'])->name('bss.validate');
+
+    Route::delete('/bss/{bss}', [BssController::class, 'destroy'])
+        ->name('bss.destroy')
+        ->middleware('role:admin');
+});
+Route::get('/api/comptes/{compte}/contacts', function (App\Models\Compte $compte) {
+    return $compte->contacts;
+})->name('api.compte.contacts');
