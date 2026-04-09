@@ -202,11 +202,11 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Date création</span>
-                    <span class="info-value">{{ $bss->date_bss->format('d/m/Y') }}</span>
+                    <span class="info-value">{{ \Carbon\Carbon::parse($bss->date_bss)->format('d/m/Y') }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Date livraison prévue</span>
-                    <span class="info-value">{{ $bss->date_livraison_prevue ? $bss->date_livraison_prevue->format('d/m/Y') : '-' }}</span>
+                    <span class="info-value">{{ $bss->date_livraison_prevue ? \Carbon\Carbon::parse($bss->date_livraison_prevue)->format('d/m/Y') : '-' }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Moyen contact</span>
@@ -240,7 +240,7 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Date feedback</span>
-                    <span class="info-value">{{ $bss->date_feedback ? $bss->date_feedback->format('d/m/Y') : '-' }}</span>
+                    <span class="info-value">{{ $bss->date_feedback ? \Carbon\Carbon::parse($bss->date_feedback)->format('d/m/Y') : '-' }}</span>
                 </div>
                 @endif
                 @if($bss->controle_document)
@@ -294,6 +294,9 @@
                     </svg>
                     Ajouter feedback
                 </a>
+            @endif
+            @if($bss->statut === 'livre' && auth()->user()->role === 'delegue' && $bss->delegate_id === auth()->id())
+                <a href="{{ route('retours.create', $bss) }}" class="btn-zn btn-zn-primary">Créer un retour</a>
             @endif
         </div>
     </div>

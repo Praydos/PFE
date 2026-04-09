@@ -682,6 +682,14 @@
                     </span>
                     <span class="sb-item-label">Consignations</span>
                 </a>
+                <a href="{{ route('bss.index') }}"
+                   class="sb-item {{ request()->routeIs('bss.*') ? 'active' : '' }}"
+                   data-label="Specimens & BSS">
+                    <span class="sb-item-icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 3.5a4 4 0 0 1 0 7"/><path d="M20 20c0-3-2-5-4-6"/></svg>
+                    </span>
+                    <span class="sb-item-label">Specimens & BSS</span>
+                </a>
 
                 @if(auth()->user()->role === 'admin')
                 <a href="{{ route('users.index') }}"

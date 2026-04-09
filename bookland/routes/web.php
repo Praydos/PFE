@@ -186,3 +186,8 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/api/comptes/{compte}/contacts', function (App\Models\Compte $compte) {
     return $compte->contacts;
 })->name('api.compte.contacts');
+
+
+Route::get('/bss/{bss}/retour/create', [RetourController::class, 'create'])->name('retours.create');
+Route::post('/bss/{bss}/retour', [RetourController::class, 'store'])->name('retours.store');
+Route::get('/retours', [RetourController::class, 'index'])->name('retours.index');

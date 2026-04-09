@@ -55,4 +55,8 @@ class Bss extends Model
     {
         return $this->hasMany(BssLigne::class);
     }
+    public function retours()
+    {
+        return $this->hasMany(Retour::class);
+    }
 }

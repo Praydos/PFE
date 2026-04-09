@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('moyen_contact', ['telephone', 'email'])->nullable();
             $table->enum('recupere_par_type', ['contact', 'transport'])->nullable();
             $table->string('recupere_par_nom')->nullable(); // contact name or expedition number
-            $table->enum('statut', ['brouillon', 'soumis', 'valide', 'livre', 'refuse'])->default('brouillon');
+            $table->enum('statut', ['brouillon', 'soumis', 'valide', 'livre', 'refuse','retour'])->default('brouillon');
             $table->text('motif_refus')->nullable();
             $table->boolean('is_validated_by_rbo')->default(false);
             $table->timestamp('validated_at')->nullable();
