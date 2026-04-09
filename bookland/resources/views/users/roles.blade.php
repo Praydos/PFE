@@ -722,10 +722,12 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                 Délégués <span class="tc">{{ $delegues->count() }}</span>
             </button>
-            <button class="dr-tab" data-target="pane-rbos" role="tab" aria-selected="false">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-                RBOs <span class="tc">{{ $rbos->count() }}</span>
-            </button>
+            @if (auth()->user()->role !== 'delegue')
+                <button class="dr-tab" data-target="pane-rbos" role="tab" aria-selected="false">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                    RBOs <span class="tc">{{ $rbos->count() }}</span>
+                </button>
+            @endif
         </div>
     </div>
 

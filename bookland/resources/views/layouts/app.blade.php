@@ -619,31 +619,56 @@
             <div class="sb-section">
                 <div class="sb-section-label">Commercial</div>
 
-                <a href="{{ route('comptes.index') }}"
-                   class="sb-item {{ request()->routeIs('comptes.*') ? 'active' : '' }}"
-                   data-label="Comptes">
-                    <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    </span>
-                    <span class="sb-item-label">Comptes</span>
-                </a>
-
-                <a href="{{ route('contacts.index') }}"
-                   class="sb-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}"
-                   data-label="Contacts">
-                    <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    </span>
-                    <span class="sb-item-label">Contacts</span>
-                </a>
+                
 
                 <a href="{{ route('products.index') }}"
                    class="sb-item {{ request()->routeIs('products.*') ? 'active' : '' }}"
                    data-label="Produits">
                     <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4.03a2 2 0 0 0 2 0l7-4.03A2 2 0 0 0 21 16z"/>
+                            <path d="M3.3 7L12 12l8.7-5"/>
+                            <path d="M12 22V12"/>
+                        </svg>
                     </span>
                     <span class="sb-item-label">Produits</span>
+                </a>
+
+                <a href="{{ route('consignations.index') }}"
+                   class="sb-item {{ request()->routeIs('consignations.*') ? 'active' : '' }}"
+                   data-label="Consignations">
+                    <span class="sb-item-icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M3 7l9-4 9 4-9 4-9-4z"/>
+                            <path d="M3 7v10l9 4 9-4V7"/>
+                            <path d="M12 11v10"/>
+                        </svg>
+                    </span>
+                    <span class="sb-item-label">Consignations</span>
+                </a>
+                <a href="{{ route('bss.index') }}"
+                   class="sb-item {{ request()->routeIs('bss.*') ? 'active' : '' }}"
+                   data-label="Specimens & BSS">
+                    <span class="sb-item-icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 12h-8"/>
+                            <path d="M17 8l4 4-4 4"/>
+                            <path d="M3 7l9-4 9 4-9 4-9-4z"/>
+                            <path d="M3 7v10l9 4 9-4v-3"/>
+                        </svg>
+                    </span>
+                    <span class="sb-item-label">Specimens & BSS</span>
+                </a>
+                <a href="{{ route('retours.index') }}"
+                   class="sb-item {{ request()->routeIs('retours.*') ? 'active' : '' }}"
+                   data-label="Les Retours">
+                    <span class="sb-item-icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M9 14L4 9l5-5"/>
+                            <path d="M4 9h11a5 5 0 0 1 5 5v1"/>
+                        </svg>
+                    </span>
+                    <span class="sb-item-label">Les Retours</span>
                 </a>
 
                 @if (auth()->user()->role == 'admin')
@@ -674,22 +699,25 @@
                     <span class="sb-item-label">Rôles</span>
                 </a>
 
-                <a href="{{ route('consignations.index') }}"
-                   class="sb-item {{ request()->routeIs('consignations.*') ? 'active' : '' }}"
-                   data-label="Consignations">
+                <a href="{{ route('comptes.index') }}"
+                   class="sb-item {{ request()->routeIs('comptes.*') ? 'active' : '' }}"
+                   data-label="Comptes">
                     <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 3.5a4 4 0 0 1 0 7"/><path d="M20 20c0-3-2-5-4-6"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     </span>
-                    <span class="sb-item-label">Consignations</span>
+                    <span class="sb-item-label">Comptes</span>
                 </a>
-                <a href="{{ route('bss.index') }}"
-                   class="sb-item {{ request()->routeIs('bss.*') ? 'active' : '' }}"
-                   data-label="Specimens & BSS">
+
+                <a href="{{ route('contacts.index') }}"
+                   class="sb-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}"
+                   data-label="Contacts">
                     <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 3.5a4 4 0 0 1 0 7"/><path d="M20 20c0-3-2-5-4-6"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </span>
-                    <span class="sb-item-label">Specimens & BSS</span>
+                    <span class="sb-item-label">Contacts</span>
                 </a>
+
+                
 
                 @if(auth()->user()->role === 'admin')
                 <a href="{{ route('users.index') }}"

@@ -12,9 +12,9 @@
                 <label>Date de retour *</label>
                 <input type="date" name="date_retour" class="form-control" value="{{ now()->format('Y-m-d') }}" required>
             </div>
-            <div class="col-md-8">
-                <label>Motif</label>
-                <input type="text" name="motif" class="form-control" placeholder="Optionnel">
+            <div class="mb-3">
+                <label for="motif">Motif du retour</label>
+                <textarea name="motif" id="motif" class="form-control" rows="3" placeholder="Expliquez la raison du retour...">{{ old('motif') }}</textarea>
             </div>
         </div>
 
