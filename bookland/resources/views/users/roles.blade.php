@@ -668,7 +668,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             <h1>Délégués &amp; RBOs</h1>
             <p>Gérez vos délégués commerciaux et responsables de bureaux opérationnels</p>
         </div>
-        <div class="dr-header-actions">
+        @if (auth()->user()->role == 'admin')
+            <div class="dr-header-actions">
             <a href="{{ route('users.create') }}?role=delegue" class="btn-dr btn-dr-teal">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Nouveau Délégué
@@ -682,29 +683,23 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 Tous les utilisateurs
             </a>
         </div>
+            
+        @endif
     </div>
 
     {{-- Stat Cards --}}
     <div class="dr-stats">
-        <div class="dr-stat-card">
-            <div class="dr-stat-icon si-blue">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        @if (auth()->user()->role == 'rbo' || auth()->user()->role == 'admin')
+            <div class="dr-stat-card">
+                <div class="dr-stat-icon si-blue">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                </div>
+                <div>
+                    <div class="dr-stat-label">Délégués</div>
+                    <div class="dr-stat-value">{{ $totalDelegues }}</div>
+                </div>
             </div>
-            <div>
-                <div class="dr-stat-label">Délégués</div>
-                <div class="dr-stat-value">{{ $totalDelegues }}</div>
-            </div>
-        </div>
-        <div class="dr-stat-card">
-            <div class="dr-stat-icon si-teal">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-            </div>
-            <div>
-                <div class="dr-stat-label">RBOs</div>
-                <div class="dr-stat-value">{{ $totalRbos }}</div>
-            </div>
-        </div>
-        <div class="dr-stat-card">
+            <div class="dr-stat-card">
             <div class="dr-stat-icon si-violet">
                 <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
@@ -713,6 +708,19 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <div class="dr-stat-value">{{ $totalDelegues + $totalRbos }}</div>
             </div>
         </div>
+        @endif
+        @if (auth()->user()->role == 'admin')
+            <div class="dr-stat-card">
+            <div class="dr-stat-icon si-teal">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            </div>
+            <div>
+                <div class="dr-stat-label">RBOs</div>
+                <div class="dr-stat-value">{{ $totalRbos }}</div>
+            </div>
+        </div>
+        @endif
+        
     </div>
 
     {{-- Tabs --}}

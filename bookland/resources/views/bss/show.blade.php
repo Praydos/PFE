@@ -298,6 +298,14 @@
             @if($bss->statut === 'livre' && auth()->user()->role === 'delegue' && $bss->delegate_id === auth()->id())
                 <a href="{{ route('retours.create', $bss) }}" class="btn-zn btn-zn-primary">Créer un retour</a>
             @endif
+
+
+
+            @if($ligne->statut_ligne === 'livree' && !$ligne->adoption)
+                <a href="{{ route('adoptions.convert', $ligne) }}" class="btn-zn btn-zn-sm btn-zn-primary">Convertir</a>
+            @elseif($ligne->adoption)
+                <span class="dr-badge bd-green">Adopté</span>
+            @endif
         </div>
     </div>
 </div>

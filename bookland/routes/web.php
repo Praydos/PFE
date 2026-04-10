@@ -35,6 +35,7 @@ use App\Http\Controllers\AnneScolaireController;
 use App\Http\Controllers\ConsignationController;
 use App\Http\Controllers\BssController;
 use App\Http\Controllers\RetourController;
+use App\Http\Controllers\AdoptionController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -56,8 +57,14 @@ Route::middleware('auth')->group(function () {
     Route::resource('comptes', CompteController::class)
         ->middleware('role:admin,rbo,delegue');
     
-    Route::resource('products', ProductController::class)
-        ->middleware('role:admin,rbo,delegue');
+    // Route::resource('products', ProductController::class)
+    //     ->middleware('role:admin,rbo,delegue');
+
+   
+    // products index is visible to all, but create/edit/delete is admin only
+
+    Route::get('/products', [ProductController::class, 'index'])
+    ->name('products.index')->middleware('role:admin,rbo,delegue');
 
     Route::get('/users/{user}/assigned-zones',[UserController::class, 'getAssignedZones'])
     ->name('users.assigned-zones')
@@ -67,6 +74,19 @@ Route::middleware('auth')->group(function () {
     ->name('consignations.index')->middleware('role:admin,rbo,delegue');
     Route::get('/consignations/{consignation}/create-bss', [ConsignationController::class, 'createBss'])
     ->name('consignations.create-bss')->middleware('role:admin,delegue');
+   
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -83,6 +103,14 @@ Route::middleware('auth')->group(function () {
         // Ville ↔ Zone assignment
         Route::post('/villes/{ville}/assign-zone',
             [VilleController::class, 'assignZone'])->name('villes.assignZone');
+
+        //products routes for admin only
+        Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('/products/create', [ProductController::class, 'store'])->name('products.store');
+        route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+        route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+        route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+       
 
         // Zone ↔ Delegate detachment
         Route::post('/zones/{zone}/detach-delegate/{delegate}',
@@ -133,61 +161,73 @@ Route::get('/contacts/{contact}/comptes', [ContactController::class, 'getComptes
 Route::post('/contacts/{contact}/comptes', [ContactController::class, 'updateComptes'])->name('contacts.comptes.update');
 
 
-// // bss routes (to be authorized and updated later)
-//     Route::resource('bss', BssController::class);
-//     Route::post('/bss/{bss}/validate', [BssController::class, 'validateBss'])->name('bss.validate');
-//     Route::post('/bss/{bss}/delivered', [BssController::class, 'markDelivered'])->name('bss.delivered');
-//     Route::post('/bss/{bss}/control', [BssController::class, 'updateControl'])->name('bss.control');
-//     Route::post('/bss/{bss}/feedback', [BssController::class, 'updateFeedback'])->name('bss.feedback');
-
-//     // Returns (separate controller)
-//     Route::get('/bss/{bss}/retour/create', [RetourController::class, 'create'])->name('retours.create');
-//     Route::post('/bss/{bss}/retour', [RetourController::class, 'store'])->name('retours.store');
-
-
-//     // API for dynamic contact loading (used in BSS create)
-//     Route::middleware(['auth'])->get('/api/comptes/{compte}/contacts', function ($compteId) {
-//         $compte = App\Models\Compte::findOrFail($compteId);
-//         return response()->json($compte->contacts);
-//     });
-
-// Route::resource('consignations', ConsignationController::class);
-// Route::resource('consignations/index', ConsignationController::class);
-// Route::get('/consignations/{consignation}/create-bss', [ConsignationController::class, 'createBss'])->name('consignations.create-bss');
-
-
-
-///
 
 
 
 
 
+// Specimen and BSS routes ============================================================================
 
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/bss', [BssController::class, 'index'])->name('bss.index');
 
     // CREATE MUST BE BEFORE {bss}
-    Route::get('/bss/create', [BssController::class, 'create'])->name('bss.create');
-    Route::post('/bss', [BssController::class, 'store'])->name('bss.store');
+    Route::get('/bss/create', [BssController::class, 'create'])
+    ->name('bss.create')->middleware('role:admin,delegue');
 
-    Route::get('/bss/{bss}', [BssController::class, 'show'])->name('bss.show');
+    Route::post('/bss', [BssController::class, 'store'])
+    ->name('bss.store')->middleware('role:admin,delegue');
 
-    Route::get('/bss/{bss}/edit', [BssController::class, 'edit'])->name('bss.edit');
-    Route::put('/bss/{bss}', [BssController::class, 'update'])->name('bss.update');
+    Route::get('/bss/{bss}', [BssController::class, 'show'])
+    ->name('bss.show');
 
-    Route::post('/bss/{bss}/validate', [BssController::class, 'validateBss'])->name('bss.validate');
+    Route::get('/bss/{bss}/edit', [BssController::class, 'edit'])
+    ->name('bss.edit');
+
+    Route::put('/bss/{bss}', [BssController::class, 'update'])
+    ->name('bss.update');
+
+    Route::post('/bss/{bss}/validate', [BssController::class, 'validateBss'])
+    ->name('bss.validate')->middleware('role:rbo,admin');
 
     Route::delete('/bss/{bss}', [BssController::class, 'destroy'])
         ->name('bss.destroy')
         ->middleware('role:admin');
+
+
+    Route::get('/retours', [RetourController::class, 'index'])
+   ->name('retours.index')->middleware('role:admin,rbo,delegue');
+   
+    Route::get('/bss/{bss}/retour/create', [RetourController::class, 'create'])
+    ->name('retours.create')->middleware('role:admin,delegue'); // delegue admin
+
+    Route::post('/bss/{bss}/retour', [RetourController::class, 'store'])
+    ->name('retours.store')->middleware('role:admin,delegue'); // delegue admin
 });
+
+
 Route::get('/api/comptes/{compte}/contacts', function (App\Models\Compte $compte) {
     return $compte->contacts;
 })->name('api.compte.contacts');
+// ====== SPECIMEN AND BSS ROUTES BELOW,  ===============================
+   
+
+// delegue admin rbo
 
 
-Route::get('/bss/{bss}/retour/create', [RetourController::class, 'create'])->name('retours.create');
-Route::post('/bss/{bss}/retour', [RetourController::class, 'store'])->name('retours.store');
-Route::get('/retours', [RetourController::class, 'index'])->name('retours.index');
+
+
+
+
+
+
+
+
+/////============================================================================
+Route::get('/adoptions/create', [AdoptionController::class, 'create'])->name('adoptions.create'); //delegue admin
+Route::resource('adoptions', AdoptionController::class)->except(['create', 'store']); // delegue admin rbo
+
+Route::post('/adoptions', [AdoptionController::class, 'store'])->name('adoptions.store'); // admin delegue
+Route::get('/bss-ligne/{bssLigne}/convert-adoption', [AdoptionController::class, 'convertFromBss'])->name('adoptions.convert'); // delegue admin
+Route::post('/bss-ligne/{bssLigne}/convert-adoption', [AdoptionController::class, 'storeFromBss'])->name('adoptions.store-convert'); // delegue admin

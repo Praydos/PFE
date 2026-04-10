@@ -34,4 +34,9 @@ class BssLigne extends Model
                     ->withPivot('quantite_retournee')
                     ->withTimestamps();
     }
+
+    public function adoption()
+{
+    return $this->hasOne(Adoption::class, 'bss_ligne_id');
+}
 }
