@@ -57,14 +57,33 @@ class Compte extends Model
 
     // Accessor for taille (will be calculated later when effectifs are added)
     public function getTailleAttribute()
-    {
-        // Placeholder: will depend on effectifs table (Phase 2)
-        return 'Non calculé';
+{
+    $currentYear = AnneeScolaire::where('is_active', true)->first();
+    if (!$currentYear) {
+        return 'Non défini';
     }
+
+    $total = $this->effectifs()
+        ->where('annee_scolaire_id', $currentYear->id)
+        ->sum('effectif_valide');
+
+    if ($total < 250) return 'Petit';
+    if ($total < 500) return 'Moyen';
+    if ($total < 1000) return 'Grand';
+    return 'Très Grand';
+}
 
 
     public function contacts()
     {
         return $this->belongsToMany(Contact::class, 'compte_contact');
     }
+
+    public function effectifs()
+    {
+        return $this->hasMany(Effectif::class);
+    }
+
+
+    
 }

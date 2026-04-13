@@ -7,6 +7,7 @@ use App\Models\Ville;
 use App\Models\Zone;
 use App\Models\User;
 use App\Models\Quartier;
+use App\Models\AnneeScolaire;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -251,6 +252,34 @@ class CompteController extends Controller
             ->with('success', 'Compte supprimé.');
     }
 
+
+    public function show(Compte $compte)
+    {
+        $user = auth()->user();
+        $this->authorizeCompte($user, $compte);
+
+        // Load relationships
+        $compte->load(['delegue', 'ville', 'zone', 'quartier', 'contacts']);
+
+        // Load effectifs with their year and sources
+        $effectifs = $compte->effectifs()
+            ->with(['anneeScolaire', 'sourceContact1', 'sourceContact2', 'sourceContact3'])
+            ->orderBy('annee_scolaire_id', 'desc')
+            ->orderBy('niveau')
+            ->get();
+
+        // Group effectifs by year for easier display
+        $effectifsByYear = $effectifs->groupBy('annee_scolaire_id');
+
+        // Get all years for a selector (to view effectifs by year)
+        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+
+        // Current active year (for taille calculation)
+        $currentYear = AnneeScolaire::where('is_active', true)->first();
+
+        return view('comptes.show', compact('compte', 'effectifsByYear', 'years', 'currentYear'));
+    }
+
     // ── Private helper ────────────────────────────────────────────────────────
 
     /**
@@ -272,5 +301,23 @@ class CompteController extends Controller
         }
 
         return [$villes, $zones, $delegues];
+    }
+
+    // ── get the taille of the niveau for the compte client  ─────────────────
+   public function getTailleAttribute()
+    {
+        $currentYear = AnneeScolaire::where('is_active', true)->first();
+        if (!$currentYear) {
+            return 'Non défini';
+        }
+
+        $total = $this->effectifs()
+            ->where('annee_scolaire_id', $currentYear->id)
+            ->sum('effectif_valide');
+
+        if ($total < 250) return 'Petit';
+        if ($total < 500) return 'Moyen';
+        if ($total < 1000) return 'Grand';
+        return 'Très Grand';
     }
 }

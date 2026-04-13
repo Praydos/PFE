@@ -203,21 +203,21 @@ class AdoptionController extends Controller
 
     // Edit adoption (only if not linked to a BSS or if allowed)
     public function edit(Adoption $adoption)
-{
-    $user = Auth::user();
-    if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) {
-        abort(403);
+    {
+        $user = Auth::user();
+        if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) {
+            abort(403);
+        }
+        $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
+        $products = Product::orderBy('titre')->get();
+        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+        $currentYear = $this->getCurrentYear();
+        
+        // Fetch contacts that belong to the adoption's compte
+        $contacts = Contact::whereHas('comptes', fn($q) => $q->where('comptes.id', $adoption->compte_id))->get();
+        
+        return view('adoptions.edit', compact('adoption', 'comptes', 'products', 'years', 'currentYear', 'contacts'));
     }
-    $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
-    $products = Product::orderBy('titre')->get();
-    $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
-    $currentYear = $this->getCurrentYear();
-    
-    // Fetch contacts that belong to the adoption's compte
-    $contacts = Contact::whereHas('comptes', fn($q) => $q->where('comptes.id', $adoption->compte_id))->get();
-    
-    return view('adoptions.edit', compact('adoption', 'comptes', 'products', 'years', 'currentYear', 'contacts'));
-}
 
     public function update(Request $request, Adoption $adoption)
     {

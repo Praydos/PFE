@@ -59,10 +59,10 @@ class EffectifController extends Controller
             'compte_id' => 'required|exists:comptes,id',
             'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
             'niveau' => 'required|string|max:255',
-            'cycle' => 'nullable|string|max:255',
-            'massar' => 'nullable|integer|min:0',
-            'source_1' => 'nullable|exists:contacts,id',
-            'nombre_classes_1' => 'nullable|integer|min:0',
+            'cycle' => 'required|string|max:255',
+            'massar' => 'required|integer|min:0',
+            'source_1' => 'required|exists:contacts,id',
+            'nombre_classes_1' => 'required|integer|min:0',
             'source_2' => 'nullable|exists:contacts,id',
             'nombre_classes_2' => 'nullable|integer|min:0',
             'source_3' => 'nullable|exists:contacts,id',
@@ -76,6 +76,10 @@ class EffectifController extends Controller
         if ($exists) {
             return redirect()->back()->withErrors(['niveau' => 'Ce niveau existe déjà.'])->withInput();
         }
+
+        // the other two source could be null but we need to set them to 0 for validation and consistency
+        $validated['nombre_classes_2'] = $validated['nombre_classes_2'] ?? 0;
+        $validated['nombre_classes_3'] = $validated['nombre_classes_3'] ?? 0;
 
         Effectif::create($validated);
         return redirect()->route('effectifs.index')->with('success', 'Effectif créé.');

@@ -455,45 +455,6 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         </div>
     </div>
 
-    {{-- Stat Cards --}}
-    {{-- <div class="cp-stats">
-        <div class="cp-stat">
-            <div class="stat-ico si-blue">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Total comptes</div>
-                <div class="stat-value">{{ $comptes->total() }}</div>
-            </div>
-        </div>
-        <div class="cp-stat">
-            <div class="stat-ico si-green">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Actifs</div>
-                <div class="stat-value">{{ $comptes->getCollection()->where('status','actif')->count() }}</div>
-            </div>
-        </div>
-        <div class="cp-stat">
-            <div class="stat-ico si-rose">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Fermés</div>
-                <div class="stat-value">{{ $comptes->getCollection()->where('status','!=','actif')->count() }}</div>
-            </div>
-        </div>
-        <div class="cp-stat">
-            <div class="stat-ico si-violet">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Cette page</div>
-                <div class="stat-value">{{ $comptes->count() }}</div>
-            </div>
-        </div>
-    </div> --}}
 
     {{-- Search bar --}}
     <div class="cp-search-bar">
@@ -661,6 +622,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                 <a href="{{ route('comptes.edit', $compte) }}" class="btn-cp btn-cp-sm btn-cp-warning">
                                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
                                 </a>
+
+                                <a href="{{ route('comptes.show', $compte) }}"><strong>Voir</strong></a>
 
                                 {{-- Delete: admin and rbo only, not delegues --}}
                                 @if(in_array(auth()->user()->role, ['admin', 'rbo']))

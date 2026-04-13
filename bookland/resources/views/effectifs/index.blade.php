@@ -367,6 +367,7 @@
                                         Modifier
                                     </a>
                                 @endif
+                                
                                 @if(!$e->is_validated && in_array(auth()->user()->role, ['admin','rbo']))
                                     <form action="{{ route('effectifs.validate', $e) }}" method="POST" style="display:inline;">
                                         @csrf
