@@ -156,6 +156,16 @@
     /* Actions */
     .actions-cell { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
 
+    .btn-zn-info {
+    background: var(--violet-light);
+    color: var(--violet);
+    border-color: rgba(124,111,205,.2);
+}
+.btn-zn-info:hover {
+    background: #e4deff;
+    color: var(--violet);
+}
+
     /* Empty state */
     .zn-empty { padding: 4rem 2rem; text-align: center; }
     .zn-empty-icon { width: 52px; height: 52px; border-radius: var(--r-md); background: var(--bg-subtle); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--text-hint); }
@@ -313,6 +323,14 @@
                                         </svg>
                                     </button>
                                 </form>
+                                <a href="{{ route('adoptions.show', $a) }}" class="btn-zn btn-zn-sm btn-zn-info">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10z"/>
+                                    </svg>
+                                    Voir
+                                </a>
+                                
                             </div>
                         </td>
                     </tr>

@@ -11,7 +11,7 @@ class Adoption extends Model
 
     protected $fillable = [
         'compte_id', 'product_id', 'annee_scolaire_id', 'quantity',
-        'date_adoption', 'delegate_id', 'niveau_scolaire', 'bss_ligne_id'
+        'date_adoption', 'delegate_id', 'niveau_scolaire', 'bss_ligne_id', 'contact_id', 'methode'
     ];
 
     protected $casts = [
@@ -26,6 +26,11 @@ class Adoption extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function contact()
+    {
+        return $this->belongsTo(Contact::class);
     }
 
     public function anneeScolaire()

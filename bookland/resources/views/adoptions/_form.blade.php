@@ -85,4 +85,24 @@
         <input type="text" name="niveau_scolaire" id="niveau_scolaire" class="frm-input"
                value="{{ $defaultNiveau }}" placeholder="Ex: 1ère année, Bac…">
     </div>
+
+        {{-- Contact --}}
+    <div class="form-group" style="flex: 1; min-width: 200px;">
+        <label class="frm-label">Contact *</label>
+        <select name="contact_id" class="frm-select" required>
+            <option value="">-- Sélectionnez un contact --</option>
+            @foreach($contacts as $c)
+                <option value="{{ $c->id }}" {{ ($defaultContactId ?? ($adoption->contact_id ?? '')) == $c->id ? 'selected' : '' }}>
+                    {{ $c->prenom }} {{ $c->nom }} ({{ $c->fonction ?? 'Sans fonction' }})
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Méthode --}}
+    <div class="form-group" style="flex: 1; min-width: 200px;">
+        <label class="frm-label">Méthode *</label>
+        <input type="text" name="methode" class="frm-input"
+            value="{{ $defaultMethode ?? ($adoption->methode ?? '') }}" required>
+    </div>
 </div>

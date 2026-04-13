@@ -182,4 +182,24 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('compte_id').addEventListener('change', function() {
+    const compteId = this.value;
+    const contactSelect = document.querySelector('select[name="contact_id"]');
+    if (!compteId) {
+        contactSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
+        return;
+    }
+    fetch(`/api/comptes/${compteId}/contacts`)
+        .then(r => r.json())
+        .then(data => {
+            let html = '<option value="">-- Sélectionnez un contact --</option>';
+            data.forEach(c => {
+                html += `<option value="${c.id}">${c.prenom} ${c.nom} (${c.fonction || ''})</option>`;
+            });
+            contactSelect.innerHTML = html;
+        });
+});
+</script>
 @endsection

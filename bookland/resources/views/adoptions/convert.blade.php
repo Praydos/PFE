@@ -167,10 +167,13 @@
                     'adoption' => null,
                     'defaultCompteId' => $defaultCompteId,
                     'defaultProductId' => $defaultProductId,
+                    'defaultContactId' => $defaultContactId,
+                    'defaultMethode' => $defaultMethode ?? '',
                     'defaultQuantity' => $defaultQuantity,
                     'defaultDate' => $defaultDate,
                     'defaultNiveau' => $defaultNiveau,
-                    'defaultYearId' => $defaultYearId ?? null
+                    'defaultYearId' => $defaultYearId ?? null,
+                    'contacts' => $contacts,
                 ])
                 <div class="card-footer">
                     <button type="submit" class="btn-zn btn-zn-primary">

@@ -456,7 +456,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     </div>
 
     {{-- Stat Cards --}}
-    <div class="cp-stats">
+    {{-- <div class="cp-stats">
         <div class="cp-stat">
             <div class="stat-ico si-blue">
                 <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -493,7 +493,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <div class="stat-value">{{ $comptes->count() }}</div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     {{-- Search bar --}}
     <div class="cp-search-bar">

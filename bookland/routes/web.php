@@ -210,14 +210,8 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/api/comptes/{compte}/contacts', function (App\Models\Compte $compte) {
     return $compte->contacts;
 })->name('api.compte.contacts');
-// ====== SPECIMEN AND BSS ROUTES BELOW,  ===============================
+// =======================================================================================================
    
-
-// delegue admin rbo
-
-
-
-
 
 
 
@@ -231,3 +225,5 @@ Route::resource('adoptions', AdoptionController::class)->except(['create', 'stor
 Route::post('/adoptions', [AdoptionController::class, 'store'])->name('adoptions.store'); // admin delegue
 Route::get('/bss-ligne/{bssLigne}/convert-adoption', [AdoptionController::class, 'convertFromBss'])->name('adoptions.convert'); // delegue admin
 Route::post('/bss-ligne/{bssLigne}/convert-adoption', [AdoptionController::class, 'storeFromBss'])->name('adoptions.store-convert'); // delegue admin
+
+Route::get('/adoptions/{adoption}/show', [AdoptionController::class, 'show'])->name('adoptions.show'); // delegue admin rbo
