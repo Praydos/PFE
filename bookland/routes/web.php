@@ -36,6 +36,7 @@ use App\Http\Controllers\ConsignationController;
 use App\Http\Controllers\BssController;
 use App\Http\Controllers\RetourController;
 use App\Http\Controllers\AdoptionController;
+use App\Http\Controllers\EffectifController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -54,11 +55,28 @@ Route::middleware('auth')->group(function () {
         ->name('users.roles')
         ->middleware('role:admin,rbo,delegue');
 
+
+    //comptes and contacts routes
     Route::resource('comptes', CompteController::class)
         ->middleware('role:admin,rbo,delegue');
+
+    Route::get('/users/{user}/assigned-comptes', [UserController::class, 'getAssignedComptes'])
+    ->name('users.assigned-comptes');
+
+    Route::get('/contacts/{contact}/comptes', [ContactController::class, 'getComptes'])
+    ->name('contacts.comptes.get');
+
+    Route::post('/contacts/{contact}/comptes', [ContactController::class, 'updateComptes'])
+    ->name('contacts.comptes.update');
     
-    // Route::resource('products', ProductController::class)
-    //     ->middleware('role:admin,rbo,delegue');
+    
+    //adoptions
+    Route::resource('adoptions', AdoptionController::class)
+    ->except(['create', 'store']); // delegue admin rbo
+    
+    Route::get('/adoptions/{adoption}/show', [AdoptionController::class, 'show'])
+    ->name('adoptions.show'); // delegue admin rbo  
+    
 
    
     // products index is visible to all, but create/edit/delete is admin only
@@ -75,13 +93,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/consignations/{consignation}/create-bss', [ConsignationController::class, 'createBss'])
     ->name('consignations.create-bss')->middleware('role:admin,delegue');
    
-
-
-
-
-
-
-
 
 
 
@@ -150,16 +161,35 @@ Route::middleware('auth')->group(function () {
         Route::delete('/consignations/{consignation}', [ConsignationController::class, 'destroy'])->name('consignations.destroy');
 
     });
+
+    // ── delegue and Admin ───────────────────────────────────────────────────
+    Route::middleware('role:admin,delegue')->group(function () {
+
+        /////---- Adoptions --------- ==========================================================================
+        Route::get('/adoptions/create', [AdoptionController::class, 'create'])
+        ->name('adoptions.create'); //delegue admin
+
+        Route::post('/adoptions', [AdoptionController::class, 'store'])
+        ->name('adoptions.store'); // admin delegue
+
+        Route::get('/bss-ligne/{bssLigne}/convert-adoption', [AdoptionController::class, 'convertFromBss'])
+        ->name('adoptions.convert'); // delegue admin
+
+        Route::post('/bss-ligne/{bssLigne}/convert-adoption', [AdoptionController::class, 'storeFromBss'])
+        ->name('adoptions.store-convert'); // delegue admin
+
+    });
 });
 
 
-Route::get('/users/{user}/assigned-comptes', [UserController::class, 'getAssignedComptes'])->name('users.assigned-comptes');
+
 // contact routes to authorize later
 Route::resource('contacts', ContactController::class);
 
-Route::get('/contacts/{contact}/comptes', [ContactController::class, 'getComptes'])->name('contacts.comptes.get');
-Route::post('/contacts/{contact}/comptes', [ContactController::class, 'updateComptes'])->name('contacts.comptes.update');
 
+Route::get('/api/comptes/{compte}/contacts', function (App\Models\Compte $compte) {
+    return $compte->contacts;
+    })->name('api.compte.contacts');
 
 
 
@@ -207,23 +237,18 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-Route::get('/api/comptes/{compte}/contacts', function (App\Models\Compte $compte) {
-    return $compte->contacts;
-})->name('api.compte.contacts');
+
 // =======================================================================================================
    
 
+Route::resource('effectifs', EffectifController::class);
+
+Route::post('/effectifs/{effectif}/validate', [EffectifController::class, 'validateRow'])
+->name('effectifs.validate');
+Route::post('/effectifs/{effectif}/devalidate', [EffectifController::class, 'devalidateRow'])
+->name('effectifs.devalidate');
 
 
 
 
 
-/////============================================================================
-Route::get('/adoptions/create', [AdoptionController::class, 'create'])->name('adoptions.create'); //delegue admin
-Route::resource('adoptions', AdoptionController::class)->except(['create', 'store']); // delegue admin rbo
-
-Route::post('/adoptions', [AdoptionController::class, 'store'])->name('adoptions.store'); // admin delegue
-Route::get('/bss-ligne/{bssLigne}/convert-adoption', [AdoptionController::class, 'convertFromBss'])->name('adoptions.convert'); // delegue admin
-Route::post('/bss-ligne/{bssLigne}/convert-adoption', [AdoptionController::class, 'storeFromBss'])->name('adoptions.store-convert'); // delegue admin
-
-Route::get('/adoptions/{adoption}/show', [AdoptionController::class, 'show'])->name('adoptions.show'); // delegue admin rbo
