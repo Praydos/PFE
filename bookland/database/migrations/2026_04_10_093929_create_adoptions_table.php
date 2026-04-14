@@ -18,7 +18,8 @@ return new class extends Migration
             $table->integer('quantity');
             $table->date('date_adoption');
             $table->foreignId('delegate_id')->constrained('users')->onDelete('cascade');
-            $table->string('niveau_scolaire')->nullable(); // e.g., CE1, 6ème, etc.
+            $table->enum('niveau', ['CP', 'CE1', 'CE2', '1er', '2ème', '6ème', '5ème', '4ème', '3ème'])->nullable(); // e.g., CP, CE1, 6ème, etc.
+            $table->enum('cycle', ['primaire', 'college', 'Lycée','Learners','Pre-teens','Teens','Adults', 'Very Young'])->nullable();
             $table->foreignId('bss_ligne_id')->nullable()->constrained('bss_lignes')->onDelete('set null');
             $table->timestamps();
 

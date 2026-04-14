@@ -70,12 +70,7 @@ Route::middleware('auth')->group(function () {
     ->name('contacts.comptes.update');
     
     
-    //adoptions
-    Route::resource('adoptions', AdoptionController::class)
-    ->except(['create', 'store']); // delegue admin rbo
     
-    Route::get('/adoptions/{adoption}/show', [AdoptionController::class, 'show'])
-    ->name('adoptions.show'); // delegue admin rbo  
     
 
    
@@ -179,7 +174,17 @@ Route::middleware('auth')->group(function () {
         ->name('adoptions.store-convert'); // delegue admin
 
     });
+
+    //adoptions authenticatoed routes for all three roles, but create/store is only for delegue and admin, and show is for all three
+    Route::resource('adoptions', AdoptionController::class)
+    ->except(['create', 'store']); // delegue admin rbo
+    
+    Route::get('/adoptions/{adoption}/show', [AdoptionController::class, 'show'])
+    ->name('adoptions.show'); // delegue admin rbo  
 });
+
+
+
 
 
 
@@ -244,11 +249,19 @@ Route::middleware(['auth'])->group(function () {
 Route::resource('effectifs', EffectifController::class);
 
 Route::post('/effectifs/{effectif}/validate', [EffectifController::class, 'validateRow'])
-->name('effectifs.validate');
+->name('effectifs.validate'); // admin and rbo only, delegue cannot validate
 Route::post('/effectifs/{effectif}/devalidate', [EffectifController::class, 'devalidateRow'])
-->name('effectifs.devalidate');
+->name('effectifs.devalidate'); // admin and rbo only, delegue cannot devalidate
+
+Route::get('/api/comptes/{compte}/effectif', [AdoptionController::class, 'getEffectifByNiveau'])
+->name('api.compte.effectif'); // returns effectif grouped by niveau for a given compte, used in the adoptions create form to show current effectif before creating an adoption
+
+Route::get('/api/comptes/{compte}/niveaux', [AdoptionController::class, 'getNiveauxByCompte'])->name('api.compte.niveaux');
 
 
+//========================================================================================================
+
+// 
 
 
 
