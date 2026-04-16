@@ -1,5 +1,4 @@
 @php
-    $isEdit = isset($adoption) && $adoption; // not used in multi‑product mode
     $defaultCompteId = $defaultCompteId ?? old('compte_id');
     $defaultYearId = $defaultYearId ?? old('annee_scolaire_id');
     $defaultDate = $defaultDate ?? old('date_adoption', now()->format('Y-m-d'));
@@ -8,38 +7,30 @@
 @endphp
 
 <div class="form-row" style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1.25rem;">
-    {{-- Compte --}}
     <div class="frm-group" style="flex:1; min-width:200px;">
         <label class="frm-label" for="compte_id">Compte <span class="req">*</span></label>
-        <div class="frm-select-wrap">
-            <select name="compte_id" id="compte_id" class="frm-select" required>
-                <option value="">-- Sélectionnez --</option>
-                @foreach($comptes as $c)
-                    <option value="{{ $c->id }}" {{ $defaultCompteId == $c->id ? 'selected' : '' }}>{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
-                @endforeach
-            </select>
-        </div>
+        <select name="compte_id" id="compte_id" class="frm-select" required>
+            <option value="">-- Sélectionnez --</option>
+            @foreach($comptes as $c)
+                <option value="{{ $c->id }}" {{ $defaultCompteId == $c->id ? 'selected' : '' }}>{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
+            @endforeach
+        </select>
     </div>
 
-    {{-- Année scolaire --}}
     <div class="frm-group" style="flex:1; min-width:180px;">
         <label class="frm-label" for="annee_scolaire_id">Année scolaire <span class="req">*</span></label>
-        <div class="frm-select-wrap">
-            <select name="annee_scolaire_id" id="annee_scolaire_id" class="frm-select" required>
-                @foreach($years as $y)
-                    <option value="{{ $y->id }}" {{ $defaultYearId == $y->id ? 'selected' : '' }}>{{ $y->libelle }}</option>
-                @endforeach
-            </select>
-        </div>
+        <select name="annee_scolaire_id" id="annee_scolaire_id" class="frm-select" required>
+            @foreach($years as $y)
+                <option value="{{ $y->id }}" {{ $defaultYearId == $y->id ? 'selected' : '' }}>{{ $y->libelle }}</option>
+            @endforeach
+        </select>
     </div>
 
-    {{-- Date adoption --}}
     <div class="frm-group" style="flex:1; min-width:150px;">
         <label class="frm-label" for="date_adoption">Date adoption <span class="req">*</span></label>
         <input type="date" name="date_adoption" id="date_adoption" class="frm-input" value="{{ $defaultDate }}" required>
     </div>
 
-    {{-- Contact (shared) --}}
     <div class="frm-group" style="flex:1; min-width:200px;">
         <label class="frm-label">Contact *</label>
         <select name="contact_id" id="contact_id" class="frm-select" required>
@@ -47,7 +38,6 @@
         </select>
     </div>
 
-    {{-- Méthode (shared) --}}
     <div class="frm-group" style="flex:1; min-width:200px;">
         <label class="frm-label">Méthode *</label>
         <input type="text" name="methode" class="frm-input" value="{{ $defaultMethode }}" required>
@@ -56,45 +46,7 @@
 
 <hr>
 <h3>Produits</h3>
-<div id="products-container">
-    <div class="product-row" style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; align-items:flex-end;">
-        <div class="frm-group" style="flex:2; min-width:200px;">
-            <label class="frm-label">Produit *</label>
-            <select name="products[0][product_id]" class="frm-select product-select" required>
-                <option value="">-- Sélectionnez --</option>
-                @foreach($products as $p)
-                    <option value="{{ $p->id }}">{{ $p->titre }} ({{ $p->isbn_13 ?? $p->isbn_10 }})</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="frm-group" style="flex:1; min-width:150px;">
-            <label class="frm-label">Niveau</label>
-            <select name="products[0][niveau]" class="frm-select niveau-select" required>
-                <option value="">-- Niveau --</option>
-            </select>
-        </div>
-        <div class="frm-group" style="flex:1; min-width:150px;">
-            <label class="frm-label">Cycle</label>
-            <select name="products[0][cycle]" class="frm-select cycle-select" required>
-                <option value="">-- Cycle --</option>
-                <option value="primaire">Primaire</option>
-                <option value="college">Collège</option>
-                <option value="Lycée">Lycée</option>
-                <option value="Learners">Learners</option>
-                <option value="Pre-teens">Pre-teens</option>
-                <option value="Teens">Teens</option>
-                <option value="Adults">Adults</option>
-            </select>
-        </div>
-        <div class="frm-group" style="flex:1; min-width:100px;">
-            <label class="frm-label">Quantité</label>
-            <input type="number" name="products[0][quantity]" class="frm-input quantity-input" readonly style="background:#f5f5f5;" required>
-        </div>
-        <div>
-            <button type="button" class="btn-zn btn-zn-danger remove-product" style="display:none;">X</button>
-        </div>
-    </div>
-</div>
+<div id="products-container"></div>
 <button type="button" id="add-product" class="btn-zn btn-zn-sm btn-zn-ghost mt-2">+ Ajouter un produit</button>
 
 <script>
@@ -103,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const yearSelect = document.getElementById('annee_scolaire_id');
     const contactSelect = document.getElementById('contact_id');
     let currentNiveaux = [];
+    let productIndex = 0;
 
     // Load contacts based on compte
     function loadContacts() {
@@ -140,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.querySelectorAll('.niveau-select').forEach(sel => {
                     sel.innerHTML = options;
                 });
-                // After loading, trigger quantity fetch for each row (if values already set)
+                // After loading, trigger quantity fetch for each row
                 document.querySelectorAll('.product-row').forEach(row => fetchQuantityForRow(row));
             })
             .catch(err => console.error('Erreur chargement niveaux:', err));
@@ -173,30 +126,74 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(err => console.error('Erreur chargement effectif:', err));
     }
 
-    // Attach event listeners to a row
+    // Create a new product row
+
+    const productsData = @json($products->map(fn($p) => [
+    'id' => $p->id,
+    'name' => $p->titre . ' (' . ($p->isbn_13 ?? $p->isbn_10) . ')'
+]));
+    function createProductRow(index) {
+        const row = document.createElement('div');
+        row.className = 'product-row';
+        row.style.cssText = 'display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; align-items:flex-end;';
+        row.innerHTML = `
+            <div class="frm-group" style="flex:2; min-width:200px;">
+                <label class="frm-label">Produit *</label>
+                <select name="products[${index}][product_id]" class="frm-select product-select" required>
+                    <option value="">-- Sélectionnez --</option>
+                    @foreach($products as $p)
+                        <option value="{{ $p->id }}">{{ $p->titre }} ({{ $p->isbn_13 ?? $p->isbn_10 }})</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="frm-group" style="flex:1; min-width:150px;">
+                <label class="frm-label">Niveau</label>
+                <select name="products[${index}][niveau]" class="frm-select niveau-select" required>
+                    <option value="">-- Niveau --</option>
+                </select>
+            </div>
+            <div class="frm-group" style="flex:1; min-width:150px;">
+                <label class="frm-label">Cycle</label>
+                <select name="products[${index}][cycle]" class="frm-select cycle-select" required>
+                    <option value="">-- Cycle --</option>
+                    <option value="primaire">Primaire</option>
+                    <option value="college">Collège</option>
+                    <option value="Lycée">Lycée</option>
+                    <option value="Learners">Learners</option>
+                    <option value="Pre-teens">Pre-teens</option>
+                    <option value="Teens">Teens</option>
+                    <option value="Adults">Adults</option>
+                </select>
+            </div>
+            <div class="frm-group" style="flex:1; min-width:100px;">
+                <label class="frm-label">Quantité</label>
+                <input type="number" name="products[${index}][quantity]" class="frm-input quantity-input" readonly style="background:#f5f5f5;" required>
+            </div>
+            <div>
+                <button type="button" class="btn-zn btn-zn-danger remove-product">X</button>
+            </div>
+        `;
+        return row;
+    }
+
+    // Attach events to a row
     function attachRowEvents(row) {
         row.querySelector('.niveau-select').addEventListener('change', () => fetchQuantityForRow(row));
         row.querySelector('.cycle-select').addEventListener('change', () => fetchQuantityForRow(row));
-        row.querySelector('.remove-product').addEventListener('click', () => row.remove());
+        row.querySelector('.remove-product').addEventListener('click', () => {
+            if (document.querySelectorAll('.product-row').length > 1) {
+                row.remove();
+            } else {
+                alert('Vous devez conserver au moins un produit.');
+            }
+        });
     }
 
-    // Add a new product row
+    // Add a new row
     function addProductRow() {
+        productIndex++;
         const container = document.getElementById('products-container');
-        const prototype = container.querySelector('.product-row');
-        const newRow = prototype.cloneNode(true);
-        const index = container.children.length;
-        newRow.querySelectorAll('select, input').forEach(el => {
-            let name = el.name;
-            if (name) {
-                el.name = name.replace(/\[\d+\]/, `[${index}]`);
-            }
-            if (el.classList.contains('product-select')) el.value = '';
-            if (el.classList.contains('niveau-select')) el.innerHTML = '<option value="">-- Niveau --</option>';
-            if (el.classList.contains('cycle-select')) el.value = '';
-            if (el.classList.contains('quantity-input')) el.value = '';
-        });
-        newRow.querySelector('.remove-product').style.display = 'inline-block';
+        const newRow = createProductRow(productIndex);
         container.appendChild(newRow);
         attachRowEvents(newRow);
         // If niveaux already loaded, populate the new row's niveau dropdown
@@ -206,10 +203,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Initial row events
-    document.querySelectorAll('.product-row').forEach(row => attachRowEvents(row));
+    // Initial product row
+    productIndex = 0;
+    const container = document.getElementById('products-container');
+    const initialRow = createProductRow(0);
+    container.appendChild(initialRow);
+    attachRowEvents(initialRow);
 
-    // Event listeners
+    // Add product button
+    document.getElementById('add-product').addEventListener('click', addProductRow);
+
+    // Event listeners for compte and year changes
     compteSelect.addEventListener('change', function() {
         loadContacts();
         loadNiveauxForRows();
@@ -217,7 +221,6 @@ document.addEventListener('DOMContentLoaded', function() {
     yearSelect.addEventListener('change', function() {
         document.querySelectorAll('.product-row').forEach(row => fetchQuantityForRow(row));
     });
-    document.getElementById('add-product').addEventListener('click', addProductRow);
 
     // Initial load
     if (compteSelect.value) {

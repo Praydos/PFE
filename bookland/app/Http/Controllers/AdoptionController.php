@@ -66,37 +66,48 @@ class AdoptionController extends Controller
         if ($user->role !== 'delegue') abort(403);
 
         $validated = $request->validate([
-            'compte_id' => 'required|exists:comptes,id',
-            'product_id' => 'required|exists:products,id',
-            'contact_id' => 'required|exists:contacts,id',
-            'methode' => 'required|string|max:255',
-            'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
-            'quantity' => 'required|integer|min:1',
-            'date_adoption' => 'required|date',
-            'niveau' => 'required|string|max:255',          // <-- changed from niveau_scolaire
-            'cycle' => 'required|string|max:255',           // <-- added cycle validation
-        ]);
+        'compte_id' => 'required|exists:comptes,id',
+        'contact_id' => 'required|exists:contacts,id',
+        'methode' => 'required|string|max:255',
+        'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
+        'date_adoption' => 'required|date',
+
+        'products' => 'required|array|min:1',
+        'products.*.product_id' => 'required|exists:products,id',
+        'products.*.niveau' => 'required|string|max:255',
+        'products.*.cycle' => 'required|string|max:255',
+        'products.*.quantity' => 'required|integer|min:1',
+    ]);
+
+
+
+        
+
+        foreach ($validated['products'] as $product) {
 
         $exists = Adoption::where('compte_id', $validated['compte_id'])
-            ->where('product_id', $validated['product_id'])
+            ->where('product_id', $product['product_id'])
             ->where('annee_scolaire_id', $validated['annee_scolaire_id'])
             ->exists();
 
-        if ($exists) return redirect()->back()->withErrors(['product_id' => 'Ce produit a déjà été adopté pour ce compte cette année.'])->withInput();
+        if ($exists) {
+            return redirect()->back()->withErrors(['product_id' => 'Ce produit a déjà été adopté pour ce compte cette année.'])->withInput();
+        }
 
         Adoption::create([
             'compte_id' => $validated['compte_id'],
-            'product_id' => $validated['product_id'],
+            'product_id' => $product['product_id'],
             'contact_id' => $validated['contact_id'],
             'methode' => $validated['methode'],
             'annee_scolaire_id' => $validated['annee_scolaire_id'],
-            'quantity' => $validated['quantity'],
+            'quantity' => $product['quantity'],
             'date_adoption' => $validated['date_adoption'],
             'delegate_id' => $user->id,
-            'niveau' => $validated['niveau'],
-            'cycle' => $validated['cycle'],
+            'niveau' => $product['niveau'],
+            'cycle' => $product['cycle'],
             'bss_ligne_id' => null,
         ]);
+    }
 
         return redirect()->route('adoptions.index')->with('success', 'Adoption enregistrée.');
     }
