@@ -18,9 +18,7 @@ class AdoptionController extends Controller
         return AnneeScolaire::where('is_active', true)->first() ?? AnneeScolaire::latest('date_debut')->first();
     }
 
-    // ------------------------------------------------------------------
     // List adoptions (role‑based)
-    // ------------------------------------------------------------------
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -33,12 +31,8 @@ class AdoptionController extends Controller
             $query->whereIn('delegate_id', $delegateIds);
         }
 
-        if ($request->filled('compte_id')) {
-            $query->where('compte_id', $request->compte_id);
-        }
-        if ($request->filled('annee_scolaire_id')) {
-            $query->where('annee_scolaire_id', $request->annee_scolaire_id);
-        }
+        if ($request->filled('compte_id')) $query->where('compte_id', $request->compte_id);
+        if ($request->filled('annee_scolaire_id')) $query->where('annee_scolaire_id', $request->annee_scolaire_id);
 
         $adoptions = $query->orderBy('date_adoption', 'desc')->paginate(15);
         $comptes = Compte::orderBy('etablissement')->get();
@@ -47,9 +41,7 @@ class AdoptionController extends Controller
         return view('adoptions.index', compact('adoptions', 'comptes', 'years'));
     }
 
-    // ------------------------------------------------------------------
     // Manual adoption – create form (only delegates)
-    // ------------------------------------------------------------------
     public function create()
     {
         $user = Auth::user();
@@ -60,17 +52,13 @@ class AdoptionController extends Controller
         $currentYear = $this->getCurrentYear();
         $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
 
-        if (!$currentYear) {
-            return redirect()->back()->withErrors(['error' => 'Aucune année scolaire active.']);
-        }
+        if (!$currentYear) return redirect()->back()->withErrors(['error' => 'Aucune année scolaire active.']);
 
-        $contacts = collect(); // will be loaded via AJAX
+        $contacts = collect();
         return view('adoptions.create', compact('comptes', 'products', 'currentYear', 'years', 'contacts'));
     }
 
-    // ------------------------------------------------------------------
     // Store manual adoption
-    // ------------------------------------------------------------------
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -84,7 +72,8 @@ class AdoptionController extends Controller
             'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
             'quantity' => 'required|integer|min:1',
             'date_adoption' => 'required|date',
-            'niveau_scolaire' => 'nullable|string|max:255',
+            'niveau' => 'required|string|max:255',          // <-- changed from niveau_scolaire
+            'cycle' => 'required|string|max:255',           // <-- added cycle validation
         ]);
 
         $exists = Adoption::where('compte_id', $validated['compte_id'])
@@ -92,9 +81,7 @@ class AdoptionController extends Controller
             ->where('annee_scolaire_id', $validated['annee_scolaire_id'])
             ->exists();
 
-        if ($exists) {
-            return redirect()->back()->withErrors(['product_id' => 'Ce produit a déjà été adopté pour ce compte cette année.'])->withInput();
-        }
+        if ($exists) return redirect()->back()->withErrors(['product_id' => 'Ce produit a déjà été adopté pour ce compte cette année.'])->withInput();
 
         Adoption::create([
             'compte_id' => $validated['compte_id'],
@@ -105,32 +92,25 @@ class AdoptionController extends Controller
             'quantity' => $validated['quantity'],
             'date_adoption' => $validated['date_adoption'],
             'delegate_id' => $user->id,
-            'niveau_scolaire' => $validated['niveau_scolaire'],
+            'niveau' => $validated['niveau'],
+            'cycle' => $validated['cycle'],
             'bss_ligne_id' => null,
         ]);
 
         return redirect()->route('adoptions.index')->with('success', 'Adoption enregistrée.');
     }
 
-    // ------------------------------------------------------------------
     // Convert a BSS line into an adoption (show pre‑filled form)
-    // ------------------------------------------------------------------
     public function convertFromBss(BssLigne $bssLigne)
     {
         $user = Auth::user();
         $bss = $bssLigne->bss;
 
-        if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre') {
-            abort(403);
-        }
-        if ($bssLigne->adoption) {
-            return redirect()->back()->with('error', 'Ce spécimen a déjà été converti en adoption.');
-        }
+        if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre') abort(403);
+        if ($bssLigne->adoption) return redirect()->back()->with('error', 'Ce spécimen a déjà été converti en adoption.');
 
         $currentYear = $this->getCurrentYear();
-        if (!$currentYear) {
-            return redirect()->back()->withErrors(['error' => 'Aucune année scolaire active.']);
-        }
+        if (!$currentYear) return redirect()->back()->withErrors(['error' => 'Aucune année scolaire active.']);
 
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
         $products = Product::all();
@@ -139,29 +119,24 @@ class AdoptionController extends Controller
         $defaultQuantity = $bssLigne->quantity;
         $defaultDate = now()->toDateString();
         $defaultNiveau = null;
+        $defaultCycle = null;
         $defaultContactId = $bss->contact_id;
         $contacts = Contact::whereHas('comptes', fn($q) => $q->where('comptes.id', $bss->compte_id))->get();
         $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
 
         return view('adoptions.convert', compact(
             'bssLigne', 'comptes', 'products', 'currentYear', 'years', 'defaultContactId', 'contacts',
-            'defaultCompteId', 'defaultProductId', 'defaultQuantity', 'defaultDate', 'defaultNiveau'
+            'defaultCompteId', 'defaultProductId', 'defaultQuantity', 'defaultDate', 'defaultNiveau', 'defaultCycle'
         ));
     }
 
-    // ------------------------------------------------------------------
     // Store adoption from BSS conversion
-    // ------------------------------------------------------------------
     public function storeFromBss(Request $request, BssLigne $bssLigne)
     {
         $user = Auth::user();
         $bss = $bssLigne->bss;
-        if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre') {
-            abort(403);
-        }
-        if ($bssLigne->adoption) {
-            return redirect()->back()->with('error', 'Déjà converti.');
-        }
+        if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre') abort(403);
+        if ($bssLigne->adoption) return redirect()->back()->with('error', 'Déjà converti.');
 
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',
@@ -171,7 +146,8 @@ class AdoptionController extends Controller
             'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
             'quantity' => 'required|integer|min:1',
             'date_adoption' => 'required|date',
-            'niveau_scolaire' => 'nullable|string|max:255',
+            'niveau' => 'required|string|max:255',
+            'cycle' => 'required|string|max:255',
         ]);
 
         $exists = Adoption::where('compte_id', $validated['compte_id'])
@@ -179,9 +155,7 @@ class AdoptionController extends Controller
             ->where('annee_scolaire_id', $validated['annee_scolaire_id'])
             ->exists();
 
-        if ($exists) {
-            return redirect()->back()->withErrors(['product_id' => 'Ce produit a déjà été adopté pour ce compte cette année.'])->withInput();
-        }
+        if ($exists) return redirect()->back()->withErrors(['product_id' => 'Ce produit a déjà été adopté pour ce compte cette année.'])->withInput();
 
         $adoption = Adoption::create([
             'compte_id' => $validated['compte_id'],
@@ -192,31 +166,27 @@ class AdoptionController extends Controller
             'quantity' => $validated['quantity'],
             'date_adoption' => $validated['date_adoption'],
             'delegate_id' => $user->id,
-            'niveau_scolaire' => $validated['niveau_scolaire'],
+            'niveau' => $validated['niveau'],
+            'cycle' => $validated['cycle'],
             'bss_ligne_id' => $bssLigne->id,
         ]);
 
         return redirect()->route('adoptions.index')->with('success', 'Adoption créée à partir du BSS.');
     }
 
-    // ------------------------------------------------------------------
     // Show a single adoption (detail view)
-    // ------------------------------------------------------------------
     public function show(Adoption $adoption)
     {
         $this->authorizeView($adoption);
         return view('adoptions.show', compact('adoption'));
     }
 
-    // ------------------------------------------------------------------
     // Edit adoption (only delegate who created it)
-    // ------------------------------------------------------------------
     public function edit(Adoption $adoption)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) {
-            abort(403);
-        }
+        if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) abort(403);
+
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
         $products = Product::orderBy('titre')->get();
         $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
@@ -226,72 +196,33 @@ class AdoptionController extends Controller
         return view('adoptions.edit', compact('adoption', 'comptes', 'products', 'years', 'currentYear', 'contacts'));
     }
 
-    // ------------------------------------------------------------------
     // Update adoption
-    // ------------------------------------------------------------------
     public function update(Request $request, Adoption $adoption)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) {
-            abort(403);
-        }
+        if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) abort(403);
+
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',
             'product_id' => 'required|exists:products,id',
             'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
             'quantity' => 'required|integer|min:1',
             'date_adoption' => 'required|date',
-            'niveau_scolaire' => 'nullable|string|max:255',
+            'niveau' => 'required|string|max:255',
+            'cycle' => 'required|string|max:255',
         ]);
+
         $adoption->update($validated);
         return redirect()->route('adoptions.index')->with('success', 'Adoption mise à jour.');
     }
 
-    // ------------------------------------------------------------------
     // Delete adoption
-    // ------------------------------------------------------------------
     public function destroy(Adoption $adoption)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) {
-            abort(403);
-        }
+        if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) abort(403);
         $adoption->delete();
         return redirect()->route('adoptions.index')->with('success', 'Adoption supprimée.');
-    }
-
-    // ------------------------------------------------------------------
-    // Helper: map compte cycle to effectif cycle
-    // ------------------------------------------------------------------
-    private function getEffectifCycleForCompte(Compte $compte)
-    {
-        if ($compte->type === 'ecole') {
-            switch ($compte->cycle) {
-                case 'Maternelle':
-                case 'Primaire':
-                    return 'primaire';
-                case 'Collège':
-                    return 'college';
-                case 'Lycée':
-                    return 'Lycée';
-                default:
-                    return null;
-            }
-        } else {
-            // centre_de_langue, librairie, autre
-            switch ($compte->cycle) {
-                case 'Kids':
-                    return 'Learners';
-                case 'Pre-teens':
-                    return 'Pre-teens';
-                case 'Teens':
-                    return 'Teens';
-                case 'Adults':
-                    return 'Adults';
-                default:
-                    return null;
-            }
-        }
     }
 
     // ------------------------------------------------------------------
@@ -319,7 +250,6 @@ class AdoptionController extends Controller
                     $niveaux = ['CP', 'CE1', 'CE2', '1er', '2ème', '6ème', '5ème', '4ème', '3ème'];
             }
         } else {
-            // For other types, a generic set
             $niveaux = ['CP', 'CE1', 'CE2', '1er', '2ème', '6ème', '5ème', '4ème', '3ème'];
         }
 
@@ -327,30 +257,25 @@ class AdoptionController extends Controller
     }
 
     // ------------------------------------------------------------------
-    // API: Fetch effectif_valide for the given compte, year, niveau and inferred cycle
+    // API: Fetch effectif_valide for the given compte, year, niveau and cycle
     // ------------------------------------------------------------------
     public function getEffectifByNiveau(Request $request, Compte $compte)
     {
         $request->validate([
             'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
             'niveau' => 'required|string|max:255',
+            'cycle' => 'required|string|max:255',
         ]);
 
-        $expectedCycle = $this->getEffectifCycleForCompte($compte);
-        $query = $compte->effectifs()
+        $effectif = $compte->effectifs()
             ->where('annee_scolaire_id', $request->annee_scolaire_id)
-            ->where('niveau', $request->niveau);
-
-        if ($expectedCycle) {
-            $query->where('cycle', $expectedCycle);
-        }
-
-        $effectif = $query->first();
+            ->where('niveau', $request->niveau)
+            ->where('cycle', $request->cycle)
+            ->first();
 
         return response()->json([
             'effectif_valide' => $effectif ? $effectif->effectif_valide : null,
             'is_validated' => $effectif ? $effectif->is_validated : false,
-            'cycle_used' => $expectedCycle, // return the cycle used for transparency
         ]);
     }
 

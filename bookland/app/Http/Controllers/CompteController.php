@@ -304,20 +304,5 @@ class CompteController extends Controller
     }
 
     // ── get the taille of the niveau for the compte client  ─────────────────
-   public function getTailleAttribute()
-    {
-        $currentYear = AnneeScolaire::where('is_active', true)->first();
-        if (!$currentYear) {
-            return 'Non défini';
-        }
-
-        $total = $this->effectifs()
-            ->where('annee_scolaire_id', $currentYear->id)
-            ->sum('effectif_valide');
-
-        if ($total < 250) return 'Petit';
-        if ($total < 500) return 'Moyen';
-        if ($total < 1000) return 'Grand';
-        return 'Très Grand';
-    }
+   
 }
