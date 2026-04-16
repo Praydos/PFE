@@ -131,67 +131,136 @@
 </style>
 @endpush
 
+
+
+
 @section('content')
 <div class="zn-page">
-
-    {{-- Breadcrumb --}}
     <div class="zn-bc">
-        <a href="{{ route('adoptions.index') }}">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-        </a>
-        <span class="zn-bc-sep">›</span>
-        <a href="{{ route('adoptions.index') }}">Adoptions</a>
-        <span class="zn-bc-sep">›</span>
-        <span class="zn-bc-cur">Convertir</span>
+        <a href="{{ route('adoptions.index') }}">Adoptions</a> ›
+        <span>Convertir BSS</span>
     </div>
-
-    {{-- Header --}}
     <div class="zn-header">
-        <h1>Convertir en adoption</h1>
-        <p>BSS : {{ $bssLigne->bss->numero }} – Produit : {{ $bssLigne->product->titre }}</p>
+        <h1>Convertir BSS en adoptions</h1>
+        <p>BSS : {{ $bss->numero }}</p>
     </div>
-
-    {{-- Form card --}}
     <div class="zn-card">
-        <div class="zn-card-header">
-            <span class="zn-card-pip"></span>
-            <span class="zn-card-title">Informations de l'adoption</span>
-        </div>
+        <div class="zn-card-header">Informations générales</div>
         <div class="zn-card-body">
-            <form method="POST" action="{{ route('adoptions.store-convert', $bssLigne) }}">
+            <form method="POST" action="{{ route('adoptions.store-convert', $bss) }}">
                 @csrf
-                @include('adoptions._form', [
-                    'adoption' => null,
-                    'defaultCompteId' => $defaultCompteId,
-                    'defaultProductId' => $defaultProductId,
-                    'defaultContactId' => $defaultContactId,
-                    'defaultMethode' => $defaultMethode ?? '',
-                    'defaultQuantity' => $defaultQuantity,
-                    'defaultDate' => $defaultDate,
-                    'defaultNiveau' => $defaultNiveau,
-                    'defaultYearId' => $defaultYearId ?? null,
-                    'contacts' => $contacts,
-                ])
+                <input type="hidden" name="compte_id" value="{{ $defaultCompteId }}">
+                <input type="hidden" name="contact_id" value="{{ $defaultContactId }}">
+                <input type="hidden" name="date_adoption" value="{{ $defaultDate }}">
+
+                <div class="frm-group">
+                    <label class="frm-label">Compte</label>
+                    <div class="frm-input" style="background:#f5f5f5;">{{ $bss->compte->etablissement }}</div>
+                </div>
+                <div class="frm-group">
+                    <label class="frm-label">Contact</label>
+                    <div class="frm-input" style="background:#f5f5f5;">{{ $bss->contact->prenom }} {{ $bss->contact->nom }}</div>
+                </div>
+                <div class="frm-group">
+                    <label class="frm-label">Date adoption</label>
+                    <div class="frm-input" style="background:#f5f5f5;">{{ \Carbon\Carbon::parse($defaultDate)->format('d/m/Y') }}</div>
+                </div>
+                <div class="frm-group">
+                    <label class="frm-label">Méthode *</label>
+                    <input type="text" name="methode" class="frm-input" value="{{ old('methode', $defaultMethode) }}" required>
+                </div>
+
+                <hr>
+                <h3>Produits à convertir</h3>
+                <div id="products-container">
+                    @foreach($defaultLines as $index => $line)
+                   <div class="product-row" data-row="{{ $index }}" style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; align-items:flex-end;">
+                    <input type="hidden" name="products[{{ $index }}][bss_ligne_id]" value="{{ $line['bss_ligne_id'] }}">
+                    <input type="hidden" name="products[{{ $index }}][product_id]" value="{{ $line['product_id'] }}">
+                    <div class="frm-group" style="flex:2;">
+                        <label class="frm-label">Produit</label>
+                        <div class="frm-input" style="background:#f5f5f5;">{{ \App\Models\Product::find($line['product_id'])->titre }}</div>
+                    </div>
+                    <div class="frm-group" style="flex:1;">
+                        <label class="frm-label">Niveau *</label>
+                        <select name="products[{{ $index }}][niveau]" class="frm-select niveau-select" required>
+                            <option value="">-- Sélectionnez --</option>
+                        </select>
+                    </div>
+                    <div class="frm-group" style="flex:1;">
+                        <label class="frm-label">Cycle *</label>
+                        <select name="products[{{ $index }}][cycle]" class="frm-select cycle-select" required>
+                            <option value="">-- Cycle --</option>
+                            <option value="primaire">Primaire</option>
+                            <option value="college">Collège</option>
+                            <option value="Lycée">Lycée</option>
+                            <option value="Learners">Learners</option>
+                            <option value="Pre-teens">Pre-teens</option>
+                            <option value="Teens">Teens</option>
+                            <option value="Adults">Adults</option>
+                        </select>
+                    </div>
+                    <div class="frm-group" style="flex:1;">
+                        <label class="frm-label">Quantité</label>
+                        <input type="number" name="products[{{ $index }}][quantity]" class="frm-input quantity-input" value="{{ $line['quantity'] }}" readonly style="background:#f5f5f5;" required>
+                    </div>
+                </div>
+                    @endforeach
+                </div>
+
                 <div class="card-footer">
-                    <button type="submit" class="btn-zn btn-zn-primary">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        Convertir
-                    </button>
-                    <a href="{{ route('bss.show', $bssLigne->bss) }}" class="btn-zn btn-zn-ghost">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <line x1="19" y1="12" x2="5" y2="12"/>
-                            <polyline points="12 19 5 12 12 5"/>
-                        </svg>
-                        Annuler
-                    </a>
+                    <button type="submit" class="btn-zn btn-zn-primary">Convertir</button>
+                    <a href="{{ route('bss.show', $bss) }}" class="btn-zn btn-zn-ghost">Annuler</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    const compteId = {{ $defaultCompteId }};
+    const yearId = {{ $currentYear->id }};
+
+    // Load niveaux for this compte
+    fetch(`/api/comptes/${compteId}/niveaux`)
+        .then(r => r.json())
+        .then(niveaux => {
+            const options = '<option value="">-- Sélectionnez un niveau --</option>' + niveaux.map(n => `<option value="${n}">${n}</option>`).join('');
+            document.querySelectorAll('.niveau-select').forEach(sel => sel.innerHTML = options);
+        })
+        .catch(err => console.error('Erreur chargement niveaux:', err));
+
+    // Function to fetch quantity for a single row
+    function fetchQuantityForRow(row) {
+        const niveauSelect = row.querySelector('.niveau-select');
+        const cycleSelect = row.querySelector('.cycle-select');
+        const quantityInput = row.querySelector('.quantity-input');
+        const niveau = niveauSelect.value;
+        const cycle = cycleSelect.value;
+
+        if (!niveau || !cycle) {
+            // Do not change quantity if niveau or cycle not selected
+            return;
+        }
+
+        fetch(`/api/comptes/${compteId}/effectif?annee_scolaire_id=${yearId}&niveau=${encodeURIComponent(niveau)}&cycle=${encodeURIComponent(cycle)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.effectif_valide !== null && data.effectif_valide > 0) {
+                    quantityInput.value = data.effectif_valide;
+                } else {
+                    quantityInput.value = ''; // or keep original? We'll clear to indicate no effectif
+                }
+            })
+            .catch(err => console.error('Erreur chargement effectif:', err));
+    }
+
+    // Attach event listeners to all rows
+    document.querySelectorAll('.product-row').forEach(row => {
+        const niveauSelect = row.querySelector('.niveau-select');
+        const cycleSelect = row.querySelector('.cycle-select');
+        if (niveauSelect) niveauSelect.addEventListener('change', () => fetchQuantityForRow(row));
+        if (cycleSelect) cycleSelect.addEventListener('change', () => fetchQuantityForRow(row));
+    });
+</script>
 @endsection

@@ -302,7 +302,8 @@
 
 
             @if($ligne->statut_ligne === 'livree' && !$ligne->adoption)
-                <a href="{{ route('adoptions.convert', $ligne) }}" class="btn-zn btn-zn-sm btn-zn-primary">Convertir</a>
+                {{-- <a href="{{ route('adoptions.convert', $ligne) }}" class="btn-zn btn-zn-sm btn-zn-primary">Convertir</a> --}}
+                <a href="{{ route('adoptions.convert', $bss) }}" class="btn-zn btn-zn-sm btn-zn-primary">Convertir en adoption</a>
             @elseif($ligne->adoption)
                 <span class="dr-badge bd-green">Adopté</span>
             @endif

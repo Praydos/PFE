@@ -167,11 +167,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/adoptions', [AdoptionController::class, 'store'])
         ->name('adoptions.store'); // admin delegue
 
-        Route::get('/bss-ligne/{bssLigne}/convert-adoption', [AdoptionController::class, 'convertFromBss'])
-        ->name('adoptions.convert'); // delegue admin
+        Route::get('/bss/{bss}/convert-adoption', [AdoptionController::class, 'convertFromBss'])
+        ->name('adoptions.convert');
+        Route::post('/bss/{bss}/convert-adoption', [AdoptionController::class, 'storeFromBss'])
+        ->name('adoptions.store-convert');
 
-        Route::post('/bss-ligne/{bssLigne}/convert-adoption', [AdoptionController::class, 'storeFromBss'])
-        ->name('adoptions.store-convert'); // delegue admin
+        
 
     });
 
@@ -239,6 +240,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/bss/{bss}/retour', [RetourController::class, 'store'])
     ->name('retours.store')->middleware('role:admin,delegue'); // delegue admin
+
+    // In routes/web.php
+    
 });
 
 
