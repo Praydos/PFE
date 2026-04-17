@@ -44,21 +44,21 @@ class AdoptionController extends Controller
 
     // Manual adoption – create form (only delegates)
     public function create()
-    {
-        $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+{
+    $user = Auth::user();
+    if ($user->role !== 'delegue') abort(403);
 
-        $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
-        $products = Product::orderBy('titre')->get();
-        $currentYear = $this->getCurrentYear();
-        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+    $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
+    // Include the fields needed for the form
+    $products = Product::orderBy('titre')->get(['id', 'titre', 'isbn_13', 'isbn_10', 'sous_categorie']);
+    $currentYear = $this->getCurrentYear();
+    $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
 
-        if (!$currentYear) return redirect()->back()->withErrors(['error' => 'Aucune année scolaire active.']);
+    if (!$currentYear) return redirect()->back()->withErrors(['error' => 'Aucune année scolaire active.']);
 
-        $contacts = collect();
-        return view('adoptions.create', compact('comptes', 'products', 'currentYear', 'years', 'contacts'));
-    }
-
+    $contacts = collect();
+    return view('adoptions.create', compact('comptes', 'products', 'currentYear', 'years', 'contacts'));
+}
     // Store manual adoption
     public function store(Request $request)
     {
@@ -77,39 +77,56 @@ class AdoptionController extends Controller
         'products.*.niveau' => 'required|string|max:255',
         'products.*.cycle' => 'required|string|max:255',
         'products.*.quantity' => 'required|integer|min:1',
+
+        'products.*.type_adoption' => 'required|in:BOOKLAND,ESPRIT_DU_LIVRE,CONCURRENT',
+        'products.*.isbn' => 'nullable|string|max:255',
+        'products.*.sous_categorie' => 'nullable|string|max:255',
     ]);
 
 
 
         
 
-        foreach ($validated['products'] as $product) {
+        $errors = [];
+$createdCount = 0;
 
-        $exists = Adoption::where('compte_id', $validated['compte_id'])
-            ->where('product_id', $product['product_id'])
-            ->where('annee_scolaire_id', $validated['annee_scolaire_id'])
-            ->exists();
+foreach ($validated['products'] as $product) {
+    $exists = Adoption::where('compte_id', $validated['compte_id'])
+        ->where('product_id', $product['product_id'])
+        ->where('annee_scolaire_id', $validated['annee_scolaire_id'])
+        ->exists();
 
-        if ($exists) {
-            return redirect()->back()->withErrors(['product_id' => 'Ce produit a déjà été adopté pour ce compte cette année.'])->withInput();
-        }
-
-        Adoption::create([
-            'compte_id' => $validated['compte_id'],
-            'product_id' => $product['product_id'],
-            'contact_id' => $validated['contact_id'],
-            'methode' => $validated['methode'],
-            'annee_scolaire_id' => $validated['annee_scolaire_id'],
-            'quantity' => $product['quantity'],
-            'date_adoption' => $validated['date_adoption'],
-            'delegate_id' => $user->id,
-            'niveau' => $product['niveau'],
-            'cycle' => $product['cycle'],
-            'bss_ligne_id' => null,
-        ]);
+    if ($exists) {
+        $errors[] = "Le produit ID {$product['product_id']} a déjà été adopté.";
+        continue;
     }
 
-        return redirect()->route('adoptions.index')->with('success', 'Adoption enregistrée.');
+    Adoption::create([
+        'compte_id' => $validated['compte_id'],
+        'product_id' => $product['product_id'],
+        'contact_id' => $validated['contact_id'],
+        'methode' => $validated['methode'],
+        'annee_scolaire_id' => $validated['annee_scolaire_id'],
+        'quantity' => $product['quantity'],
+        'date_adoption' => $validated['date_adoption'],
+        'delegate_id' => $user->id,
+        'niveau' => $product['niveau'],
+        'cycle' => $product['cycle'],
+        'bss_ligne_id' => null,
+        'type_adoption' => $product['type_adoption'],
+        'isbn' => $product['isbn'],
+        'sous_categorie' => $product['sous_categorie'],
+    ]);
+    $createdCount++;
+}
+
+if ($createdCount > 0) {
+    return redirect()->route('adoptions.index')->with('success', "$createdCount adoption(s) enregistrée(s).");
+} else {
+    return redirect()->back()->withErrors(['products' => 'Aucune adoption n\'a été créée. ' . implode(' ', $errors)])->withInput();
+}
+
+        // return redirect()->route('adoptions.index')->with('success', 'Adoption enregistrée.');
     }
 
     // Convert a BSS line into an adoption (show pre‑filled form)
@@ -136,10 +153,13 @@ class AdoptionController extends Controller
         // Prepare default data for each line of the BSS
         $defaultLines = [];
         foreach ($bss->lignes as $ligne) {
+            $product = Product::find($ligne->product_id);
             $defaultLines[] = [
                 'bss_ligne_id' => $ligne->id,
                 'product_id'   => $ligne->product_id,
                 'quantity'     => $ligne->quantity,
+                'isbn'         => $product->isbn_13 ?? $product->isbn_10 ?? '',
+                'sous_categorie' => $product->sous_categorie ?? '',
                 'niveau'       => null,
                 'cycle'        => null,
             ];
@@ -174,6 +194,11 @@ class AdoptionController extends Controller
             'products.*.niveau' => 'required|string|max:255',
             'products.*.cycle' => 'required|string|max:255',
             'products.*.quantity' => 'required|integer|min:1',
+
+
+            'products.*.type_adoption' => 'required|in:BOOKLAND,ESPRIT_DU_LIVRE,CONCURRENT',
+            'products.*.isbn' => 'nullable|string|max:255',
+            'products.*.sous_categorie' => 'nullable|string|max:255',
         ]);
 
         $compte_id = $bss->compte_id;
@@ -209,6 +234,10 @@ class AdoptionController extends Controller
                 'niveau' => $item['niveau'],
                 'cycle' => $item['cycle'],
                 'bss_ligne_id' => $item['bss_ligne_id'],
+
+                'type_adoption' => $item['type_adoption'],
+                'isbn' => $item['isbn'],
+                'sous_categorie' => $item['sous_categorie'],
             ]);
             $created++;
         }
@@ -223,7 +252,9 @@ class AdoptionController extends Controller
     // Show a single adoption (detail view)
     public function show(Adoption $adoption)
     {
+        
         $this->authorizeView($adoption);
+        
         return view('adoptions.show', compact('adoption'));
     }
 

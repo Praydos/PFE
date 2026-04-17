@@ -14,6 +14,9 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('contact_id')->constrained()->onDelete('cascade');
             $table->string('methode');
+            $table->enum('type_adoption', ['BOOKLAND', 'ESPRIT_DU_LIVRE', 'CONCURRENT'])->nullable()->after('methode');
+            $table->string('isbn')->nullable()->after('type_adoption');
+            $table->string('sous_categorie')->nullable()->after('isbn');
             $table->foreignId('annee_scolaire_id')->constrained('annees_scolaires')->onDelete('cascade');
             $table->integer('quantity');
             $table->date('date_adoption');

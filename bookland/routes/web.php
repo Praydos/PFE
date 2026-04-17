@@ -78,6 +78,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/products', [ProductController::class, 'index'])
     ->name('products.index')->middleware('role:admin,rbo,delegue');
+    Route::get('/products/{product}', [ProductController::class, 'show'])
+    ->name('products.show')->middleware('role:admin,rbo,delegue');
 
     Route::get('/users/{user}/assigned-zones',[UserController::class, 'getAssignedZones'])
     ->name('users.assigned-zones')

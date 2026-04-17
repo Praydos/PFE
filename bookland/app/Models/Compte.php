@@ -13,11 +13,12 @@ class Compte extends Model
         'type', 'etablissement', 'ville_id', 'zone_id', 'adresse',
         'delegue_id', 'status', 'motif_fermeture', 'suspendre_actions',
         'motif_suspension', 'site_web', 'tel_bureau_1', 'tel_bureau_2',
-        'tel_mobile', 'fax', 'email', 'parent_compte_id','quartier_id'
+        'tel_mobile', 'fax', 'email', 'parent_compte_id','quartier_id','cycles'
     ];
 
     protected $casts = [
         'suspendre_actions' => 'boolean',
+        'cycles' => 'array',
     ];
 
     public function ville()

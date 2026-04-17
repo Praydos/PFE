@@ -48,7 +48,14 @@
 <h3>Produits</h3>
 <div id="products-container"></div>
 <button type="button" id="add-product" class="btn-zn btn-zn-sm btn-zn-ghost mt-2">+ Ajouter un produit</button>
-
+@php
+$productsData = $products->map(fn($p) => [
+    'id' => $p->id,
+    'name' => $p->titre . ' (' . ($p->isbn_13 ?? $p->isbn_10) . ')',
+    'isbn' => $p->isbn_13 ?? $p->isbn_10 ?? '',
+    'sous_categorie' => $p->sous_categorie ?? '',
+])->values();
+@endphp
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const compteSelect = document.getElementById('compte_id');
@@ -128,54 +135,81 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Create a new product row
 
-    const productsData = @json($products->map(fn($p) => [
-    'id' => $p->id,
-    'name' => $p->titre . ' (' . ($p->isbn_13 ?? $p->isbn_10) . ')'
-]));
+    const productsData = @js($productsData);
     function createProductRow(index) {
-        const row = document.createElement('div');
-        row.className = 'product-row';
-        row.style.cssText = 'display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; align-items:flex-end;';
-        row.innerHTML = `
-            <div class="frm-group" style="flex:2; min-width:200px;">
-                <label class="frm-label">Produit *</label>
-                <select name="products[${index}][product_id]" class="frm-select product-select" required>
-                    <option value="">-- Sélectionnez --</option>
-                    @foreach($products as $p)
-                        <option value="{{ $p->id }}">{{ $p->titre }} ({{ $p->isbn_13 ?? $p->isbn_10 }})</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="frm-group" style="flex:1; min-width:150px;">
-                <label class="frm-label">Niveau</label>
-                <select name="products[${index}][niveau]" class="frm-select niveau-select" required>
-                    <option value="">-- Niveau --</option>
-                </select>
-            </div>
-            <div class="frm-group" style="flex:1; min-width:150px;">
-                <label class="frm-label">Cycle</label>
-                <select name="products[${index}][cycle]" class="frm-select cycle-select" required>
-                    <option value="">-- Cycle --</option>
-                    <option value="primaire">Primaire</option>
-                    <option value="college">Collège</option>
-                    <option value="Lycée">Lycée</option>
-                    <option value="Learners">Learners</option>
-                    <option value="Pre-teens">Pre-teens</option>
-                    <option value="Teens">Teens</option>
-                    <option value="Adults">Adults</option>
-                </select>
-            </div>
-            <div class="frm-group" style="flex:1; min-width:100px;">
-                <label class="frm-label">Quantité</label>
-                <input type="number" name="products[${index}][quantity]" class="frm-input quantity-input" readonly style="background:#f5f5f5;" required>
-            </div>
-            <div>
-                <button type="button" class="btn-zn btn-zn-danger remove-product">X</button>
-            </div>
-        `;
-        return row;
-    }
+    const row = document.createElement('div');
+    row.className = 'product-row';
+    row.style.cssText = 'display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; align-items:flex-end; border-bottom: 1px solid #e4e7f0; padding-bottom: 1rem;';
+    
+    let productOptions = '<option value="">-- Sélectionnez --</option>';
+    productsData.forEach(p => {
+        productOptions += `<option value="${p.id}" data-isbn="${p.isbn}" data-sous-categorie="${p.sous_categorie}">${p.name}</option>`;
+    });
+    
+    row.innerHTML = `
+        <div class="frm-group" style="flex:2; min-width:200px;">
+            <label class="frm-label">Produit *</label>
+            <select name="products[${index}][product_id]" class="frm-select product-select" required>
+                ${productOptions}
+            </select>
+        </div>
+        <div class="frm-group" style="flex:1; min-width:150px;">
+            <label class="frm-label">Type adoption *</label>
+            <select name="products[${index}][type_adoption]" class="frm-select type-select" required>
+                <option value="">-- Sélectionnez --</option>
+                <option value="BOOKLAND">BOOKLAND</option>
+                <option value="ESPRIT_DU_LIVRE">ESPRIT DU LIVRE</option>
+                <option value="CONCURRENT">CONCURRENT</option>
+            </select>
+        </div>
+        <div class="frm-group" style="flex:1; min-width:150px;">
+            <label class="frm-label">ISBN</label>
+            <input type="text" name="products[${index}][isbn]" class="frm-input isbn-input" readonly style="background:#f5f5f5;">
+        </div>
+        <div class="frm-group" style="flex:1; min-width:150px;">
+            <label class="frm-label">Sous-catégorie</label>
+            <input type="text" name="products[${index}][sous_categorie]" class="frm-input sous-categorie-input" readonly style="background:#f5f5f5;">
+        </div>
+        <div class="frm-group" style="flex:1; min-width:150px;">
+            <label class="frm-label">Niveau</label>
+            <select name="products[${index}][niveau]" class="frm-select niveau-select" required>
+                <option value="">-- Niveau --</option>
+            </select>
+        </div>
+        <div class="frm-group" style="flex:1; min-width:150px;">
+            <label class="frm-label">Cycle</label>
+            <select name="products[${index}][cycle]" class="frm-select cycle-select" required>
+                <option value="">-- Cycle --</option>
+                <option value="primaire">Primaire</option>
+                <option value="college">Collège</option>
+                <option value="Lycée">Lycée</option>
+                <option value="Learners">Learners</option>
+                <option value="Pre-teens">Pre-teens</option>
+                <option value="Teens">Teens</option>
+                <option value="Adults">Adults</option>
+            </select>
+        </div>
+        <div class="frm-group" style="flex:1; min-width:100px;">
+            <label class="frm-label">Quantité</label>
+            <input type="number" name="products[${index}][quantity]" class="frm-input quantity-input" readonly style="background:#f5f5f5;" required>
+        </div>
+        <div>
+            <button type="button" class="btn-zn btn-zn-danger remove-product">X</button>
+        </div>
+    `;
 
+    // Attach product select change event
+    const productSelect = row.querySelector('.product-select');
+    productSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const isbn = selectedOption.dataset.isbn || '';
+        const sousCategorie = selectedOption.dataset.sousCategorie || '';
+        row.querySelector('.isbn-input').value = isbn;
+        row.querySelector('.sous-categorie-input').value = sousCategorie;
+    });
+
+    return row;
+}
     // Attach events to a row
     function attachRowEvents(row) {
         row.querySelector('.niveau-select').addEventListener('change', () => fetchQuantityForRow(row));

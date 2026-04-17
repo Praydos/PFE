@@ -369,7 +369,13 @@
             <table class="zn-table">
                 <thead>
                     <tr>
-                        <th>N° BSS</th><th>Compte</th><th>Contact</th><th>Délégué</th><th>Date création</th><th>Statut</th><th>Actions</th>
+                        <th>N° BSS</th>
+                        <th>Compte</th>
+                        <th>Contact</th>
+                        <th>Délégué</th>
+                        <th>Date création</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>

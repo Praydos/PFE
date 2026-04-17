@@ -204,6 +204,22 @@
                         <label class="frm-label">Quantité</label>
                         <input type="number" name="products[{{ $index }}][quantity]" class="frm-input quantity-input" value="{{ $line['quantity'] }}" readonly style="background:#f5f5f5;" required>
                     </div>
+                    <div class="frm-group" style="flex:1;">
+    <label class="frm-label">Type adoption *</label>
+    <select name="products[{{ $index }}][type_adoption]" class="frm-select" required>
+        <option value="BOOKLAND">BOOKLAND</option>
+        <option value="ESPRIT_DU_LIVRE">ESPRIT DU LIVRE</option>
+        <option value="CONCURRENT">CONCURRENT</option>
+    </select>
+</div>
+<div class="frm-group" style="flex:1;">
+    <label class="frm-label">ISBN</label>
+    <input type="text" name="products[{{ $index }}][isbn]" class="frm-input" value="{{ $line['isbn'] ?? '' }}" readonly>
+</div>
+<div class="frm-group" style="flex:1;">
+    <label class="frm-label">Sous-catégorie</label>
+    <input type="text" name="products[{{ $index }}][sous_categorie]" class="frm-input" value="{{ $line['sous_categorie'] ?? '' }}" readonly>
+</div>
                 </div>
                     @endforeach
                 </div>

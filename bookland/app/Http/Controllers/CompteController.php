@@ -122,7 +122,8 @@ class CompteController extends Controller
             'delegue_id'       => 'required|exists:users,id',
             'status'           => 'required|in:actif,ferme',
             'motif_fermeture'  => 'nullable|required_if:status,ferme|string',
-            'cycle'            => 'nullable|in:Maternelle,Primaire,Collège,Lycée,Kids,Teens,Adults',
+            'cycles'           => 'nullable|array',
+            'cycles.*'         => 'in:Maternelle,Primaire,Collège,Lycée,Kids,Teens,Adults',
             'tel_bureau_1'     => 'nullable|string|max:20',
             'email'            => 'nullable|email',
         ]);
@@ -148,6 +149,8 @@ class CompteController extends Controller
                 ->withErrors(['delegue_id' => 'Le délégué sélectionné n\'est pas assigné à cette zone.'])
                 ->withInput();
         }
+
+        $validated['cycles'] = $validated['cycles'] ?? [];
 
         Compte::create($validated);
 
@@ -181,10 +184,14 @@ class CompteController extends Controller
         if ($user->role === 'delegue') {
             $validated = $request->validate([
                 'adresse'          => 'required|string',
+                'type'             => 'required|in:ecole,centre_de_langue,librairie,autre',
+                'etablissement'    => 'required|string|max:255',
                 'tel_bureau_1'     => 'nullable|string|max:20',
                 'email'            => 'nullable|email',
                 'status'           => 'required|in:actif,ferme',
                 'motif_fermeture'  => 'nullable|required_if:status,ferme|string',
+                'cycles'           => 'nullable|array',
+                'cycles.*'         => 'in:Maternelle,Primaire,Collège,Lycée,Kids,Teens,Adults',
             ]);
 
             $compte->update($validated);
@@ -203,7 +210,8 @@ class CompteController extends Controller
             'delegue_id'       => 'required|exists:users,id',
             'status'           => 'required|in:actif,ferme',
             'motif_fermeture'  => 'nullable|required_if:status,ferme|string',
-            'cycle'            => 'nullable|in:Maternelle,Primaire,Collège,Lycée,Kids,Teens,Adults',
+            'cycles'           => 'nullable|array',
+            'cycles.*'         => 'in:Maternelle,Primaire,Collège,Lycée,Kids,Teens,Adults',
             'tel_bureau_1'     => 'nullable|string|max:20',
             'email'            => 'nullable|email',
         ]);
@@ -228,6 +236,8 @@ class CompteController extends Controller
                 ->withErrors(['delegue_id' => 'Le délégué sélectionné n\'est pas assigné à cette zone.'])
                 ->withInput();
         }
+
+        $validated['cycles'] = $validated['cycles'] ?? [];
 
         $compte->update($validated);
 

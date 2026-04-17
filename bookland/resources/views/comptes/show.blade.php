@@ -186,6 +186,7 @@
 </style>
 @endpush
 
+
 @section('content')
 <div class="zn-page">
 
@@ -196,19 +197,17 @@
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
-            Comptes
         </a>
         <span class="zn-bc-sep">›</span>
         <span class="zn-bc-cur">{{ $compte->etablissement }}</span>
     </div>
 
-    {{-- Header --}}
     <div class="zn-header">
         <h1>{{ $compte->etablissement }}</h1>
         <p>Détail du compte client</p>
     </div>
 
-    {{-- Basic info card --}}
+    {{-- Carte Informations générales --}}
     <div class="zn-card">
         <div class="zn-card-header">
             <span class="zn-card-pip"></span>
@@ -217,28 +216,76 @@
         <div class="zn-card-body">
             <div class="info-grid">
                 <div class="info-item"><span class="info-label">Type</span> {{ ucfirst(str_replace('_', ' ', $compte->type)) }}</div>
-                <div class="info-item">
-                    <span class="info-label">Statut</span>
-                    <span class="dr-badge {{ $compte->status == 'actif' ? 'bd-green' : 'bd-none' }}">{{ $compte->status }}</span>
-                </div>
+                <div class="info-item"><span class="info-label">Statut</span> <span class="dr-badge {{ $compte->status == 'actif' ? 'bd-green' : 'bd-none' }}">{{ $compte->status }}</span></div>
                 <div class="info-item"><span class="info-label">Ville</span> {{ $compte->ville->nom }}</div>
                 <div class="info-item"><span class="info-label">Zone</span> {{ $compte->zone->name ?? '-' }}</div>
                 <div class="info-item"><span class="info-label">Quartier</span> {{ $compte->quartier->nom ?? '-' }}</div>
                 <div class="info-item"><span class="info-label">Adresse</span> {{ $compte->adresse }}</div>
                 <div class="info-item"><span class="info-label">Téléphone</span> {{ $compte->tel_bureau_1 ?? '-' }}</div>
                 <div class="info-item"><span class="info-label">Email</span> {{ $compte->email ?? '-' }}</div>
-                <div class="info-item"><span class="info-label">Cycle</span> {{ $compte->cycle ?? '-' }}</div>
-                <div class="info-item"><span class="info-label">Délégué</span> {{ optional($compte->delegue)->prenom }} {{ optional($compte->delegue)->nom }}</div>
+                <div class="info-item">
+    <span class="info-label">Cycles</span>
+    <span class="info-value">
+        @php $cyclesArr = is_array($compte->cycles) ? $compte->cycles : []; @endphp
+        @if($cyclesArr)
+            @foreach($cyclesArr as $c)
+                <span class="dr-badge bd-blue" style="margin-right:.2rem;">{{ $c }}</span>
+            @endforeach
+        @else
+            —
+        @endif
+    </span>
+</div>
                 <div class="info-item"><span class="info-label">Taille établissement</span> <span class="dr-badge bd-amber">{{ $compte->taille }}</span></div>
             </div>
         </div>
     </div>
 
-    {{-- Contacts card --}}
-    <div class="zn-card">
+    {{-- Carte Délégué assigné --}}
+    <div class="zn-card mt-4">
         <div class="zn-card-header">
             <span class="zn-card-pip"></span>
-            <span class="zn-card-title">Contacts</span>
+            <span class="zn-card-title">Délégué pédagogique</span>
+        </div>
+        <div class="zn-card-body">
+            @if($compte->delegue)
+                <div class="info-grid">
+                    <div class="info-item"><span class="info-label">Nom</span> {{ $compte->delegue->prenom }} {{ $compte->delegue->nom }}</div>
+                    <div class="info-item"><span class="info-label">Email</span> {{ $compte->delegue->email }}</div>
+                    <div class="info-item"><span class="info-label">Téléphone</span> {{ $compte->delegue->telephone ?? '-' }}</div>
+                    <div class="info-item"><span class="info-label">Ville</span> {{ $compte->delegue->ville->nom ?? '-' }}</div>
+                </div>
+            @else
+                <p class="text-muted">Aucun délégué assigné.</p>
+            @endif
+        </div>
+    </div>
+
+    {{-- Carte RBO de la zone --}}
+    <div class="zn-card mt-4">
+        <div class="zn-card-header">
+            <span class="zn-card-pip"></span>
+            <span class="zn-card-title">Responsable Back Office (RBO) de la zone</span>
+        </div>
+        <div class="zn-card-body">
+            @if($compte->zone && $compte->zone->rbo)
+                <div class="info-grid">
+                    <div class="info-item"><span class="info-label">Nom</span> {{ $compte->zone->rbo->prenom }} {{ $compte->zone->rbo->nom }}</div>
+                    <div class="info-item"><span class="info-label">Email</span> {{ $compte->zone->rbo->email }}</div>
+                    <div class="info-item"><span class="info-label">Téléphone</span> {{ $compte->zone->rbo->telephone ?? '-' }}</div>
+                    <div class="info-item"><span class="info-label">Ville</span> {{ $compte->zone->rbo->ville->nom ?? '-' }}</div>
+                </div>
+            @else
+                <p class="text-muted">Aucun RBO trouvé pour cette zone.</p>
+            @endif
+        </div>
+    </div>
+
+    {{-- Carte Contacts du compte --}}
+    <div class="zn-card mt-4">
+        <div class="zn-card-header">
+            <span class="zn-card-pip"></span>
+            <span class="zn-card-title">Contacts associés</span>
         </div>
         <div class="zn-card-body">
             @if($compte->contacts->isEmpty())
@@ -247,13 +294,7 @@
                 <div class="table-responsive">
                     <table class="zn-table">
                         <thead>
-                            <tr>
-                                <th>Nom</th>
-                                <th>Fonction</th>
-                                <th>Téléphone</th>
-                                <th>Email</th>
-                                <th>Décideur</th>
-                            </tr>
+                            <tr><th>Nom</th><th>Fonction</th><th>Téléphone</th><th>Email</th><th>Décideur</th></tr>
                         </thead>
                         <tbody>
                             @foreach($compte->contacts as $contact)
@@ -272,16 +313,16 @@
         </div>
     </div>
 
-    {{-- Effectifs card with year selector --}}
-    <div class="zn-card">
+    {{-- Carte Effectifs (année sélectionnable) --}}
+    <div class="zn-card mt-4">
         <div class="zn-card-header">
             <span class="zn-card-pip"></span>
             <span class="zn-card-title">Effectifs scolaires</span>
         </div>
         <div class="zn-card-body">
-            <form method="GET" action="{{ route('comptes.show', $compte) }}" class="year-selector">
+            <form method="GET" action="{{ route('comptes.show', $compte) }}" class="mb-3">
                 <label>Sélectionner une année :</label>
-                <select name="year_id" class="zn-select" onchange="this.form.submit()">
+                <select name="year_id" class="form-select w-auto d-inline-block ms-2" onchange="this.form.submit()">
                     @foreach($years as $y)
                         <option value="{{ $y->id }}" {{ request('year_id', $currentYear->id ?? '') == $y->id ? 'selected' : '' }}>{{ $y->libelle }}</option>
                     @endforeach
@@ -303,9 +344,10 @@
                                 <th>Niveau</th>
                                 <th>Cycle</th>
                                 <th>Massar</th>
-                                <th>Sources (classes)</th>
+                                <th>Source 1 (classes)</th>
+                                <th>Source 2 (classes)</th>
+                                <th>Source 3 (classes)</th>
                                 <th>Effectif validé</th>
-                                <th>Taille</th>
                                 <th>Statut validation</th>
                             </tr>
                         </thead>
@@ -317,37 +359,31 @@
                                 <td>{{ $eff->massar ?? '-' }}</td>
                                 <td>
                                     @if($eff->source_1)
-                                        {{ optional($eff->sourceContact1)->prenom }} {{ optional($eff->sourceContact1)->nom }}
-                                        <br><span class="dr-badge bd-teal">{{ $eff->nombre_classes_1 }} classe(s)</span>
+                                        {{ optional($eff->sourceContact1)->prenom }} {{ optional($eff->sourceContact1)->nom }}<br>
+                                        <span class="dr-badge bd-teal">{{ $eff->nombre_classes_1 }} classe(s)</span>
+                                    @else -
                                     @endif
+                                </td>
+                                <td>
                                     @if($eff->source_2)
-                                        <br>{{ optional($eff->sourceContact2)->prenom }} {{ optional($eff->sourceContact2)->nom }}
-                                        <br><span class="dr-badge bd-teal">{{ $eff->nombre_classes_2 }} classe(s)</span>
+                                        {{ optional($eff->sourceContact2)->prenom }} {{ optional($eff->sourceContact2)->nom }}<br>
+                                        <span class="dr-badge bd-teal">{{ $eff->nombre_classes_2 }} classe(s)</span>
+                                    @else -
                                     @endif
+                                </td>
+                                <td>
                                     @if($eff->source_3)
-                                        <br>{{ optional($eff->sourceContact3)->prenom }} {{ optional($eff->sourceContact3)->nom }}
-                                        <br><span class="dr-badge bd-teal">{{ $eff->nombre_classes_3 }} classe(s)</span>
-                                    @endif
-                                    @if(!$eff->source_1 && !$eff->source_2 && !$eff->source_3)
-                                        <span class="text-muted">—</span>
+                                        {{ optional($eff->sourceContact3)->prenom }} {{ optional($eff->sourceContact3)->nom }}<br>
+                                        <span class="dr-badge bd-teal">{{ $eff->nombre_classes_3 }} classe(s)</span>
+                                    @else -
                                     @endif
                                 </td>
                                 <td>
                                     @if($eff->effectif_valide)
-                                        <span class="dr-badge bd-teal" style="font-weight:600;">{{ $eff->effectif_valide }}</span>
+                                        <span class="dr-badge bd-blue">{{ $eff->effectif_valide }}</span>
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
-                                </td>
-                                <td>
-                                    @php
-                                        $val = $eff->effectif_valide;
-                                        if (is_null($val)) echo '-';
-                                        elseif ($val < 250) echo '<span class="dr-badge bd-amber">Petit</span>';
-                                        elseif ($val < 500) echo '<span class="dr-badge bd-amber">Moyen</span>';
-                                        elseif ($val < 1000) echo '<span class="dr-badge bd-amber">Grand</span>';
-                                        else echo '<span class="dr-badge bd-amber">Très Grand</span>';
-                                    @endphp
                                 </td>
                                 <td>
                                     @if($eff->is_validated)
@@ -360,19 +396,12 @@
                             @endforeach
                         </tbody>
                         @php
-                            $totalYear = $yearEffectifs->sum('effectif_valide');
-                            $globalSize = '';
-                            if ($totalYear < 250) $globalSize = 'Petit';
-                            elseif ($totalYear < 500) $globalSize = 'Moyen';
-                            elseif ($totalYear < 1000) $globalSize = 'Grand';
-                            else $globalSize = 'Très Grand';
+                            $totalEffectif = $yearEffectifs->sum('effectif_valide');
                         @endphp
                         <tfoot>
                             <tr>
-                                <th colspan="4" class="text-end">Total établissement :</th>
-                                <th><span class="dr-badge bd-blue">{{ $totalYear }}</span></th>
-                                <th><span class="dr-badge bd-amber">{{ $globalSize }}</span></th>
-                                <th></th>
+                                <th colspan="6" class="text-end">Total effectif validé :</th>
+                                <th colspan="2"><span class="dr-badge bd-amber">{{ $totalEffectif }}</span></th>
                             </tr>
                         </tfoot>
                     </table>
@@ -381,8 +410,7 @@
         </div>
     </div>
 
-    {{-- Action buttons --}}
-    <div class="card-actions">
+    <div class="mt-4">
         <a href="{{ route('comptes.index') }}" class="btn-zn btn-zn-ghost">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <line x1="19" y1="12" x2="5" y2="12"/>
@@ -390,7 +418,7 @@
             </svg>
             Retour
         </a>
-        @can('update', $compte)
+        @if(auth()->user()->role === 'admin' || (auth()->user()->role === 'rbo' && $compte->zone->rbo_id === auth()->id()) || (auth()->user()->role === 'delegue' && $compte->delegue_id === auth()->id()))
             <a href="{{ route('comptes.edit', $compte) }}" class="btn-zn btn-zn-primary">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -398,8 +426,7 @@
                 </svg>
                 Modifier
             </a>
-        @endcan
+        @endif
     </div>
-
 </div>
 @endsection

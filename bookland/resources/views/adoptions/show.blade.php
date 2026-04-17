@@ -126,6 +126,9 @@
 </style>
 @endpush
 
+
+
+
 @section('content')
 <div class="zn-page">
 
@@ -167,6 +170,28 @@
                     <span class="info-label">Produit</span>
                     <span class="info-value">{{ $adoption->product->titre }} ({{ $adoption->product->isbn_13 ?? $adoption->product->isbn_10 }})</span>
                 </div>
+                {{-- New fields --}}
+                <div class="info-item">
+                    <span class="info-label">Type adoption</span>
+                    <span class="info-value">
+                        @php
+                            $typeMap = [
+                                'BOOKLAND' => 'Bookland',
+                                'ESPRIT_DU_LIVRE' => 'Esprit du livre',
+                                'CONCURRENT' => 'Concurrent'
+                            ];
+                        @endphp
+                        {{ $typeMap[$adoption->type_adoption] ?? $adoption->type_adoption }}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">ISBN</span>
+                    <span class="info-value">{{ $adoption->isbn ?? '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Sous-catégorie</span>
+                    <span class="info-value">{{ $adoption->sous_categorie ?? '-' }}</span>
+                </div>
                 <div class="info-item">
                     <span class="info-label">Méthode</span>
                     <span class="info-value">{{ $adoption->methode }}</span>
@@ -189,7 +214,11 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Niveau scolaire</span>
-                    <span class="info-value">{{ $adoption->niveau_scolaire ?? '-' }}</span>
+                    <span class="info-value">{{ $adoption->niveau ?? '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Cycle</span>
+                    <span class="info-value">{{ $adoption->cycle ?? '-' }}</span>
                 </div>
                 @if($adoption->bssLigne)
                 <div class="info-item">

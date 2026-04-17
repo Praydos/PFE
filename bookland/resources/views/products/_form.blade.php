@@ -293,9 +293,9 @@
                                     <option value="5ème" {{ old('niveau', $product->niveau ?? '') == '5ème' ? 'selected' : '' }}>5ème</option>
                                     <option value="4ème" {{ old('niveau', $product->niveau ?? '') == '4ème' ? 'selected' : '' }}>4ème</option>
                                     <option value="3ème" {{ old('niveau', $product->niveau ?? '') == '3ème' ? 'selected' : '' }}>3ème</option>
-                                    <option value="Seconde" {{ old('niveau', $product->niveau ?? '') == 'Seconde' ? 'selected' : '' }}>Seconde</option>
-                                    <option value="Première" {{ old('niveau', $product->niveau ?? '') == 'Première' ? 'selected' : '' }}>Première</option>
-                                    <option value="Terminale" {{ old('niveau', $product->niveau ?? '') == 'Terminale' ? 'selected' : '' }}>Terminale</option>
+                                    <option value="2ème" {{ old('niveau', $product->niveau ?? '') == '2ème' ? 'selected' : '' }}>2ème</option>
+                                    <option value="1ère" {{ old('niveau', $product->niveau ?? '') == '1ère' ? 'selected' : '' }}>1ère</option>
+                                    
                                 </select>
                             </div>
                         </div>
@@ -369,6 +369,7 @@
                                     <option value="Collège" {{ old('sous_rayon', $product->sous_rayon ?? '') == 'Collège' ? 'selected' : '' }}>Collège</option>
                                     <option value="Lycée" {{ old('sous_rayon', $product->sous_rayon ?? '') == 'Lycée' ? 'selected' : '' }}>Lycée</option>
                                     <option value="Supérieur" {{ old('sous_rayon', $product->sous_rayon ?? '') == 'Supérieur' ? 'selected' : '' }}>Supérieur</option>
+                                    <option value="Maternelle" {{ old('sous_rayon', $product->sous_rayon ?? '') == 'Maternelle' ? 'selected' : '' }}>Maternelle</option>
                                 </select>
                             </div>
                         </div>
@@ -398,6 +399,9 @@
                                     <option value="Anglais" {{ old('sous_categorie', $product->sous_categorie ?? '') == 'Anglais' ? 'selected' : '' }}>Anglais</option>
                                     <option value="Maths" {{ old('sous_categorie', $product->sous_categorie ?? '') == 'Maths' ? 'selected' : '' }}>Maths</option>
                                     <option value="SVT" {{ old('sous_categorie', $product->sous_categorie ?? '') == 'SVT' ? 'selected' : '' }}>SVT</option>
+                                    <option value="Histoire-Géo" {{ old('sous_categorie', $product->sous_categorie ?? '') == 'Histoire-Géo' ? 'selected' : '' }}>Histoire-Géo</option>
+                                    <option value="Physique-Chimie" {{ old('sous_categorie', $product->sous_categorie ?? '') == 'Physique-Chimie' ? 'selected' : '' }}>Physique-Chimie</option>
+                                    <option value="Histoire-Géo" {{ old('sous_categorie', $product->sous_categorie ?? '') == 'Histoire-Géo' ? 'selected' : '' }}>Histoire-Géo</option>
                                     <option value="Histoire-Géo" {{ old('sous_categorie', $product->sous_categorie ?? '') == 'Histoire-Géo' ? 'selected' : '' }}>Histoire-Géo</option>
                                 </select>
                             </div>

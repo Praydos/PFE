@@ -135,6 +135,17 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     letter-spacing: -.01em;
     line-height: 1;
 }
+
+.btn-zn {
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .56rem 1.1rem; border-radius: var(--r-sm);
+        font-family: var(--font); font-size: .82rem; font-weight: 600;
+        cursor: pointer; border: 1px solid transparent;
+        transition: all var(--t); text-decoration: none;
+        white-space: nowrap; letter-spacing: -.01em; line-height: 1;
+    }
+
+.btn-zn-sm { padding: .38rem .72rem; font-size: .75rem; }
 .btn-dr svg { flex-shrink: 0; }
 
 .btn-dr-primary {
@@ -185,8 +196,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 .btn-dr-danger { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.18); }
 .btn-dr-danger:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
 
-.btn-dr-info { background: var(--violet-light); color: var(--violet); border-color: rgba(124,111,205,.2); }
-.btn-dr-info:hover { background: #e4deff; color: var(--violet); text-decoration: none; }
+.btn-zn-info { background: var(--violet-light); color: var(--violet); border-color: rgba(124,111,205,.2); }
+.btn-zn-info:hover { background: #e8e5ff; color: var(--violet); text-decoration: none; }
 
 .btn-dr-danger-ghost { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.2); }
 .btn-dr-danger-ghost:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
@@ -671,6 +682,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     /* Also hide phone col on very small screens */
     .dr-table .col-phone { display: none; }
 }
+
 </style>
 @endpush
 
@@ -727,15 +739,13 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                         <th>CODE</th>
                         <th>ARTICLE</th>
                         <th>RAYON</th>
-                        <th>SOUS-RAYON</th>
-                        <th>CATÉGORIE</th>
+                        {{-- <th>SOUS-RAYON</th> --}}
+                        {{-- <th>CATÉGORIE</th> --}}
                         <th>SOUS-CATÉGORIE</th>
                         <th>EDITEUR</th>
-                        <th>COLLECTION</th>
+                        {{-- <th>COLLECTION</th> --}}
                         <th>SOURCE</th>
-                        @if (auth()->user()->role == "admin")
-                            <th>ACTIONS</th>
-                        @endif
+                        <th>ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -754,18 +764,19 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                             @endif
                         </td>
                         <td>{{ $product->rayon ?? '-' }}</td>
-                        <td>{{ $product->sous_rayon ?? '-' }}</td>
-                        <td>{{ $product->categorie ?? '-' }}</td>
+                        {{-- <td>{{ $product->sous_rayon ?? '-' }}</td> --}}
+                        {{-- <td>{{ $product->categorie ?? '-' }}</td> --}}
                         <td>{{ $product->sous_categorie ?? '-' }}</td>
                         <td>{{ $product->editeur ?? '-' }}</td>
-                        <td>{{ $product->collection ?? '-' }}</td>
+                        {{-- <td>{{ $product->collection ?? '-' }}</td> --}}
                         <td>
                             <span class="dr-badge bd-{{ $product->source === 'bookland' ? 'blue' : 'teal' }}">
                                 {{ ucfirst(str_replace('_', ' ', $product->source)) }}
                             </span>
                         </td>
-                        @if (auth()->user()->role == 'admin')
+                        
                         <td>
+                            @if (auth()->user()->role == 'admin')
                             <div class="actions-cell">
                                 <a href="{{ route('products.edit', $product) }}" class="btn-dr btn-dr-sm btn-dr-warning">
                                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
@@ -776,9 +787,16 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
                                     </button>
                                 </form>
+                                @endif
+                                <a href="{{ route('products.show', $product) }}" class="btn-zn btn-zn-sm btn-zn-info">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    </svg>
+                                    Détails
+                                </a>
                             </div>
                         </td>
-                        @endif
+                        
                     </tr>
                     @empty
                     <tr>

@@ -25,7 +25,15 @@ class CompteFactory extends Factory
             'delegue_id' => User::factory()->delegue(),
             'status' => 'actif',
             'motif_fermeture' => null,
-            'cycle' => $this->faker->randomElement(['Maternelle', 'Primaire', 'Collège', 'Lycée', 'Kids', 'Teens', 'Adults']),
+            'cycles' => $this->faker->randomElements([
+                    'Maternelle',
+                    'Primaire',
+                    'Collège',
+                    'Lycée',
+                    'Kids',
+                    'Teens',
+                    'Adults'
+                ], rand(1,3)),
             'tel_bureau_1' => $this->faker->phoneNumber(),
             'email' => $this->faker->companyEmail(),
         ];

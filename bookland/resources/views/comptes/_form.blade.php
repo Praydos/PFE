@@ -19,7 +19,7 @@
      ══════════════════════════════════════════════════════════════════════════ --}}
 
 {{-- Établissement --}}
-@if($isDelegue && $isEdit)
+@if(false)
     {{-- Read-only display --}}
     <div class="frm-group">
         <label class="frm-label">Nom de l'établissement</label>
@@ -50,7 +50,7 @@
 @endif
 
 {{-- Type --}}
-@if($isDelegue && $isEdit)
+@if(false)
     <div class="frm-group">
         <label class="frm-label">Type</label>
         <div class="frm-readonly">{{ ucfirst(str_replace('_', ' ', $compte->type)) }}</div>
@@ -74,26 +74,32 @@
 @endif
 
 {{-- Cycle --}}
-@if($isDelegue && $isEdit)
+{{-- Cycle --}}
+@if(false)
     <div class="frm-group">
-        <label class="frm-label">Cycle</label>
-        <div class="frm-readonly">{{ $compte->cycle ?? '—' }}</div>
+        <label class="frm-label">Cycles</label>
+        <div class="frm-readonly">
+            @php
+                $cyclesArr = is_array($compte->cycles) ? $compte->cycles : [];
+            @endphp
+            {{ $cyclesArr ? implode(', ', $cyclesArr) : '—' }}
+        </div>
     </div>
 @else
     <div class="frm-group">
-        <label class="frm-label" for="cycle">Cycle</label>
-        <div class="frm-select-wrap">
-            <select id="cycle" name="cycle" class="frm-select {{ $errors->has('cycle') ? 'is-invalid' : '' }}">
-                <option value="">— Non spécifié —</option>
-                @foreach($cycles as $cycleOption)
-                    <option value="{{ $cycleOption }}" {{ (old('cycle', $compte->cycle ?? '') == $cycleOption) ? 'selected' : '' }}>
-                        {{ $cycleOption }}
-                    </option>
-                @endforeach
-            </select>
+        <label class="frm-label">Cycles</label>
+        <div style="display:flex; flex-wrap:wrap; gap:.5rem .75rem; padding:.5rem 0;">
+            @foreach(['Maternelle', 'Primaire', 'Collège', 'Lycée', 'Kids', 'Teens', 'Adults'] as $cycleOption)
+                <label style="display:inline-flex; align-items:center; gap:.35rem; font-size:.83rem; color:var(--text-secondary); cursor:pointer; font-weight:500;">
+                    <input type="checkbox" name="cycles[]" value="{{ $cycleOption }}"
+                        style="accent-color:var(--blue); width:15px; height:15px; cursor:pointer;"
+                        {{ (is_array(old('cycles', $compte->cycles ?? [])) && in_array($cycleOption, old('cycles', $compte->cycles ?? []))) ? 'checked' : '' }}>
+                    {{ $cycleOption }}
+                </label>
+            @endforeach
         </div>
-        @error('cycle')
-            <span class="frm-error"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
+        @error('cycles')
+            <span class="frm-error">{{ $message }}</span>
         @enderror
     </div>
 @endif

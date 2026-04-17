@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreignId('delegue_id')->nullable()->constrained('users')->onDelete('set null');
             $table->enum('status', ['actif', 'ferme'])->default('actif');
             $table->text('motif_fermeture')->nullable();
-            $table->enum('cycle', ['Maternelle', 'Primaire', 'Collège', "Lycée", 'Kids', 'Teens','Adults'])->nullable();;
+            $table->json('cycles')->nullable(); // store multiple values (e.g., ["primaire", "college"])
             // $table->boolean('suspendre_actions')->default(false);
             // $table->text('motif_suspension')->nullable();
             $table->string('tel_bureau_1')->nullable();
