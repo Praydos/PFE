@@ -237,12 +237,15 @@ class ExamenController extends Controller
 
     private function authorizeEdit(Examen $examen)
     {
+        if ($examen->anneeScolaire->is_closed && !auth()->user()->isAdmin()) {
+            abort(403, 'Cette année scolaire est clôturée.');
+        }
         $user = Auth::user();
         if ($user->role === 'admin') return;
-        if ($user->role === 'delegue' && $examen->delegate_id === $user->id) return;
+        if ($user->role === 'delegue' && $examen->delegue_id === $user->id) return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($examen->delegate_id)) return;
+            if ($delegateIds->contains($examen->delegue_id)) return;
         }
         abort(403);
     }

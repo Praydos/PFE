@@ -695,6 +695,19 @@
                     <span class="sb-item-label">Effectifs</span>
                 </a>
 
+
+                <a href="{{ route('examens.index') }}"
+                   class="sb-item {{ request()->routeIs('examens.*') ? 'active' : '' }}"
+                   data-label="Examens">
+                    <span class="sb-item-icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M9 14L4 9l5-5"/>
+                            <path d="M4 9h11a5 5 0 0 1 5 5v1"/>
+                        </svg>
+                    </span>
+                    <span class="sb-item-label">Examens</span>
+                </a>
+
                 @if (auth()->user()->role == 'admin')
                     <a href="{{ route('annees-scolaires.index') }}"
                     class="sb-item {{ request()->routeIs('annees-scolaires.*') ? 'active' : '' }}"

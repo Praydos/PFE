@@ -77,8 +77,26 @@
     .btn-zn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); color: #fff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(91,141,238,.4); }
     .btn-zn-ghost { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border); box-shadow: var(--shadow-xs); }
     .btn-zn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-md); text-decoration: none; }
+    .btn-zn-danger-ghost { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.2); }
+    .btn-zn-danger-ghost:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
+    .btn-zn-warning { background: var(--amber-light); color: var(--amber); border-color: rgba(232,160,32,.2); }
+    .btn-zn-warning:hover { background: #ffefd4; color: var(--amber); text-decoration: none; }
+    .btn-zn-danger { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.18); }
+    .btn-zn-danger:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
     .btn-zn-sm { padding: .38rem .72rem; font-size: .75rem; }
 
+
+    .actions-cell { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
+
+    .btn-zn-info {
+    background: var(--violet-light);
+    color: var(--violet);
+    border-color: rgba(124,111,205,.2);
+}
+.btn-zn-info:hover {
+    background: #e4deff;
+    color: var(--violet);
+}
     /* ── Search / Filters ───────────────────────────────── */
     .zn-search-bar {
         background: var(--bg-card);
@@ -335,11 +353,12 @@
                             <div class="actions-cell">
                                 <a href="{{ route('examens.show', $e) }}" class="btn-zn btn-zn-sm btn-zn-info">
                                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10z"/>
                                     </svg>
                                     Voir
                                 </a>
-                                @if(in_array(auth()->user()->role, ['admin','rbo']) || (auth()->user()->role === 'delegue' && $e->delegate_id === auth()->id()))
+                                @if(in_array(auth()->user()->role, ['admin','rbo']) || (auth()->user()->role === 'delegue' && $e->delegue_id === auth()->id()))
                                     <a href="{{ route('examens.edit', $e) }}" class="btn-zn btn-zn-sm btn-zn-warning">
                                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
