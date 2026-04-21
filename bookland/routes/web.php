@@ -37,6 +37,7 @@ use App\Http\Controllers\BssController;
 use App\Http\Controllers\RetourController;
 use App\Http\Controllers\AdoptionController;
 use App\Http\Controllers\EffectifController;
+use App\Http\Controllers\ExamenController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -267,7 +268,10 @@ Route::get('/api/comptes/{compte}/niveaux', [AdoptionController::class, 'getNive
 
 //========================================================================================================
 
-// 
+// examens 
+
+Route::resource('examens', ExamenController::class); // fix the order of routes in the controller to avoid conflicts with {examen} swallowing
+Route::post('/examens/{examen}/change-status', [ExamenController::class, 'changeStatus'])->name('examens.change-status');
 
 
 
