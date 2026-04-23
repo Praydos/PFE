@@ -40,6 +40,9 @@ use App\Http\Controllers\EffectifController;
 use App\Http\Controllers\ExamenController;
 use App\Http\Controllers\FormationController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\ActionController;
+use App\Http\Controllers\AgendaController;
+
 use Illuminate\Support\Facades\Route;
 
 
@@ -290,3 +293,16 @@ Route::get('/events/{event}/statistics', [EventController::class, 'statistics'])
 Route::post('/events/{event}/contact/{contact}/status', [EventController::class, 'updateStatus'])->name('events.update-status');
 Route::get('/api/events/contacts-by-city', [EventController::class, 'getContactsByCity'])->name('api.events.contacts-by-city');
 Route::get('/api/events/all-contacts', [EventController::class, 'getAllContacts'])->name('api.events.all-contacts');
+
+
+//=========================================================================================================
+//actions comercial and agenda 
+Route::resource('actions', ActionController::class);
+Route::post('/actions/{action}/realiser', [ActionController::class, 'realiser'])->name('actions.realiser');
+Route::post('/actions/{action}/valider', [ActionController::class, 'valider'])->name('actions.valider');
+Route::post('/actions/{action}/annuler', [ActionController::class, 'annuler'])->name('actions.annuler');
+Route::post('/actions/{action}/reporter', [ActionController::class, 'reporter'])->name('actions.reporter');
+Route::get('/api/action-types-by-categorie', [ActionController::class, 'getActionTypesByCategorie'])->name('api.action-types');
+Route::get('/api/moyens-by-action-type', [ActionController::class, 'getMoyensByActionType'])->name('api.moyens');
+
+Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');

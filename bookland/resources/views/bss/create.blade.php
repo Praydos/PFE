@@ -286,7 +286,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <input type="number" name="products[0][quantity]" class="frm-input" placeholder="Quantité" style="flex:1;" value="1" disabled>
+                        <input type="number" name="products[0][quantity]" class="frm-input" placeholder="Quantité" style="flex:1;" value="1" max="1" required>
                         <button type="button" class="btn-zn btn-zn-danger remove-product" style="display:none;">X</button>
                     </div>
                 </div>
