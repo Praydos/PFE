@@ -39,6 +39,7 @@ use App\Http\Controllers\AdoptionController;
 use App\Http\Controllers\EffectifController;
 use App\Http\Controllers\ExamenController;
 use App\Http\Controllers\FormationController;
+use App\Http\Controllers\EventController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -279,3 +280,13 @@ Route::resource('formations', FormationController::class);
 Route::post('/formations/{formation}/change-status', [FormationController::class, 'changeStatus'])->name('formations.change-status');
 
 
+
+//=========================================================================================================
+//evenments routes Route::resource('events', EventController::class);
+Route::resource('events', EventController::class);
+Route::get('/events/{event}/invite', [EventController::class, 'inviteForm'])->name('events.invite');
+Route::post('/events/{event}/invite', [EventController::class, 'storeInvitations'])->name('events.store-invitations');
+Route::get('/events/{event}/statistics', [EventController::class, 'statistics'])->name('events.statistics');
+Route::post('/events/{event}/contact/{contact}/status', [EventController::class, 'updateStatus'])->name('events.update-status');
+Route::get('/api/events/contacts-by-city', [EventController::class, 'getContactsByCity'])->name('api.events.contacts-by-city');
+Route::get('/api/events/all-contacts', [EventController::class, 'getAllContacts'])->name('api.events.all-contacts');

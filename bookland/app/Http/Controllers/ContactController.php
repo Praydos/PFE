@@ -6,6 +6,9 @@ use App\Models\Contact;
 use App\Models\Compte;
 use App\Models\Ville;
 use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Collection;
+
 use Illuminate\Support\Facades\Auth;
 
 class ContactController extends Controller
@@ -154,11 +157,34 @@ class ContactController extends Controller
 
 
     // New methods
-public function getComptes(Contact $contact)
+    private function getRboDelegueIds(User $rbo): Collection
+    {
+        return $rbo->zonesAsRbo()
+            ->with('delegates')
+            ->get()
+            ->flatMap(fn ($zone) => $zone->delegates->pluck('id'))
+            ->unique();
+    }
+    public function getComptes(Contact $contact)
 {
-    $allComptes = Compte::with('ville')->orderBy('etablissement')->get();
+    $user = auth()->user();
+    // Get comptes that the user is allowed to see (based on role)
+    $query = Compte::with('ville')->orderBy('etablissement');
+    
+    if ($user->role === 'delegue') {
+        $query->where('delegue_id', $user->id);
+    } elseif ($user->role === 'rbo') {
+        $delegateIds = $this->getRboDelegueIds($user);
+        $query->whereIn('delegue_id', $delegateIds);
+    }
+    // Admin sees all
+    
+    // IMPORTANT: Filter by the same ville as the contact
+    $query->where('ville_id', $contact->ville_id);
+    
+    $allComptes = $query->get();
     $assignedIds = $contact->comptes->pluck('id')->toArray();
-
+    
     $comptesList = $allComptes->map(function ($compte) use ($assignedIds) {
         return [
             'id' => $compte->id,
@@ -166,7 +192,7 @@ public function getComptes(Contact $contact)
             'assigned' => in_array($compte->id, $assignedIds)
         ];
     });
-
+    
     return response()->json([
         'all_comptes' => $comptesList->values(),
         'assigned_ids' => $assignedIds
@@ -175,13 +201,25 @@ public function getComptes(Contact $contact)
 
 public function updateComptes(Request $request, Contact $contact)
 {
+    $user = auth()->user();
+    
     $request->validate([
         'compte_ids' => 'array',
         'compte_ids.*' => 'exists:comptes,id'
     ]);
-
+    
+    // Get the selected comptes and check their ville_id
+    $selectedComptes = Compte::whereIn('id', $request->compte_ids ?? [])->get();
+    foreach ($selectedComptes as $compte) {
+        if ($compte->ville_id !== $contact->ville_id) {
+            return response()->json([
+                'error' => "Le compte {$compte->etablissement} n'appartient pas à la même ville que le contact."
+            ], 422);
+        }
+    }
+    
     $contact->comptes()->sync($request->compte_ids ?? []);
-
+    
     return response()->json(['success' => true]);
 }
 

@@ -153,7 +153,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 
 /* ── Card ──────────────────────────────────────────── */
 .zn-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 1.5rem; }
-.zn-card-header { padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: linear-gradient(to bottom, #fafbff, #fff); }
+.zn-card-header { padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border); display: flex; align-items: center;  gap: 1rem; background: linear-gradient(to bottom, #fafbff, #fff); }
 .zn-card-title { font-size: .88rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: .55rem; letter-spacing: -.01em; }
 .title-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 3px var(--blue-mid); }
 .zn-count { font-size: .76rem; color: var(--text-muted); font-weight: 500; }
