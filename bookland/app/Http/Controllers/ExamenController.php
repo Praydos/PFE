@@ -6,6 +6,8 @@ use App\Models\Examen;
 use App\Models\Epreuve;
 use App\Models\Compte;
 use App\Models\Contact;
+use App\Models\Action;
+use App\Models\ActionLine;
 use App\Models\AnneeScolaire;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -61,45 +63,86 @@ class ExamenController extends Controller
 
     // Store new examen
     public function store(Request $request)
-    {
-        $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+{
+    $user = Auth::user();
+    if ($user->role !== 'delegue') abort(403);
 
-        $validated = $request->validate([
-            'compte_id' => 'required|exists:comptes,id',
-            'contact_id' => 'required|exists:contacts,id',
-            'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
-            'langue' => 'required|string',
-            'organisme' => 'required|string',
-            'titre' => 'required|string',
-            'abreviation' => 'nullable|string',
-            'niveau_cecr' => 'nullable|string',
-            'niveaux_scolaires' => 'nullable|array',
-            'date_demande' => 'required|date',
-            'date_examen' => 'nullable|date',
-            'description' => 'nullable|string',
-            'observations' => 'nullable|string',
-            'epreuves' => 'nullable|array',
-            'epreuves.*.epreuve' => 'required_with:epreuves|string',
-            'epreuves.*.duree' => 'nullable|integer',
-            'epreuves.*.date_realisation' => 'nullable|date',
-        
-        ]);
+    $validated = $request->validate([
+        'compte_id' => 'required|exists:comptes,id',
+        'contact_id' => 'required|exists:contacts,id',
+        'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
+        'langue' => 'required|string',
+        'organisme' => 'required|string',
+        'titre' => 'required|string',
+        'abreviation' => 'nullable|string',
+        'niveau_cecr' => 'nullable|string',
+        'niveaux_scolaires' => 'nullable|array',
+        'date_demande' => 'required|date',
+        'date_examen' => 'nullable|date',
+        'description' => 'nullable|string',
+        'observations' => 'nullable|string',
+        'epreuves' => 'nullable|array',
+        'epreuves.*.epreuve' => 'required_with:epreuves|string',
+        'epreuves.*.duree' => 'nullable|integer',
+        'epreuves.*.date_realisation' => 'nullable|date',
+    ]);
 
-        $validated['delegue_id'] = $user->id;
-        $validated['statut'] = 'en_attente_feedback';
-        $validated['niveaux_scolaires'] = $validated['niveaux_scolaires'] ?? [];
+    $validated['delegue_id'] = $user->id;
+    $validated['statut'] = 'planifie'; // Set status to planifie directly
+    $validated['niveaux_scolaires'] = $validated['niveaux_scolaires'] ?? [];
 
-        $examen = Examen::create($validated);
+    $examen = Examen::create($validated);
 
-        if (!empty($validated['epreuves'])) {
-            foreach ($validated['epreuves'] as $epreuve) {
-                $examen->epreuves()->create($epreuve);
-            }
+    if (!empty($validated['epreuves'])) {
+        foreach ($validated['epreuves'] as $epreuve) {
+            $examen->epreuves()->create($epreuve);
         }
-
-        return redirect()->route('examens.index')->with('success', 'Demande d\'examen créée.');
     }
+
+    // Automatically create an action
+    $this->createActionForExamen($examen);
+
+    return redirect()->route('examens.index')->with('success', 'Demande d\'examen créée.');
+}
+
+    //
+    private function createActionForExamen(Examen $examen)
+{
+    $compte = $examen->compte;
+    $lieu = 'Zone: ' . ($compte->zone->name ?? 'N/A') . ' - Ville: ' . ($compte->ville->nom ?? 'N/A');
+
+    $action = Action::create([
+        'objet' => 'Présentation examen : ' . $examen->titre,
+        'compte_id' => $examen->compte_id,
+        'delegue_id' => $examen->delegue_id,
+        'date_planification' => $examen->date_examen ?? $examen->date_demande,
+        'lieu' => $lieu,
+        'statut' => 'planifie',
+        'type' => 'commercial',
+        'module_lie' => 'examen',
+        'module_id' => $examen->id,
+    ]);
+
+    $actionLine = ActionLine::create([
+        'action_id' => $action->id,
+        'categorie' => 'Visite',
+        'action_type' => 'Visite de Prospection – Présentation Examens',
+        'moyen' => 'Visite',
+        'description' => 'Présentation de l\'examen ' . $examen->titre,
+    ]);
+
+    // Link the contact
+    if ($examen->contact_id) {
+        $actionLine->contacts()->attach($examen->contact_id);
+    }
+
+    // Link the exam (pivot table action_line_examen)
+    $actionLine->examens()->attach($examen->id);
+}
+
+
+
+
 
     // Show detail
     public function show(Examen $examen)
@@ -126,54 +169,60 @@ class ExamenController extends Controller
 }
 
     // Update
-    public function update(Request $request, Examen $examen)
-    {
-        $this->authorizeEdit($examen);
-        $validated = $request->validate([
-            'compte_id' => 'required|exists:comptes,id',
-            'contact_id' => 'required|exists:contacts,id',
-            'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
-            'langue' => 'required|string',
-            'organisme' => 'required|string',
-            'titre' => 'required|string',
-            'abreviation' => 'nullable|string',
-            'niveau_cecr' => 'nullable|string',
-            'niveaux_scolaires' => 'nullable|array',
-            'date_demande' => 'required|date',
-            'date_examen' => 'nullable|date',
-            'description' => 'nullable|string',
-            'observations' => 'nullable|string',
-            'statut' => 'required|in:' . implode(',', array_keys($this->getStatutOptions())),
-            'epreuves' => 'nullable|array',
-            'epreuves.*.id' => 'nullable|exists:epreuves,id',
-            'epreuves.*.epreuve' => 'required_with:epreuves|string',
-            'epreuves.*.duree' => 'nullable|integer',
-            'epreuves.*.date_realisation' => 'nullable|date',
-        ]);
+   public function update(Request $request, Examen $examen)
+{
+    $this->authorizeEdit($examen);
+    $validated = $request->validate([
+        'compte_id' => 'required|exists:comptes,id',
+        'contact_id' => 'required|exists:contacts,id',
+        'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
+        'langue' => 'required|string',
+        'organisme' => 'required|string',
+        'titre' => 'required|string',
+        'abreviation' => 'nullable|string',
+        'niveau_cecr' => 'nullable|string',
+        'niveaux_scolaires' => 'nullable|array',
+        'date_demande' => 'required|date',
+        'date_examen' => 'nullable|date',
+        'description' => 'nullable|string',
+        'observations' => 'nullable|string',
+        'statut' => 'required|in:' . implode(',', array_keys($this->getStatutOptions())),
+        'epreuves' => 'nullable|array',
+        'epreuves.*.id' => 'nullable|exists:epreuves,id',
+        'epreuves.*.epreuve' => 'required_with:epreuves|string',
+        'epreuves.*.duree' => 'nullable|integer',
+        'epreuves.*.date_realisation' => 'nullable|date',
+    ]);
 
-        $validated['niveaux_scolaires'] = $validated['niveaux_scolaires'] ?? [];
-        $examen->update($validated);
+    $validated['niveaux_scolaires'] = $validated['niveaux_scolaires'] ?? [];
+    $oldStatut = $examen->statut;
+    $examen->update($validated);
 
-        // Sync epreuves
-        $existingIds = [];
-        if (!empty($validated['epreuves'])) {
-            foreach ($validated['epreuves'] as $epreuve) {
-                if (isset($epreuve['id'])) {
-                    $ep = Epreuve::find($epreuve['id']);
-                    if ($ep && $ep->examen_id == $examen->id) {
-                        $ep->update($epreuve);
-                        $existingIds[] = $ep->id;
-                    }
-                } else {
-                    $new = $examen->epreuves()->create($epreuve);
-                    $existingIds[] = $new->id;
+    // Sync epreuves
+    $existingIds = [];
+    if (!empty($validated['epreuves'])) {
+        foreach ($validated['epreuves'] as $epreuve) {
+            if (isset($epreuve['id'])) {
+                $ep = Epreuve::find($epreuve['id']);
+                if ($ep && $ep->examen_id == $examen->id) {
+                    $ep->update($epreuve);
+                    $existingIds[] = $ep->id;
                 }
+            } else {
+                $new = $examen->epreuves()->create($epreuve);
+                $existingIds[] = $new->id;
             }
         }
-        $examen->epreuves()->whereNotIn('id', $existingIds)->delete();
-
-        return redirect()->route('examens.index')->with('success', 'Examen mis à jour.');
     }
+    $examen->epreuves()->whereNotIn('id', $existingIds)->delete();
+
+    // Create action if status changed to planifie and not already created
+    if ($validated['statut'] == 'planifie' && $oldStatut != 'planifie' && !$this->hasAction($examen)) {
+        $this->createActionForExamen($examen);
+    }
+
+    return redirect()->route('examens.index')->with('success', 'Examen mis à jour.');
+}
 
     // Delete
     public function destroy(Examen $examen)
@@ -249,4 +298,10 @@ class ExamenController extends Controller
         }
         abort(403);
     }
+
+
+    private function hasAction(Examen $examen)
+{
+    return Action::where('module_lie', 'examen')->where('module_id', $examen->id)->exists();
+}
 }
