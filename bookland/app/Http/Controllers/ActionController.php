@@ -82,7 +82,7 @@ public function create()
     $categories = $this->getCategories();
     $products = Product::orderBy('titre')->get();
     $examens = Examen::orderBy('titre')->get();
-    $bssList = Bss::where('delegue_id', $user->id)
+    $bssList = Bss::where('delegate_id', $user->id)
         ->whereIn('statut', ['valide', 'livre'])
         ->with('compte')
         ->get();
@@ -193,39 +193,40 @@ public function create()
 }
 
     private function generateRecurrence($data)
-    {
-        $actions = [];
-        $start = Carbon::parse($data['date_planification']);
-        $end = $data['recurrence_fin'] ? Carbon::parse($data['recurrence_fin']) : $start;
-        $freq = $data['recurrence_frequence'] ?? null;
-        $interval = $data['recurrence_intervalle'] ?? 1;
+{
+    $actions = [];
+    $start = Carbon::parse($data['date_planification']);
+    $end = $data['recurrence_fin'] ? Carbon::parse($data['recurrence_fin']) : $start;
+    $freq = $data['recurrence_frequence'] ?? null;
+    $interval = $data['recurrence_intervalle'] ?? 1;
 
-        if (!$freq) {
-            // Single occurrence
-            $actions[] = $this->buildActionData($data);
-            return $actions;
-        }
-
-        // Generate occurrences
-        $current = $start->copy();
-        while ($current <= $end) {
-            $actionData = $this->buildActionData($data);
-            $actionData['date_planification'] = $current->toDateString();
-            // For recurrence, we set parent_action_id to a placeholder; will link after first is created? 
-            // Simpler: store recurrence rule and generate on the fly? But spec says generate actual rows.
-            // We'll set parent_action_id = null for first occurrence, later occurrences will have parent pointing to first.
-            if (empty($actions)) {
-                $actionData['parent_action_id'] = null;
-            } else {
-                // We'll link after creation because we need the first action's id. We'll handle later.
-                // For now, store without parent; we'll update after creation.
-            }
-            $actions[] = $actionData;
-            $current->add($freq, $interval);
-        }
-
+    if (!$freq) {
+        // Single occurrence
+        $actions[] = $this->buildActionData($data);
         return $actions;
     }
+
+    // Map frequency to Carbon unit
+    $unitMap = [
+        'daily'   => 'days',
+        'weekly'  => 'weeks',
+        'monthly' => 'months',
+        'yearly'  => 'years',
+    ];
+    $unit = $unitMap[$freq] ?? 'days';
+
+    // Generate occurrences
+    $current = $start->copy();
+    while ($current <= $end) {
+        $actionData = $this->buildActionData($data);
+        $actionData['date_planification'] = $current->toDateString();
+        $actions[] = $actionData;
+
+        $current->add($interval, $unit);
+    }
+
+    return $actions;
+}
 
     private function buildActionData($data)
     {
@@ -252,11 +253,11 @@ public function create()
     }
 
     public function show(Action $action)
-    {
-        $this->authorizeView($action);
-        $action->load('lignes.contacts', 'lignes.products', 'lignes.examens', 'compte', 'delegate');
-        return view('actions.show', compact('action'));
-    }
+{
+    $this->authorizeView($action);
+    $action->load('lignes.contacts', 'lignes.products', 'lignes.examens', 'lignes.bss', 'lignes.retour', 'compte', 'delegate');
+    return view('actions.show', compact('action'));
+}
 
     public function edit(Action $action)
     {

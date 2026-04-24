@@ -11,7 +11,7 @@
             <form method="POST" action="{{ route('actions.update', $action) }}">
                 @csrf
                 @method('PUT')
-                @include('actions._form', ['action' => $action])
+                @include('actions._form', ['action' => $action, 'products' => $products, 'examens' => $examens, 'bssOptions' => $bssOptions])
 
                 <div class="mt-4">
                     <h5>Lignes d'action</h5>

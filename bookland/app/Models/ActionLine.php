@@ -30,4 +30,14 @@ class ActionLine extends Model
     {
         return $this->belongsToMany(Examen::class, 'action_line_examen');
     }
+
+    public function bss()
+{
+    return $this->belongsTo(Bss::class);
+}
+
+public function retour()
+{
+    return $this->belongsTo(Retour::class);
+}
 }
