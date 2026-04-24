@@ -232,8 +232,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/bss/{bss}', [BssController::class, 'update'])
     ->name('bss.update');
 
-    Route::post('/bss/{bss}/validate', [BssController::class, 'validateBss'])
-    ->name('bss.validate')->middleware('role:rbo,admin');
+    // Route::post('/bss/{bss}/validate', [BssController::class, 'validateBss'])
+    // ->name('bss.validate')->middleware('role:rbo,admin');
 
     Route::delete('/bss/{bss}', [BssController::class, 'destroy'])
         ->name('bss.destroy')

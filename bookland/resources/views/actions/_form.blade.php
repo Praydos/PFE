@@ -40,14 +40,14 @@
         <label class="frm-label" for="date_planification">Date <span class="req">*</span></label>
         <input type="date" name="date_planification" id="date_planification" class="frm-input" value="{{ $defaultDate }}" required>
     </div>
-    <div class="frm-group" style="flex: 0.8; min-width: 100px;">
+    {{-- <div class="frm-group" style="flex: 0.8; min-width: 100px;">
         <label class="frm-label" for="heure">Heure</label>
         <input type="time" name="heure" id="heure" class="frm-input" value="{{ $defaultHeure }}" step="60">
     </div>
     <div class="frm-group" style="flex: 0.8; min-width: 100px;">
         <label class="frm-label" for="duree">Durée (min)</label>
         <input type="number" name="duree" id="duree" class="frm-input" value="{{ $defaultDuree }}" min="0">
-    </div>
+    </div> --}}
     <div class="frm-group" style="flex: 1.5; min-width: 150px;">
         <label class="frm-label" for="lieu">Lieu</label>
         <input type="text" name="lieu" id="lieu" class="frm-input" value="{{ $defaultLieu }}">

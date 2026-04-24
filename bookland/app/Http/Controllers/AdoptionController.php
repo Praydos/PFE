@@ -242,7 +242,10 @@ if ($createdCount > 0) {
             $created++;
         }
 
+
         if ($created > 0) {
+            $bss = $bssLigne->bss;
+            $bss->update(['statut' => 'adopte']);
             return redirect()->route('adoptions.index')->with('success', "$created adoption(s) créée(s) à partir du BSS.");
         } else {
             return redirect()->back()->with('error', 'Aucune adoption n\'a été créée (déjà converties ou déjà adoptées).');

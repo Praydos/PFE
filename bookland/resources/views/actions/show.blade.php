@@ -239,8 +239,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
             <div class="info-grid">
                 <div class="info-item"><span class="info-label">Compte</span> {{ $action->compte->etablissement }}</div>
                 <div class="info-item"><span class="info-label">Date</span> {{ $action->date_planification->format('d/m/Y') }}</div>
-                <div class="info-item"><span class="info-label">Heure</span> {{ $action->heure ?? '-' }}</div>
-                <div class="info-item"><span class="info-label">Durée</span> {{ $action->duree ? $action->duree.' min' : '-' }}</div>
+                {{-- <div class="info-item"><span class="info-label">Heure</span> {{ $action->heure ?? '-' }}</div>
+                <div class="info-item"><span class="info-label">Durée</span> {{ $action->duree ? $action->duree.' min' : '-' }}</div> --}}
                 <div class="info-item"><span class="info-label">Lieu</span> {{ $action->lieu ?? '-' }}</div>
                 <div class="info-item"><span class="info-label">Statut</span> <span class="dr-badge bd-{{ $action->statut }}">{{ ucfirst($action->statut) }}</span></div>
                 <div class="info-item"><span class="info-label">Type</span> {{ ucfirst($action->type) }}</div>

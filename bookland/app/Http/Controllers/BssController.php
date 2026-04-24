@@ -10,6 +10,8 @@ use App\Models\Product;
 use App\Models\Consignation;
 use App\Models\AnneeScolaire;
 use App\Models\User;
+use App\Models\Action;
+use App\Models\ActionLine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -111,7 +113,7 @@ class BssController extends Controller
         return redirect()->back()->withErrors(['error' => 'Année scolaire active non trouvée.']);
     }
 
-    // 🔒 Strict check: already delivered products
+    // Check already delivered
     $alreadyDelivered = [];
     foreach ($validated['products'] as $item) {
         $already = BssLigne::whereHas('bss', function ($q) use ($validated, $currentYear) {
@@ -146,7 +148,7 @@ class BssController extends Controller
         'recupere_par_type' => $validated['recupere_par_type'],
         'recupere_par_nom' => $recupereParNom,
         'controle_document' => $validated['controle_document'] ?? null,
-        'statut' => 'soumis',
+        'statut' => 'valide', // No RBO validation needed
     ]);
 
     foreach ($validated['products'] as $item) {
@@ -169,7 +171,43 @@ class BssController extends Controller
         ]);
     }
 
-    return redirect()->route('bss.index')->with('success', 'BSS créé et soumis à validation.');
+    $compte = Compte::with(['zone', 'ville'])->find($bss->compte_id);
+    $lieu = 'Zone: ' . ($compte->zone->name ?? 'N/A') . ' - Ville: ' . ($compte->ville->nom ?? 'N/A');
+
+
+    // Automatically create an Action for this BSS
+    $action = Action::create([
+        'objet' => 'Livraison BSS ' . $bss->numero,
+        'compte_id' => $bss->compte_id,
+        'delegue_id' => $user->id,
+        'date_planification' => $bss->date_livraison_prevue ?? now(),
+        'statut' => 'planifie',
+        'type' => 'commercial',
+        'module_lie' => 'bss',
+        'module_id' => $bss->id,
+        'lieu' => $lieu,
+    ]);
+
+    // Create an action line
+    $actionLine = ActionLine::create([
+        'action_id' => $action->id,
+        'categorie' => 'Correspondance',
+        'action_type' => 'Livraison Spécimens',
+        'moyen' => 'Visite',
+        'description' => 'BSS ' . $bss->numero,
+    ]);
+
+    // Attach products from BSS lines to the action line
+    foreach ($bss->lignes as $bssLine) {
+        $actionLine->products()->attach($bssLine->product_id);
+    }
+
+    // Attach the contact
+if ($bss->contact_id) {
+    $actionLine->contacts()->attach($bss->contact_id);
+}
+
+    return redirect()->route('bss.index')->with('success', 'BSS créé et livraison planifiée.');
 }
 
     // Show a single BSS (detail)
