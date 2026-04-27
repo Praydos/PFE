@@ -42,6 +42,7 @@ use App\Http\Controllers\FormationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ActionController;
 use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\DemandeSpecimenController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -306,3 +307,17 @@ Route::get('/api/action-types-by-categorie', [ActionController::class, 'getActio
 Route::get('/api/moyens-by-action-type', [ActionController::class, 'getMoyensByActionType'])->name('api.moyens');
 
 Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
+
+//=========================================================================================================
+// requetes special 
+Route::resource('demandes-specimens', DemandeSpecimenController::class);
+Route::post('/demandes-specimens/{demandes_specimen}/validate', [DemandeSpecimenController::class, 'validateRequest'])->name('demandes-specimens.validate');
+
+
+Route::get('/api/comptes/{compte}/details', function (App\Models\Compte $compte) {
+    return response()->json(['ville_id' => $compte->ville_id, 'zone_id' => $compte->zone_id]);
+})->name('api.compte.details');
+
+Route::get('/api/villes/{ville}/zones', function (App\Models\Ville $ville) {
+    return $ville->zones;
+})->name('api.ville.zones');

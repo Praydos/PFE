@@ -56,7 +56,10 @@ class ExamenController extends Controller
         $langues = ['Français', 'Anglais', 'Arabe', 'Espagnol'];
         $organismes = ['Cambridge Assessment English', 'TOEFL', 'IELTS', 'Other'];
         $niveauxCECR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Pre-A1'];
-        $niveauxScolaires = ['CP', 'CE1', 'CE2', 'CM1', 'CM2', '6ème', '5ème', '4ème', '3ème', '2ème', '1ère', 'Terminale'];
+        
+        $niveauxScolaires = ['CP', 'CE1', 'CE2', '6ème', '5ème', 
+        '4ème', '3ème', '2ème', '1ère', '3ème lycee', '2ème lycee', 
+        '1ère lycee', '3ème college', '2ème college', '1ère college'];
 
         return view('examens.create', compact('comptes', 'currentYear', 'years', 'langues', 'organismes', 'niveauxCECR', 'niveauxScolaires'));
     }

@@ -210,6 +210,123 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
     .status-form { flex-direction: column; align-items: stretch; }
     .status-form .frm-select-wrap { width: 100%; }
 }
+
+
+/* ── Modal Overlay ───────────────────────── */
+.dlg-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 25, 40, 0.45);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--t);
+}
+
+.dlg-modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ── Modal Box ───────────────────────────── */
+.dlg-modal {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg-card);
+    border-radius: var(--r-xl);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transform: translateY(20px) scale(.96);
+    transition: all var(--t);
+}
+
+.dlg-modal-overlay.visible .dlg-modal {
+    transform: translateY(0) scale(1);
+}
+
+/* ── Header ──────────────────────────────── */
+.dlg-modal-hd {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(to bottom, #fafbff, #fff);
+}
+
+.dlg-modal-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dlg-modal-titles h2 {
+    font-size: .95rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.dlg-modal-titles p {
+    font-size: .75rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.dlg-modal-close {
+    margin-left: auto;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: .3rem;
+    border-radius: var(--r-sm);
+    transition: all var(--t);
+}
+
+.dlg-modal-close:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* ── Body ────────────────────────────────── */
+.dlg-modal-body {
+    padding: 1.2rem;
+}
+
+/* ── Form ────────────────────────────────── */
+.frm-group {
+    margin-bottom: .9rem;
+}
+
+.frm-input {
+    width: 100%;
+    padding: .6rem .75rem;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--border);
+    font-size: .82rem;
+    font-family: var(--font);
+    background: var(--bg-card);
+    transition: all var(--t);
+}
+
+.frm-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-mid);
+    outline: none;
+}
+
+.req {
+    color: var(--rose);
+}
 </style>
 @endpush
 
@@ -219,6 +336,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
     {{-- Breadcrumb --}}
     <div class="zn-bc">
+        <a href="{{ route('actions.index') }}">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        </a>
+        <span class="zn-bc-sep">›</span>
         <a href="{{ route('actions.index') }}">Actions</a>
         <span class="zn-bc-sep">›</span>
         <span class="zn-bc-cur">{{ $action->objet }}</span>
@@ -226,8 +350,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
     {{-- Header --}}
     <div class="zn-header">
-        <h1>{{ $action->objet }}</h1>
-        <p>Action du {{ $action->date_planification->format('d/m/Y') }} – {{ $action->compte->etablissement }}</p>
+        <div class="zn-header-left">
+            <h1>{{ $action->objet }}</h1>
+            <p>Action du {{ $action->date_planification->format('d/m/Y') }} – {{ $action->compte->etablissement }}</p>
+        </div>
     </div>
 
     <div class="zn-card">
@@ -239,8 +365,6 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
             <div class="info-grid">
                 <div class="info-item"><span class="info-label">Compte</span> {{ $action->compte->etablissement }}</div>
                 <div class="info-item"><span class="info-label">Date</span> {{ $action->date_planification->format('d/m/Y') }}</div>
-                {{-- <div class="info-item"><span class="info-label">Heure</span> {{ $action->heure ?? '-' }}</div>
-                <div class="info-item"><span class="info-label">Durée</span> {{ $action->duree ? $action->duree.' min' : '-' }}</div> --}}
                 <div class="info-item"><span class="info-label">Lieu</span> {{ $action->lieu ?? '-' }}</div>
                 <div class="info-item"><span class="info-label">Statut</span> <span class="dr-badge bd-{{ $action->statut }}">{{ ucfirst($action->statut) }}</span></div>
                 <div class="info-item"><span class="info-label">Type</span> {{ ucfirst($action->type) }}</div>
@@ -322,59 +446,83 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
             @endif
         </div>
     </div>
-</div>
 
-{{-- Modal for reporting --}}
-<div class="dlg-modal-overlay" id="reportModalOverlay">
-    <div class="dlg-modal">
-        <div class="dlg-modal-hd">
-            <div class="dlg-modal-icon">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 16 14"/>
-                </svg>
+    {{-- Reporting modal (styled exactly like the delegates modal) --}}
+    <div class="dlg-modal-overlay" id="reportModalOverlay">
+        <div class="dlg-modal">
+            <div class="dlg-modal-hd">
+                <div class="dlg-modal-icon">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </div>
+                <div class="dlg-modal-titles">
+                    <h2>Reporter l'action</h2>
+                    <p>Choisissez une nouvelle date et heure</p>
+                </div>
+                <button class="dlg-modal-close" id="closeReportModal" aria-label="Fermer">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
             </div>
-            <div class="dlg-modal-titles">
-                <h2>Reporter l'action</h2>
-                <p>Choisissez une nouvelle date et heure</p>
+            <div class="dlg-modal-body">
+                <form method="POST" action="{{ route('actions.reporter', $action) }}">
+                    @csrf
+                    <div class="frm-group">
+                        <label class="frm-label">Nouvelle date <span class="req">*</span></label>
+                        <input type="date" name="nouvelle_date" class="frm-input" required>
+                    </div>
+                    {{-- <div class="frm-group">
+                        <label class="frm-label">Nouvelle heure</label>
+                        <input type="time" name="nouvelle_heure" class="frm-input">
+                    </div> --}}
+                    <div style="display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1rem;">
+                        <button type="button" class="btn-zn btn-zn-ghost" id="cancelReportBtn">Annuler</button>
+                        <button type="submit" class="btn-zn btn-zn-primary">Reporter</button>
+                    </div>
+                </form>
             </div>
-            <button class="dlg-modal-close" id="closeReportModal">&times;</button>
-        </div>
-        <div class="dlg-modal-body">
-            <form method="POST" action="{{ route('actions.reporter', $action) }}">
-                @csrf
-                <div class="frm-group">
-                    <label class="frm-label">Nouvelle date *</label>
-                    <input type="date" name="nouvelle_date" class="frm-input" required>
-                </div>
-                <div class="frm-group">
-                    <label class="frm-label">Nouvelle heure</label>
-                    <input type="time" name="nouvelle_heure" class="frm-input">
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1rem;">
-                    <button type="button" class="btn-zn btn-zn-ghost" id="cancelReportBtn">Annuler</button>
-                    <button type="submit" class="btn-zn btn-zn-primary">Reporter</button>
-                </div>
-            </form>
         </div>
     </div>
+
 </div>
 @endsection
 
 @push('scripts')
 <script>
-    const reportOverlay = document.getElementById('reportModalOverlay');
-    const openBtn = document.getElementById('openReportModalBtn');
-    const closeBtn = document.getElementById('closeReportModal');
-    const cancelBtn = document.getElementById('cancelReportBtn');
+    (function() {
+        const reportOverlay = document.getElementById('reportModalOverlay');
+        const openBtn = document.getElementById('openReportModalBtn');
+        const closeBtn = document.getElementById('closeReportModal');
+        const cancelBtn = document.getElementById('cancelReportBtn');
 
-    function openModal() { reportOverlay.classList.add('visible'); document.body.style.overflow = 'hidden'; }
-    function closeModal() { reportOverlay.classList.remove('visible'); document.body.style.overflow = ''; }
-
-    if (openBtn) openBtn.addEventListener('click', openModal);
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
-    reportOverlay.addEventListener('click', (e) => { if (e.target === reportOverlay) closeModal(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && reportOverlay.classList.contains('visible')) closeModal(); });
+        function openModal() {
+            if (reportOverlay) {
+                reportOverlay.classList.add('visible');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        function closeModal() {
+            if (reportOverlay) {
+                reportOverlay.classList.remove('visible');
+                document.body.style.overflow = '';
+            }
+        }
+        if (openBtn) openBtn.addEventListener('click', openModal);
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        if (reportOverlay) {
+            reportOverlay.addEventListener('click', (e) => {
+                if (e.target === reportOverlay) closeModal();
+            });
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && reportOverlay && reportOverlay.classList.contains('visible')) {
+                closeModal();
+            }
+        });
+    })();
 </script>
 @endpush
