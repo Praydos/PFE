@@ -207,6 +207,24 @@
         <p>Détail du compte client</p>
     </div>
 
+    {{-- Actions rapides --}}
+<div class="zn-card mt-4">
+    <div class="zn-card-header">
+        <span class="zn-card-pip"></span>
+        <span class="zn-card-title">Actions rapides</span>
+    </div>
+    <div class="zn-card-body">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('bss.create', ['compte_id' => $compte->id]) }}" class="btn-zn btn-zn-primary">Nouveau BSS</a>
+            <a href="{{ route('examens.create', ['compte_id' => $compte->id]) }}" class="btn-zn btn-zn-primary">Nouvel examen</a>
+            <a href="{{ route('actions.create', ['compte_id' => $compte->id]) }}" class="btn-zn btn-zn-primary">Nouvelle action</a>
+            <a href="{{ route('events.create', ['compte_id' => $compte->id]) }}" class="btn-zn btn-zn-primary">Nouvel événement</a>
+            <a href="{{ route('formations.create', ['compte_id' => $compte->id]) }}" class="btn-zn btn-zn-primary">Nouvelle formation</a>
+            <a href="{{ route('demandes-specimens.create', ['compte_id' => $compte->id]) }}" class="btn-zn btn-zn-primary">Demande spéciale</a>
+        </div>
+    </div>
+</div>
+
     {{-- Carte Informations générales --}}
     <div class="zn-card">
         <div class="zn-card-header">

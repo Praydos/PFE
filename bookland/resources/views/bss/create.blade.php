@@ -197,9 +197,11 @@
                         <label class="frm-label" for="compte_id">Compte <span class="req">*</span></label>
                         <div class="frm-select-wrap">
                             <select name="compte_id" id="compte_id" class="frm-select" required>
-                                <option value="">— Sélectionnez —</option>
+                                <option value="">-- Sélectionnez --</option>
                                 @foreach($comptes as $c)
-                                    <option value="{{ $c->id }}">{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
+                                    <option value="{{ $c->id }}" {{ (old('compte_id', $selectedCompteId ?? '') == $c->id) ? 'selected' : '' }}>
+                                        {{ $c->etablissement }} ({{ $c->ville->nom }})
+                                    </option>
                                 @endforeach
                             </select>
                         </div>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Formation;
 use App\Models\Compte;
 use App\Models\Contact;
+use App\Models\Zone;
+use App\Models\Ville;
 use App\Models\AnneeScolaire;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,6 +46,27 @@ class FormationController extends Controller
         return view('formations.index', compact('formations', 'comptes', 'years', 'statuts', 'types'));
     }
 
+
+    private function getUserVilles($user)
+    {
+        if ($user->role === 'admin') {
+            return Ville::orderBy('nom')->get();
+        }
+        // For delegate or RBO, get villes through their zones
+        if ($user->role === 'delegue') {
+            $zoneIds = $user->zones->pluck('id');
+            return Ville::whereHas('zones', fn($q) => $q->whereIn('zones.id', $zoneIds))->get();
+        }
+        if ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            $zoneIds = Zone::whereIn('rbo_id', [$user->id])->orWhereHas('delegates', fn($q) => $q->whereIn('users.id', $delegateIds))->pluck('id');
+            return Ville::whereHas('zones', fn($q) => $q->whereIn('zones.id', $zoneIds))->get();
+        }
+        return collect();
+    }
+
+
+
     public function create()
     {
         $user = Auth::user();
@@ -58,7 +81,20 @@ class FormationController extends Controller
         ];
         $cibles = ['Direction', 'Enseignants', 'Parents'];
 
-        return view('formations.create', compact('comptes', 'currentYear', 'years', 'types', 'cibles'));
+        $villes = $this->getUserVilles($user); // helper
+        $zones = Zone::all();
+
+        // Pre‑selected compte from query parameter
+        $selectedCompteId = request('compte_id');
+        $defaultVilleId = null;
+        $defaultZoneId = null;
+        if ($selectedCompteId && $comptes->contains('id', $selectedCompteId)) {
+            $compte = $comptes->find($selectedCompteId);
+            $defaultVilleId = $compte->ville_id;
+            $defaultZoneId = $compte->zone_id;
+        }
+
+        return view('formations.create', compact('comptes', 'currentYear', 'years', 'types', 'cibles', 'villes', 'zones', 'selectedCompteId', 'defaultVilleId', 'defaultZoneId'));
     }
 
     public function store(Request $request)
@@ -69,37 +105,23 @@ class FormationController extends Controller
     $validated = $request->validate([
         'compte_id' => 'required|exists:comptes,id',
         'contact_id' => 'required|exists:contacts,id',
-        'type' => 'required|in:Formation méthode,Présentation méthode,Accompagnement pédagogique,Leçon modèle,Intégration de classe,Audit de classe,Formation Examen CAMBRIDGE',
+        'ville_id' => 'required|exists:villes,id',
+        'zone_id' => 'required|exists:zones,id',
+        'type' => 'required|in:...',
         'cible' => 'nullable|in:Direction,Enseignants,Parents',
-
-        // ✅ ADD THIS
-        'dates_ecole' => 'required|array',
-        'dates_ecole.*' => 'date'
-
-        
+        'dates_ecole' => 'nullable|array',
+        'dates_ecole.*' => 'date',
     ]);
 
-    $compte = Compte::find($validated['compte_id']);
-
-    $validated['zone_id'] = $compte->zone_id;
-    $validated['ville_id'] = $compte->ville_id;
     $validated['delegue_id'] = $user->id;
     $validated['annee_scolaire_id'] = $this->getCurrentYear()->id;
-
-    // store multiple dates
-    $validated['date_demande'] = array_filter($validated['dates_ecole']);
-
-    // remove temporary field
-    unset($validated['dates_ecole']);
-
     $validated['statut'] = 'demande';
-    $validated['dates_proposees'] = $request->dates_proposees ?? [];
+    $validated['dates_ecole'] = $validated['dates_ecole'] ?? [];
 
     Formation::create($validated);
 
     return redirect()->route('formations.index')->with('success', 'Demande de formation créée.');
 }
-
     public function show(Formation $formation)
     {
         $this->authorizeView($formation);

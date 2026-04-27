@@ -315,7 +315,12 @@ Route::post('/demandes-specimens/{demandes_specimen}/validate', [DemandeSpecimen
 
 
 Route::get('/api/comptes/{compte}/details', function (App\Models\Compte $compte) {
-    return response()->json(['ville_id' => $compte->ville_id, 'zone_id' => $compte->zone_id]);
+    return response()->json([
+        'ville_id' => $compte->ville_id,
+        'ville_nom' => $compte->ville->nom,
+        'zone_id' => $compte->zone_id,
+        'zone_name' => $compte->zone->name,
+    ]);
 })->name('api.compte.details');
 
 Route::get('/api/villes/{ville}/zones', function (App\Models\Ville $ville) {

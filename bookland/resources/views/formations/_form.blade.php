@@ -1,7 +1,9 @@
 @php
     $isEdit = isset($formation);
-    $defaultCompteId = old('compte_id', $isEdit ? $formation->compte_id : '');
+    $defaultCompteId = old('compte_id', $isEdit ? $formation->compte_id : ($selectedCompteId ?? ''));
     $defaultContactId = old('contact_id', $isEdit ? $formation->contact_id : '');
+    $defaultVilleId = old('ville_id', $isEdit ? $formation->ville_id : ($defaultVilleId ?? ''));
+    $defaultZoneId = old('zone_id', $isEdit ? $formation->zone_id : ($defaultZoneId ?? ''));
     $defaultType = old('type', $isEdit ? $formation->type : '');
     $defaultCible = old('cible', $isEdit ? $formation->cible : '');
     $defaultDatesEcole = old('dates_ecole', $isEdit ? ($formation->dates_ecole ?? []) : []);
@@ -26,6 +28,32 @@
         <div class="frm-select-wrap">
             <select name="contact_id" id="contact_id" class="frm-select" required>
                 <option value="">— Sélectionnez d'abord un compte —</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+{{-- Ville and Zone --}}
+<div class="form-row" style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+    <div class="frm-group" style="flex: 1; min-width: 200px;">
+        <label class="frm-label" for="ville_id">Ville <span class="req">*</span></label>
+        <div class="frm-select-wrap">
+            <select name="ville_id" id="ville_id" class="frm-select" required>
+                <option value="">— Sélectionnez —</option>
+                @foreach($villes as $v)
+                    <option value="{{ $v->id }}" {{ $defaultVilleId == $v->id ? 'selected' : '' }}>{{ $v->nom }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+    <div class="frm-group" style="flex: 1; min-width: 200px;">
+        <label class="frm-label" for="zone_id">Zone <span class="req">*</span></label>
+        <div class="frm-select-wrap">
+            <select name="zone_id" id="zone_id" class="frm-select" required>
+                <option value="">— Sélectionnez —</option>
+                @foreach($zones as $z)
+                    <option value="{{ $z->id }}" {{ $defaultZoneId == $z->id ? 'selected' : '' }}>{{ $z->name }}</option>
+                @endforeach
             </select>
         </div>
     </div>
@@ -123,37 +151,56 @@
 @endif
 
 <script>
-    // Load contacts dynamically
     const compteSelect = document.getElementById('compte_id');
     const contactSelect = document.getElementById('contact_id');
-    if (compteSelect) {
-        compteSelect.addEventListener('change', function() {
-            let compteId = this.value;
-            if (!compteId) {
-                contactSelect.innerHTML = '<option value="">— Sélectionnez d\'abord un compte —</option>';
-                return;
-            }
-            fetch(`/api/comptes/${compteId}/contacts`)
-                .then(r => r.json())
-                .then(data => {
-                    let html = '<option value="">— Sélectionnez un contact —</option>';
-                    data.forEach(c => html += `<option value="${c.id}">${c.prenom} ${c.nom} (${c.fonction || ''})</option>`);
-                    contactSelect.innerHTML = html;
-                    const defaultContactId = '{{ $defaultContactId }}';
-                    if (defaultContactId) contactSelect.value = defaultContactId;
-                });
-        });
-        if (compteSelect.value) {
-            compteSelect.dispatchEvent(new Event('change'));
+    const villeSelect = document.getElementById('ville_id');
+    const zoneSelect = document.getElementById('zone_id');
+
+    function loadCompteDetails(compteId) {
+        if (!compteId) return;
+        fetch(`/api/comptes/${compteId}/details`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.ville_id) villeSelect.value = data.ville_id;
+                if (data.zone_id) zoneSelect.value = data.zone_id;
+                // Load contacts after setting ville/zone
+                loadContactsForCompte(compteId);
+            })
+            .catch(err => console.error('Error loading compte details:', err));
+    }
+
+    function loadContactsForCompte(compteId) {
+        fetch(`/api/comptes/${compteId}/contacts`)
+            .then(r => r.json())
+            .then(data => {
+                let html = '<option value="">— Sélectionnez un contact —</option>';
+                data.forEach(c => html += `<option value="${c.id}">${c.prenom} ${c.nom} (${c.fonction || ''})</option>`);
+                contactSelect.innerHTML = html;
+                const defaultContactId = '{{ $defaultContactId }}';
+                if (defaultContactId) contactSelect.value = defaultContactId;
+            });
+    }
+
+    compteSelect.addEventListener('change', function() {
+        const compteId = this.value;
+        if (compteId) {
+            loadCompteDetails(compteId);
+        } else {
+            contactSelect.innerHTML = '<option value="">— Sélectionnez d\'abord un compte —</option>';
+            villeSelect.value = '';
+            zoneSelect.value = '';
         }
+    });
+
+    // Initial load if a compte is pre‑selected
+    if (compteSelect.value) {
+        loadCompteDetails(compteSelect.value);
     }
 
     // Remove date row
     function attachRemoveEvent(row) {
         const removeBtn = row.querySelector('.remove-date');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', () => row.remove());
-        }
+        if (removeBtn) removeBtn.addEventListener('click', () => row.remove());
     }
 
     // Add date row (generic)
@@ -175,6 +222,8 @@
         });
     });
 
-    // Attach to existing rows
     document.querySelectorAll('.date-row').forEach(row => attachRemoveEvent(row));
+
+
+    
 </script>

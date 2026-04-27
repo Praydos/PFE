@@ -65,6 +65,13 @@ class BssController extends Controller
     $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
     $contacts = Contact::whereHas('comptes', fn($q) => $q->where('delegue_id', $user->id))->get();
 
+    // Pre‑selected compte from query parameter
+    $selectedCompteId = request('compte_id');
+    if ($selectedCompteId && $comptes->contains('id', $selectedCompteId)) {
+        $selectedCompte = $comptes->find($selectedCompteId);
+        // You can also pre‑select the first contact of that compte if needed
+    }
+
     $currentYear = $this->getCurrentYear();
     if (!$currentYear) {
         return redirect()->back()->withErrors(['error' => 'Aucune année scolaire définie.']);
@@ -78,7 +85,7 @@ class BssController extends Controller
     $increment = $lastBss ? intval(substr($lastBss->numero, -4)) + 1 : 1;
     $numero = 'BSS-' . now()->year . '-' . str_pad($increment, 4, '0', STR_PAD_LEFT);
 
-    return view('bss.create', compact('comptes', 'contacts', 'consignations', 'numero', 'currentYear'));
+    return view('bss.create', compact('comptes', 'contacts', 'consignations', 'numero', 'currentYear', 'selectedCompteId'));
 }
 
     // Store new BSS
@@ -203,9 +210,9 @@ class BssController extends Controller
     }
 
     // Attach the contact
-if ($bss->contact_id) {
-    $actionLine->contacts()->attach($bss->contact_id);
-}
+    if ($bss->contact_id) {
+        $actionLine->contacts()->attach($bss->contact_id);
+    }
 
     return redirect()->route('bss.index')->with('success', 'BSS créé et livraison planifiée.');
 }

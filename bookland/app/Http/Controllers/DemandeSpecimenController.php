@@ -50,23 +50,30 @@ class DemandeSpecimenController extends Controller
 
     // Create form
     public function create()
-    {
-        $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+{
+    $user = Auth::user();
+    if ($user->role !== 'delegue') abort(403);
 
-        $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
-        $products = Product::orderBy('titre')->get();
-        $currentYear = $this->getCurrentYear();
-        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
-        $contacts = Contact::whereHas('comptes', fn($q) => $q->where('delegue_id', $user->id))->get();
+    $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
+    $products = Product::orderBy('titre')->get();
+    $currentYear = $this->getCurrentYear();
+    $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+    $villes = $this->getUserVilles($user);
+    $zones = Zone::all();
 
-        // For ville/zone selection (personnelle case)
-        $villes = $this->getUserVilles($user);
-        $zones = Zone::all();
-
-        return view('demandes_specimens.create', compact('comptes', 'products', 'currentYear', 'years', 'villes', 'zones', 'contacts'));
+    $selectedCompteId = request('compte_id');
+    $defaultVilleId = null;
+    $defaultZoneId = null;
+    $defaultContactId = null;
+    if ($selectedCompteId && $comptes->contains('id', $selectedCompteId)) {
+        $compte = $comptes->find($selectedCompteId);
+        $defaultVilleId = $compte->ville_id;
+        $defaultZoneId = $compte->zone_id;
+        // We also need to pre‑select the contact? Not necessary, the AJAX will load them.
     }
 
+    return view('demandes_specimens.create', compact('comptes', 'products', 'currentYear', 'years', 'villes', 'zones', 'selectedCompteId', 'defaultVilleId', 'defaultZoneId'));
+}
     // Store new request
     public function store(Request $request)
     {

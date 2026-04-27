@@ -82,7 +82,7 @@ public function create()
     $categories = $this->getCategories();
     $products = Product::orderBy('titre')->get();
     $examens = Examen::orderBy('titre')->get();
-    $bssList = Bss::where('delegate_id', $user->id)
+    $bssList = Bss::where('delegue_id', $user->id)
         ->whereIn('statut', ['valide', 'livre'])
         ->with('compte')
         ->get();
@@ -90,7 +90,11 @@ public function create()
         ->with('bss.compte')
         ->get();
 
-    // Assign class properties to local variables
+    $selectedCompteId = request('compte_id');
+    if ($selectedCompteId && $comptes->contains('id', $selectedCompteId)) {
+        $selectedCompte = $comptes->find($selectedCompteId);
+    }
+
     $requiresProduct = $this->requiresProduct;
     $requiresBss = $this->requiresBss;
     $requiresRetour = $this->requiresRetour;
@@ -98,7 +102,7 @@ public function create()
 
     return view('actions.create', compact(
         'comptes', 'categories', 'products', 'examens', 'bssList', 'retoursList',
-        'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen'
+        'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen', 'selectedCompteId'
     ));
 }
 

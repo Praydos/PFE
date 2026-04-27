@@ -46,23 +46,26 @@ class ExamenController extends Controller
 
     // Create form
     public function create()
-    {
-        $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+{
+    $user = Auth::user();
+    if ($user->role !== 'delegue') abort(403);
 
-        $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
-        $currentYear = $this->getCurrentYear();
-        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
-        $langues = ['Français', 'Anglais', 'Arabe', 'Espagnol'];
-        $organismes = ['Cambridge Assessment English', 'TOEFL', 'IELTS', 'Other'];
-        $niveauxCECR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Pre-A1'];
-        
-        $niveauxScolaires = ['CP', 'CE1', 'CE2', '6ème', '5ème', 
-        '4ème', '3ème', '2ème', '1ère', '3ème lycee', '2ème lycee', 
-        '1ère lycee', '3ème college', '2ème college', '1ère college'];
+    $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
+    $currentYear = $this->getCurrentYear();
+    $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+    $langues = ['Français', 'Anglais', 'Arabe', 'Espagnol'];
+    $organismes = ['Cambridge Assessment English', 'TOEFL', 'IELTS', 'Other'];
+    $niveauxCECR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Pre-A1'];
+    $niveauxScolaires = ['CP', 'CE1', 'CE2', 'CM1', 'CM2', '6ème', '5ème', '4ème', '3ème', '2ème', '1ère', 'Terminale'];
 
-        return view('examens.create', compact('comptes', 'currentYear', 'years', 'langues', 'organismes', 'niveauxCECR', 'niveauxScolaires'));
+    $selectedCompteId = request('compte_id');
+    if ($selectedCompteId && $comptes->contains('id', $selectedCompteId)) {
+        $selectedCompte = $comptes->find($selectedCompteId);
+        // You can also pre‑fill the contact list (but that's already done in AJAX)
     }
+
+    return view('examens.create', compact('comptes', 'currentYear', 'years', 'langues', 'organismes', 'niveauxCECR', 'niveauxScolaires', 'selectedCompteId'));
+}
 
     // Store new examen
     public function store(Request $request)

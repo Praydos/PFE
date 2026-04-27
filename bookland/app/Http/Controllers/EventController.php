@@ -65,18 +65,30 @@ class EventController extends Controller
 
     // Create form
     public function create()
-    {
-        $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+{
+    $user = Auth::user();
+    if ($user->role !== 'delegue') abort(403);
 
-        $villes = $this->getDelegateVilles();
-        $currentYear = $this->getCurrentYear();
-        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
-        $types = ['Public Speaking', 'Ateliers de lecture', 'English Day', 'Compétitions', 'Amizing minds', 'Workshop', 'Exposition de livres', 'Salon', 'Formation Editeur', 'Présentation Produit'];
-        $editeurs = ['Esprit du livre', 'Matifica', 'Express publishing', 'Bookland'];
+    $villes = $this->getDelegateVilles();
+    $currentYear = $this->getCurrentYear();
+    $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+    $types = ['Public Speaking', 'Ateliers de lecture', 'English Day', 'Compétitions', 'Amizing minds', 'Workshop', 'Exposition de livres', 'Salon', 'Formation Editeur', 'Présentation Produit'];
+    $editeurs = ['Esprit du livre', 'Matifica', 'Express publishing', 'Bookland'];
 
-        return view('events.create', compact('villes', 'currentYear', 'years', 'types', 'editeurs'));
+    // Pre‑fill ville and zone if a compte_id is provided
+    $selectedCompteId = request('compte_id');
+    $defaultVilleId = null;
+    $defaultZoneId = null;
+    if ($selectedCompteId) {
+        $compte = Compte::find($selectedCompteId);
+        if ($compte && $compte->delegue_id == $user->id) {
+            $defaultVilleId = $compte->ville_id;
+            $defaultZoneId = $compte->zone_id;
+        }
     }
+
+    return view('events.create', compact('villes', 'currentYear', 'years', 'types', 'editeurs', 'defaultVilleId', 'defaultZoneId'));
+}
 
     // Store event
     public function store(Request $request)

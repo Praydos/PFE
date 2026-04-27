@@ -33,15 +33,12 @@
                 </div>
 
                 {{-- Compte --}}
-                <div class="mb-3">
-                    <label class="form-label">Compte</label>
-                    <select name="compte_id" id="compte_id" class="form-select">
-                        <option value="">-- Sélectionnez (pour type Établissement) --</option>
-                        @foreach($comptes as $c)
-                            <option value="{{ $c->id }}">{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
-                        @endforeach
-                    </select>
-                </div>
+                <select name="compte_id" id="compte_id" class="form-select">
+                    <option value="">-- Sélectionnez (pour type Établissement) --</option>
+                    @foreach($comptes as $c)
+                        <option value="{{ $c->id }}" {{ $selectedCompteId == $c->id ? 'selected' : '' }}>{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
+                    @endforeach
+                </select>
 
                 {{-- Contact --}}
                 <div class="mb-3">
@@ -52,23 +49,16 @@
                 </div>
 
                 {{-- Ville et zone --}}
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Ville</label>
-                        <select name="ville_id" id="ville_id" class="form-select">
-                            <option value="">-- Sélectionnez --</option>
-                            @foreach($villes as $v)
-                                <option value="{{ $v->id }}">{{ $v->nom }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Zone</label>
-                        <select name="zone_id" id="zone_id" class="form-select">
-                            <option value="">-- Sélectionnez --</option>
-                        </select>
-                    </div>
-                </div>
+                <select name="ville_id" id="ville_id" class="form-select">
+    @foreach($villes as $v)
+        <option value="{{ $v->id }}" {{ $defaultVilleId == $v->id ? 'selected' : '' }}>{{ $v->nom }}</option>
+    @endforeach
+</select>
+<select name="zone_id" id="zone_id" class="form-select">
+    @foreach($zones as $z)
+        <option value="{{ $z->id }}" {{ $defaultZoneId == $z->id ? 'selected' : '' }}>{{ $z->name }}</option>
+    @endforeach
+</select>
 
                 {{-- Description --}}
                 <div class="mb-3">

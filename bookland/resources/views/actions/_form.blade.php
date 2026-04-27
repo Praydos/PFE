@@ -1,7 +1,7 @@
 @php
     $isEdit                  = isset($action);
     $defaultObjet            = old('objet',                  $isEdit ? $action->objet                                    : '');
-    $defaultCompteId         = old('compte_id',              $isEdit ? $action->compte_id                                : '');
+    $defaultCompteId = old('compte_id', $isEdit ? $action->compte_id : ($selectedCompteId ?? ''));
     $defaultDate             = old('date_planification',     $isEdit ? $action->date_planification->format('Y-m-d')       : '');
     $defaultHeure            = old('heure',                  $isEdit ? $action->heure                                    : '');
     $defaultDuree            = old('duree',                  $isEdit ? $action->duree                                    : '');
@@ -176,4 +176,41 @@
         });
     }
 })();
+
+// Auto-fill lieu when compte is selected
+document.addEventListener('DOMContentLoaded', function() {
+    const compteSelect = document.getElementById('compte_id');
+    const lieuInput = document.getElementById('lieu');
+
+    if (!compteSelect || !lieuInput) return;
+
+    function setLieuFromCompte(compteId) {
+        if (!compteId) return;
+        fetch(`/api/comptes/${compteId}/details`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return response.json();
+            })
+            .then(data => {
+                const zoneName = data.zone_name || '—';
+                const villeName = data.ville_nom || '—';
+                lieuInput.value = `Zone: ${zoneName} - Ville: ${villeName}`;
+            })
+            .catch(err => console.error('Error fetching compte details:', err));
+    }
+
+    // When compte changes, update lieu
+    compteSelect.addEventListener('change', function() {
+        if (this.value) {
+            setLieuFromCompte(this.value);
+        } else {
+            lieuInput.value = '';
+        }
+    });
+
+    // If a compte is already pre‑selected (e.g., from shortcut), trigger change
+    if (compteSelect.value) {
+        setLieuFromCompte(compteSelect.value);
+    }
+});
 </script>
