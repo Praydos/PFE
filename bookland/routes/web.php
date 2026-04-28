@@ -333,6 +333,6 @@ Route::get('/api/villes/{ville}/zones', function (App\Models\Ville $ville) {
 
 Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
 Route::get('/agenda/events', [AgendaController::class, 'events'])->name('agenda.events');
-
+Route::patch('/agenda/event/{type}/{id}/reschedule', [AgendaController::class, 'rescheduleEvent'])->name('agenda.reschedule');
 Route::resource('vacations', VacationController::class)->only(['index', 'store', 'update', 'destroy'])
 ->middleware('role:admin');

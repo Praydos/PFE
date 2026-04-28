@@ -200,6 +200,91 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
     .ag-table th, .ag-table td { padding:.7rem .9rem; }
 }
 @media(max-width:480px) { .ag-stats { grid-template-columns:1fr; } }
+
+
+
+/* Primary button (blue background, white text, shadow) */
+.btn-ag-primary {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+    box-shadow: var(--sb);
+}
+.btn-ag-primary:hover {
+    background: var(--blue-d);
+    border-color: var(--blue-d);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(91,141,238,.4);
+    text-decoration: none;
+}
+
+/* inhncing the drag and drop animation*/
+
+/* ── Drag & Drop Enhancements ───────────────────── */
+
+/* While dragging */
+.fc-event.fc-event-dragging {
+    opacity: 0.9 !important;
+    transform: scale(1.03);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+}
+
+/* Mirror clone */
+.fc .fc-event-mirror {
+    transform: scale(1.03) translateY(2px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+}
+
+/* Hover day highlight */
+.fc-daygrid-day.fc-day-highlight {
+    background: rgba(91,141,238,0.12) !important;
+    transition: background 0.2s ease;
+}
+
+/* Drop bounce animation */
+@keyframes dropBounce {
+    0%   { transform: scale(1.05); }
+    50%  { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+.fc-event.drop-animate {
+    animation: dropBounce 0.25s ease;
+}
+
+/* Error shake */
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+.fc-event.shake {
+    animation: shake 0.25s ease;
+}
+
+/* Toast */
+.ag-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1a1f36;
+    color: #fff;
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.25s ease;
+    z-index: 9999;
+}
+
+.ag-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
 </style>
 @endpush
 
@@ -223,55 +308,16 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
         </div>
     </div>
 
-    {{-- Stat cards
-    @php
-        $tabCounts = [
-            'all'        => count($events instanceof \Illuminate\Pagination\LengthAwarePaginator ? $events->items() : (array)$events),
-            'actions'    => 0,
-            'examens'    => 0,
-            'formations' => 0,
-            'events'     => 0,
-            'specimens'  => 0,
-        ];
-        if ($viewMode === 'list') {
-            foreach ($events as $ev) {
-                $type = $ev['type'] ?? 'other';
-                if (isset($tabCounts[$type])) $tabCounts[$type]++;
-            }
-        }
-    @endphp --}}
-    {{-- <div class="ag-stats">
-        <div class="ag-stat">
-            <div class="stat-ico si-blue">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
-            </div>
-            <div><div class="stat-label">Total</div><div class="stat-value">{{ $viewMode === 'list' ? $events->total() : '—' }}</div></div>
-        </div>
-        <div class="ag-stat">
-            <div class="stat-ico si-blue">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            <div><div class="stat-label">Actions</div><div class="stat-value">{{ $tabCounts['actions'] ?: '—' }}</div></div>
-        </div>
-        <div class="ag-stat">
-            <div class="stat-ico si-violet">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div><div class="stat-label">Examens</div><div class="stat-value">{{ $tabCounts['examens'] ?: '—' }}</div></div>
-        </div>
-        <div class="ag-stat">
-            <div class="stat-ico si-teal">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
-            </div>
-            <div><div class="stat-label">Formations</div><div class="stat-value">{{ $tabCounts['formations'] ?: '—' }}</div></div>
-        </div>
-        <div class="ag-stat">
-            <div class="stat-ico si-amber">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            </div>
-            <div><div class="stat-label">Événements</div><div class="stat-value">{{ $tabCounts['events'] ?: '—' }}</div></div>
-        </div>
-    </div> --}}
+   <div class="create-actions-toolbar" style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="{{ route('bss.create') }}" class="btn-ag btn-ag-primary">Nouveau BSS</a>
+        <a href="{{ route('examens.create') }}" class="btn-ag btn-ag-primary">Nouvel examen</a>
+        <a href="{{ route('actions.create') }}" class="btn-ag btn-ag-primary">Nouvelle action</a>
+        <a href="{{ route('formations.create') }}" class="btn-ag btn-ag-primary">Nouvelle formation</a>
+        <a href="{{ route('events.create') }}" class="btn-ag btn-ag-primary">Nouvel événement</a>
+        <a href="{{ route('demandes-specimens.create') }}" class="btn-ag btn-ag-primary">Demande spéciale</a>
+    </div>
+
+    
 
     {{-- Toolbar: tabs + view toggle --}}
     <div class="ag-toolbar">
@@ -445,6 +491,21 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
     const viewMode   = '{{ $viewMode }}';
     const currentTab = '{{ $tab }}';
 
+    /* ── Toast helper ───────────────────────── */
+    function showToast(message) {
+        let toast = document.createElement('div');
+        toast.className = 'ag-toast';
+        toast.innerText = message;
+        document.body.appendChild(toast);
+
+        setTimeout(() => toast.classList.add('show'), 50);
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 2500);
+    }
+
     /* ── Tab switching ──────────────────────── */
     document.querySelectorAll('.ag-tab').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -454,50 +515,86 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
 
     /* ── FullCalendar ───────────────────────── */
     if (viewMode === 'calendar') {
-        const calEl = document.getElementById('calendar');
-        if (!calEl) return;
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
 
-        const calendar = new FullCalendar.Calendar(calEl, {
+        const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            locale: 'fr',
-            height: 'auto',
-            firstDay: 1,
             headerToolbar: {
-                left:   'prev,next today',
+                left: 'prev,next today',
                 center: 'title',
-                right:  'dayGridMonth,timeGridWeek,listMonth'
-            },
-            buttonText: {
-                today:     'Aujourd\'hui',
-                month:     'Mois',
-                week:      'Semaine',
-                list:      'Liste',
+                right: 'dayGridMonth,timeGridWeek,listMonth'
             },
             events: '{{ route("agenda.events") }}?tab=' + currentTab,
-            eventClick: function(info) {
-                info.jsEvent.preventDefault();
-                if (info.event.url) window.location.href = info.event.url;
+            editable: true,
+            droppable: true,
+
+
+            /* ✅ FIXES */
+            snapDuration: { days: 1 },
+            allDayMaintainDuration: true,
+            eventDragMinDistance: 5,
+            fixedMirrorParent: document.body,
+
+            eventDrop: function(info) {
+                const el = info.el;
+
+                // 🎯 Bounce animation
+                el.classList.add('drop-animate');
+                setTimeout(() => el.classList.remove('drop-animate'), 300);
+
+                const event = info.event;
+                const newDate = event.start.toISOString().slice(0, 10);
+                const type = event.extendedProps.type;
+                const id = event.id;
+
+                if (!type || !id) {
+                    el.classList.add('shake');
+                    setTimeout(() => el.classList.remove('shake'), 300);
+                    showToast("Impossible de modifier ❌");
+                    info.revert();
+                    return;
+                }
+
+                const baseUrl = '{{ url("/agenda/event") }}';
+
+                fetch(`${baseUrl}/${type}/${id}/reschedule`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ new_date: newDate })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        el.classList.add('shake');
+                        setTimeout(() => el.classList.remove('shake'), 300);
+
+                        showToast(data.error || "Erreur lors du déplacement ❌");
+                        info.revert();
+                    } else {
+                        showToast("Événement déplacé ✔");
+                        calendar.refetchEvents();
+                    }
+                })
+                .catch(() => {
+                    el.classList.add('shake');
+                    setTimeout(() => el.classList.remove('shake'), 300);
+
+                    showToast("Erreur réseau ⚠");
+                    info.revert();
+                });
             },
-            eventDidMount: function(info) {
-                /* colour events by type */
-                const type = info.event.extendedProps.type || '';
-                const colours = {
-                    actions:    { bg:'#5b8dee', border:'#3d6fd6' },
-                    examens:    { bg:'#7c6fcd', border:'#6a5db8' },
-                    formations: { bg:'#0cb8b6', border:'#0a9997' },
-                    events:     { bg:'#e8a020', border:'#c8891a' },
-                    specimens:  { bg:'#28c76f', border:'#20a85c' },
-                    tasks:      { bg:'#9ba8c5', border:'#7b8ab0' },
-                };
-                if (colours[type]) {
-                    info.el.style.backgroundColor  = colours[type].bg;
-                    info.el.style.borderColor       = colours[type].border;
+
+            eventClick: function(info) {
+                if (info.event.url) {
+                    window.location.href = info.event.url;
                 }
             },
-            dayCellDidMount: function(info) {
-                info.el.style.cursor = 'default';
-            },
-            noEventsText: 'Aucun événement à afficher',
+
+            height: 'auto',
         });
 
         calendar.render();

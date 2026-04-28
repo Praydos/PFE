@@ -127,7 +127,10 @@ class AgendaController extends Controller
             'start' => $action->date_planification->toDateString() . ($action->heure ? 'T' . $action->heure : ''),
             'url' => route('actions.show', $action),
             'color' => $this->getColorForDelegate($action->delegate_id),
+            'id' => $action->id,
+            
             'extendedProps' => [
+                'type' => 'action',
                 'compte' => $compte->etablissement ?? '',
                 'ville' => $compte->ville->nom ?? '',
                 'zone' => $compte->zone->name ?? '',
@@ -146,7 +149,10 @@ class AgendaController extends Controller
             'start' => $examen->date_examen->toDateString(),
             'url' => route('examens.show', $examen),
             'color' => '#6f42c1',
+            'id' => $examen->id,
+            
             'extendedProps' => [
+                'type' => 'examen',
                 'compte' => $compte->etablissement ?? '',
                 'ville' => $compte->ville->nom ?? '',
                 'zone' => $compte->zone->name ?? '',
@@ -170,7 +176,10 @@ class AgendaController extends Controller
             'start' => $firstDate,
             'url' => route('formations.show', $formation),
             'color' => '#fd7e14',
+            'id' => $formation->id,
+            
             'extendedProps' => [
+                'type' => 'formation',
                 'compte' => $compte->etablissement ?? '',
                 'ville' => $compte->ville->nom ?? '',
                 'zone' => $compte->zone->name ?? '',
@@ -189,7 +198,10 @@ class AgendaController extends Controller
             'start' => $event->date_event->toDateString(),
             'url' => route('events.show', $event),
             'color' => '#28a745',
+            'id' => $event->id,
+            
             'extendedProps' => [
+                'type' => 'event',
                 'compte' => $compte->etablissement ?? '',
                 'ville' => $compte->ville->nom ?? '',
                 'zone' => $compte->zone->name ?? '',
@@ -326,7 +338,10 @@ class AgendaController extends Controller
             'start' => $bss->date_livraison_prevue->toDateString(),
             'url' => route('bss.show', $bss),
             'color' => '#17a2b8', // teal
+            'id' => $bss->id,
+            
             'extendedProps' => [
+                'type' => 'specimen',
                 'compte' => $compte->etablissement ?? '',
                 'ville' => $compte->ville->nom ?? '',
                 'zone' => $compte->zone->name ?? '',
@@ -334,6 +349,45 @@ class AgendaController extends Controller
             ],
         ];
     }
+
+
+
+    public function rescheduleEvent(Request $request, $type, $id)
+{
+    $user = Auth::user();
+    $newDate = $request->input('new_date');
+
+    if (!$newDate) {
+        return response()->json(['error' => 'Date manquante'], 422);
+    }
+
+    $model = null;
+    switch ($type) {
+    case 'action':
+        $model = Action::findOrFail($id);
+        $model->date_planification = $newDate;
+        break;
+    case 'examen':
+        $model = Examen::findOrFail($id);
+        $model->date_examen = $newDate;
+        break;
+    case 'event':
+        $model = Event::findOrFail($id);
+        $model->date_event = $newDate;
+        break;
+    case 'specimen':
+        // If you allow rescheduling BSS deliveries
+        $model = Bss::findOrFail($id);
+        $model->date_livraison_prevue = $newDate;
+        break;
+    default:
+        return response()->json(['error' => 'Type non supporté'], 400);
+}
+
+    $model->save();
+
+    return response()->json(['success' => true]);
+}
 
     
         
