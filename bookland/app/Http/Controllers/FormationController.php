@@ -79,6 +79,8 @@ class FormationController extends Controller
             'Formation méthode', 'Présentation méthode', 'Accompagnement pédagogique',
             'Leçon modèle', 'Intégration de classe', 'Audit de classe', 'Formation Examen CAMBRIDGE'
         ];
+
+        
         $cibles = ['Direction', 'Enseignants', 'Parents'];
 
         $villes = $this->getUserVilles($user); // helper
@@ -107,18 +109,30 @@ class FormationController extends Controller
         'contact_id' => 'required|exists:contacts,id',
         'ville_id' => 'required|exists:villes,id',
         'zone_id' => 'required|exists:zones,id',
-        'type' => 'required|in:...',
+        'type' => 'required|in:Formation méthode,Présentation méthode,Accompagnement pédagogique,Leçon modèle,Intégration de classe,Audit de classe,Formation Examen CAMBRIDGE',
         'cible' => 'nullable|in:Direction,Enseignants,Parents',
         'dates_ecole' => 'nullable|array',
         'dates_ecole.*' => 'date',
+        'dates_proposees' => 'nullable|array',
+        'dates_proposees.*' => 'date',
     ]);
 
-    $validated['delegue_id'] = $user->id;
-    $validated['annee_scolaire_id'] = $this->getCurrentYear()->id;
-    $validated['statut'] = 'demande';
-    $validated['dates_ecole'] = $validated['dates_ecole'] ?? [];
+    // Prepare data for creation
+    $data = [
+        'compte_id' => $validated['compte_id'],
+        'contact_id' => $validated['contact_id'],
+        'ville_id' => $validated['ville_id'],
+        'zone_id' => $validated['zone_id'],
+        'type' => $validated['type'],
+        'cible' => $validated['cible'] ?? null,
+        'delegue_id' => $user->id,
+        'annee_scolaire_id' => $this->getCurrentYear()->id,
+        'statut' => 'demande',
+        'date_demande' => $validated['dates_ecole'] ?? [],      // JSON array
+        'dates_proposees' => $validated['dates_proposees'] ?? [], // JSON array (nullable)
+    ];
 
-    Formation::create($validated);
+    Formation::create($data);
 
     return redirect()->route('formations.index')->with('success', 'Demande de formation créée.');
 }

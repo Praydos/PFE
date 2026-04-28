@@ -43,6 +43,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\ActionController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\DemandeSpecimenController;
+use App\Http\Controllers\VacationController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -306,7 +307,7 @@ Route::post('/actions/{action}/reporter', [ActionController::class, 'reporter'])
 Route::get('/api/action-types-by-categorie', [ActionController::class, 'getActionTypesByCategorie'])->name('api.action-types');
 Route::get('/api/moyens-by-action-type', [ActionController::class, 'getMoyensByActionType'])->name('api.moyens');
 
-Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
+// Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
 
 //=========================================================================================================
 // requetes special 
@@ -326,3 +327,12 @@ Route::get('/api/comptes/{compte}/details', function (App\Models\Compte $compte)
 Route::get('/api/villes/{ville}/zones', function (App\Models\Ville $ville) {
     return $ville->zones;
 })->name('api.ville.zones');
+
+
+//=========================================================================================================
+
+Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
+Route::get('/agenda/events', [AgendaController::class, 'events'])->name('agenda.events');
+
+Route::resource('vacations', VacationController::class)->only(['index', 'store', 'update', 'destroy'])
+->middleware('role:admin');
