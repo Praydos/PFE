@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\Models\Vacation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Tache;
 use Illuminate\Support\Facades\Log;
 use App\Models\Bss;
 
@@ -103,6 +104,13 @@ class AgendaController extends Controller
                 foreach ($specimens as $bss) {
                     $e = $this->formatSpecimenEvent($bss);
                     if ($e) $calendarEvents[] = $e;
+                }
+            }
+
+            if ($tab === 'all' || $tab === 'tasks') {
+                $tasks = $this->getTasks($user, $start, $end);
+                foreach ($tasks as $task) {
+                    $calendarEvents[] = $this->formatTaskEvent($task);
                 }
             }
 
@@ -352,6 +360,42 @@ class AgendaController extends Controller
 
 
 
+        private function getTasks($user, $start, $end)
+    {
+        $query = Tache::with('delegate');
+        if ($user->role === 'delegue') {
+            $query->where('delegue_id', $user->id);
+        } elseif ($user->role === 'rbo') {
+            $delegateIds = $this->getDelegateIdsForRbo($user);
+            $query->whereIn('delegue_id', $delegateIds);
+        }
+        if ($start && $end) {
+            $query->whereBetween('date_planification', [$start, $end]);
+        }
+        return $query->get();
+    }
+
+    private function formatTaskEvent($task)
+    {
+        return [
+            'id' => $task->id,
+            'title' => $task->objet,
+            'start' => $task->date_planification->toDateString(),
+            'url' => route('taches.show', $task),
+            'color' => '#9ba8c5',
+            'type' => 'task',
+            'extendedProps' => [
+                'type' => 'task',
+                'delegate' => $task->delegate->prenom . ' ' . $task->delegate->nom,
+            ],
+        ];
+    }
+
+
+
+
+
+
     public function rescheduleEvent(Request $request, $type, $id)
 {
     $user = Auth::user();
@@ -379,6 +423,10 @@ class AgendaController extends Controller
         // If you allow rescheduling BSS deliveries
         $model = Bss::findOrFail($id);
         $model->date_livraison_prevue = $newDate;
+        break;
+    case 'tache':
+        $model = Tache::findOrFail($id);
+        $model->date_planification = $newDate;
         break;
     default:
         return response()->json(['error' => 'Type non supporté'], 400);

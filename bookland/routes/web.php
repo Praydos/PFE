@@ -44,6 +44,7 @@ use App\Http\Controllers\ActionController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\DemandeSpecimenController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\TacheController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -336,3 +337,26 @@ Route::get('/agenda/events', [AgendaController::class, 'events'])->name('agenda.
 Route::patch('/agenda/event/{type}/{id}/reschedule', [AgendaController::class, 'rescheduleEvent'])->name('agenda.reschedule');
 Route::resource('vacations', VacationController::class)->only(['index', 'store', 'update', 'destroy'])
 ->middleware('role:admin');
+
+//=========================================================================================================
+//taches routes
+// List
+Route::get('/taches', [TacheController::class, 'index'])->name('taches.index');
+
+// Create
+Route::get('/taches/create', [TacheController::class, 'create'])->name('taches.create');
+Route::post('/taches', [TacheController::class, 'store'])->name('taches.store');
+
+// Show (IMPORTANT ONE)
+Route::get('/taches/{tache}', [TacheController::class, 'show'])->name('taches.show');
+
+// Edit
+Route::get('/taches/{tache}/edit', [TacheController::class, 'edit'])->name('taches.edit');
+Route::put('/taches/{tache}', [TacheController::class, 'update'])->name('taches.update');
+
+// Delete
+Route::delete('/taches/{tache}', [TacheController::class, 'destroy'])->name('taches.destroy');
+
+// Custom action
+Route::post('/taches/{tache}/validate', [TacheController::class, 'validateTache'])
+    ->name('taches.validate');
