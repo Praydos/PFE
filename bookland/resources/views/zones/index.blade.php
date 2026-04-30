@@ -360,52 +360,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         </a>
     </div>
 
-    {{-- Stat Cards --}}
-    @php
-        $col         = $zones->getCollection();
-        $totalZones  = $zones->total();
-        $villesCount = $col->pluck('ville.nom')->unique()->filter()->count();
-        $rbosCount   = $col->pluck('rbo.id')->unique()->filter()->count();
-        $dlgTotal    = $col->sum(fn($z) => $z->delegates->count());
-    @endphp
-    <div class="zn-stats">
-        <div class="zn-stat">
-            <div class="stat-ico si-blue">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Zones</div>
-                <div class="stat-value">{{ $totalZones }}</div>
-            </div>
-        </div>
-        <div class="zn-stat">
-            <div class="stat-ico si-teal">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Villes</div>
-                <div class="stat-value">{{ $villesCount }}</div>
-            </div>
-        </div>
-        <div class="zn-stat">
-            <div class="stat-ico si-violet">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">RBOs</div>
-                <div class="stat-value">{{ $rbosCount }}</div>
-            </div>
-        </div>
-        <div class="zn-stat">
-            <div class="stat-ico si-green">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Délégués</div>
-                <div class="stat-value">{{ $dlgTotal }}</div>
-            </div>
-        </div>
-    </div>
+    
 
     {{-- Search --}}
     <div class="zn-search-bar">

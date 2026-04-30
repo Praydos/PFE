@@ -13,7 +13,7 @@ class Examen extends Model
         'compte_id', 'contact_id', 'delegue_id', 'annee_scolaire_id',
         'langue', 'organisme', 'titre', 'abreviation', 'niveau_cecr',
         'niveaux_scolaires', 'date_demande', 'date_examen', 'statut',
-        'description', 'observations'
+        'description', 'observations',
     ];
 
     protected $casts = [

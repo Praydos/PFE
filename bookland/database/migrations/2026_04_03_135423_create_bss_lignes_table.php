@@ -12,9 +12,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('bss_id')->constrained('bsses')->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('restrict');
+            //quantity n and n-1
             $table->integer('quantity');
             $table->enum('source', ['consignation', 'magasin'])->default('consignation');
-            $table->enum('statut_ligne', ['en_attente', 'livree', 'retournee'])->default('en_attente');
+            $table->enum('statut_ligne', ['en_attente', 'livree', 'retournee','Adoptee'])->default('en_attente');
             $table->date('date_retour')->nullable();
             $table->timestamps();
 

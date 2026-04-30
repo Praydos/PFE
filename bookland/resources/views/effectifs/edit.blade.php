@@ -243,8 +243,9 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
             <span class="ef-card-title">Informations de l'effectif</span>
         </div>
 
-        <form method="PUT" action="{{ route('effectifs.store') }}" novalidate>
+        <form method="POST" action="{{ route('effectifs.update', $effectif->id) }}" novalidate>
             @csrf
+            @method('PUT')
 
             <div class="ef-card-body">
 

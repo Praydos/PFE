@@ -315,6 +315,7 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
         <a href="{{ route('formations.create') }}" class="btn-ag btn-ag-primary">Nouvelle formation</a>
         <a href="{{ route('events.create') }}" class="btn-ag btn-ag-primary">Nouvel événement</a>
         <a href="{{ route('demandes-specimens.create') }}" class="btn-ag btn-ag-primary">Demande spéciale</a>
+        <a href="{{ route('taches.create') }}" class="btn-ag btn-ag-primary">Nouvelle tâche</a>
     </div>
 
     

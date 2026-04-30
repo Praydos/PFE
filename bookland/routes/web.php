@@ -45,6 +45,7 @@ use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\DemandeSpecimenController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\TacheController;
+use App\Http\Controllers\ActionAmeliorationController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -360,3 +361,13 @@ Route::delete('/taches/{tache}', [TacheController::class, 'destroy'])->name('tac
 // Custom action
 Route::post('/taches/{tache}/validate', [TacheController::class, 'validateTache'])
     ->name('taches.validate');
+
+
+//=========================================================================================================
+
+//actions amelioration routes
+Route::resource('actions-amelioration', ActionAmeliorationController::class);
+Route::get('/actions-amelioration/{actions_amelioration}/edit-suivi', [ActionAmeliorationController::class, 'editSuivi'])->name('actions-amelioration.edit-suivi');
+Route::put('/actions-amelioration/{actions_amelioration}/suivi', [ActionAmeliorationController::class, 'updateSuivi'])->name('actions-amelioration.update-suivi');
+Route::get('/actions-amelioration/{actions_amelioration}/edit-efficacite', [ActionAmeliorationController::class, 'editEfficacite'])->name('actions-amelioration.edit-efficacite');
+Route::put('/actions-amelioration/{actions_amelioration}/efficacite', [ActionAmeliorationController::class, 'updateEfficacite'])->name('actions-amelioration.update-efficacite');

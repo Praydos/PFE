@@ -15,6 +15,7 @@ return new class extends Migration
             $table->foreignId('contact_id')->constrained()->onDelete('restrict'); // required
             $table->foreignId('delegate_id')->constrained('users')->onDelete('restrict');
             $table->foreignId('annee_scolaire_id')->constrained('annees_scolaires')->onDelete('restrict');
+
             $table->date('date_bss'); // creation date
             $table->date('date_livraison_prevue')->nullable();
             $table->enum('moyen_contact', ['telephone', 'email'])->nullable();
@@ -25,6 +26,7 @@ return new class extends Migration
             $table->boolean('is_validated_by_rbo')->default(false);
             $table->timestamp('validated_at')->nullable();
             $table->foreignId('validated_by')->nullable()->constrained('users')->onDelete('set null');
+            
             // Feedback fields (editable by delegate after validation)
             $table->text('feedback')->nullable();
             $table->date('date_feedback')->nullable()->after('feedback');
