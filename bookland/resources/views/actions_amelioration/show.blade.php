@@ -255,99 +255,111 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
     @endif
 
     {{-- ── Section 3 : Efficacité ── --}}
-    @if($actions_amelioration->responsable_efficacite_id)
-    <div class="aa-section">
-        <div class="aa-section-hd">
-            <div class="aa-section-icon si-green">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            </div>
-            <span class="aa-section-title">Évaluation de l'efficacité</span>
+{{-- ── Section 3 : Efficacité ── --}}
+@if($actions_amelioration->responsable_efficacite_id)
+<div class="aa-section">
+    <div class="aa-section-hd">
+        <div class="aa-section-icon si-green">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
         </div>
-        <div class="aa-info-grid">
-            <div class="aa-info-item">
-                <span class="aa-info-label">Responsable efficacité</span>
-                <span class="aa-info-value">{{ $actions_amelioration->responsableEfficacite->prenom }} {{ $actions_amelioration->responsableEfficacite->nom }}</span>
-            </div>
-            <div class="aa-info-item">
-                <span class="aa-info-label">Date efficacité</span>
-                <span class="aa-info-value mono {{ $actions_amelioration->date_efficacite ? '' : 'muted' }}">
-                    {{ $actions_amelioration->date_efficacite ? $actions_amelioration->date_efficacite->format('d/m/Y') : '—' }}
-                </span>
-            </div>
-            <div class="aa-info-item">
-                <span class="aa-info-label">Mode de contrôle</span>
-                <span class="aa-info-value {{ $actions_amelioration->mode_controle ? '' : 'muted' }}">
-                    {{ $actions_amelioration->mode_controle ?? '—' }}
-                </span>
-            </div>
-            <div class="aa-info-item">
-                <span class="aa-info-label">Action efficace ?</span>
-                @php $eff = $actions_amelioration->action_efficace; @endphp
-                <span class="aa-info-value">
-                    @if($eff === true)
-                        <span style="display:inline-flex;align-items:center;gap:.3rem;color:#1aaa5e;font-weight:600;">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                            Oui
-                        </span>
-                    @elseif($eff === false)
-                        <span style="display:inline-flex;align-items:center;gap:.3rem;color:var(--rose);font-weight:600;">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            Non
-                        </span>
-                    @else
-                        <span class="muted">—</span>
-                    @endif
-                </span>
-            </div>
-            <div class="aa-info-item">
-                <span class="aa-info-label">Besoin d'autre action ?</span>
-                @php $besoin = $actions_amelioration->besoin_action_amelioration; @endphp
-                <span class="aa-info-value">
-                    @if($besoin === true)
-                        <span style="color:var(--amber);font-weight:600;">Oui</span>
-                    @elseif($besoin === false)
-                        <span style="color:var(--t3);">Non</span>
-                    @else
-                        <span class="muted">—</span>
-                    @endif
-                </span>
-            </div>
-            <div class="aa-info-item">
-                <span class="aa-info-label">Date de clôture</span>
-                <span class="aa-info-value mono {{ $actions_amelioration->date_cloture ? '' : 'muted' }}">
-                    {{ $actions_amelioration->date_cloture ? $actions_amelioration->date_cloture->format('d/m/Y') : '—' }}
-                </span>
-            </div>
-            @if($actions_amelioration->description_resultat)
-            <div class="aa-info-item full">
-                <span class="aa-info-label">Description du résultat</span>
-                <span class="aa-info-value">{{ $actions_amelioration->description_resultat }}</span>
-            </div>
-            @endif
-        </div>
+        <span class="aa-section-title">Évaluation de l'efficacité</span>
     </div>
-    @endif
 
-    {{-- ── Footer actions ── --}}
-    <div class="aa-footer">
-        <a href="{{ route('actions-amelioration.index') }}" class="btn-aa btn-aa-ghost">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            Retour à la liste
-        </a>
-        @if(auth()->user()->role !== 'rbo')
-            @if(!$actions_amelioration->responsable_suivi_id)
-            <a href="{{ route('actions-amelioration.edit-suivi', $actions_amelioration) }}" class="btn-aa btn-aa-primary">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                Ajouter le suivi
-            </a>
-            @elseif(!$actions_amelioration->responsable_efficacite_id)
-            <a href="{{ route('actions-amelioration.edit-efficacite', $actions_amelioration) }}" class="btn-aa btn-aa-teal">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                Ajouter l'évaluation
-            </a>
-            @endif
+    <div class="aa-info-grid">
+        <div class="aa-info-item">
+            <span class="aa-info-label">Responsable efficacité</span>
+            <span class="aa-info-value">
+                {{ optional($actions_amelioration->responsableEfficacite)->prenom }}
+                {{ optional($actions_amelioration->responsableEfficacite)->nom }}
+            </span>
+        </div>
+
+        <div class="aa-info-item">
+            <span class="aa-info-label">Date efficacité</span>
+            <span class="aa-info-value mono {{ $actions_amelioration->date_efficacite ? '' : 'muted' }}">
+                {{ $actions_amelioration->date_efficacite 
+                    ? $actions_amelioration->date_efficacite->format('d/m/Y') 
+                    : '—' }}
+            </span>
+        </div>
+
+        <div class="aa-info-item">
+            <span class="aa-info-label">Mode de contrôle</span>
+            <span class="aa-info-value {{ $actions_amelioration->mode_controle ? '' : 'muted' }}">
+                {{ $actions_amelioration->mode_controle ?? '—' }}
+            </span>
+        </div>
+
+        <div class="aa-info-item">
+            <span class="aa-info-label">Action efficace ?</span>
+            @php $eff = $actions_amelioration->action_efficace; @endphp
+            <span class="aa-info-value">
+                @if($eff === true || $eff === 1)
+                    <span style="color:#1aaa5e;font-weight:600;">Oui</span>
+                @elseif($eff === false || $eff === 0)
+                    <span style="color:var(--rose);font-weight:600;">Non</span>
+                @else
+                    <span class="muted">—</span>
+                @endif
+            </span>
+        </div>
+
+        <div class="aa-info-item">
+            <span class="aa-info-label">Besoin d'autre action ?</span>
+            @php $besoin = $actions_amelioration->besoin_action_amelioration; @endphp
+            <span class="aa-info-value">
+                @if($besoin === true || $besoin === 1)
+                    <span style="color:var(--amber);font-weight:600;">Oui</span>
+                @elseif($besoin === false || $besoin === 0)
+                    <span style="color:var(--t3);">Non</span>
+                @else
+                    <span class="muted">—</span>
+                @endif
+            </span>
+        </div>
+
+        <div class="aa-info-item">
+            <span class="aa-info-label">Date de clôture</span>
+            <span class="aa-info-value mono {{ $actions_amelioration->date_cloture ? '' : 'muted' }}">
+                {{ $actions_amelioration->date_cloture 
+                    ? $actions_amelioration->date_cloture->format('d/m/Y') 
+                    : '—' }}
+            </span>
+        </div>
+
+        @if($actions_amelioration->description_resultat)
+        <div class="aa-info-item full">
+            <span class="aa-info-label">Description du résultat</span>
+            <span class="aa-info-value">
+                {{ $actions_amelioration->description_resultat }}
+            </span>
+        </div>
         @endif
     </div>
+</div>
+@endif
 
+{{-- ── Footer actions ── --}}
+<div class="aa-footer">
+    <a href="{{ route('actions-amelioration.index') }}" class="btn-aa btn-aa-ghost">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Retour à la liste
+    </a>
+    @if(auth()->user()->role !== 'rbo')
+        @if(!$actions_amelioration->responsable_suivi_id)
+        <a href="{{ route('actions-amelioration.edit-suivi', $actions_amelioration) }}" class="btn-aa btn-aa-primary">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Ajouter le suivi
+        </a>
+        @elseif(!$actions_amelioration->responsable_efficacite_id)
+        <a href="{{ route('actions-amelioration.edit-efficacite', $actions_amelioration) }}" class="btn-aa btn-aa-teal">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Ajouter l'évaluation
+        </a>
+        @endif
+    @endif
+</div>
 </div>
 @endsection

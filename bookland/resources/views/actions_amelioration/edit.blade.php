@@ -5,7 +5,7 @@
     <h1>Modifier l'action d'amélioration</h1>
     <form method="POST" action="{{ route('actions-amelioration.update', $actions_amelioration) }}">
         @csrf @method('PUT')
-        @include('actions_amelioration._form')
+        @include('actions_amelioration._form_stage1')
         <button type="submit" class="btn-primary">Mettre à jour</button>
         <a href="{{ route('actions-amelioration.index') }}" class="btn-secondary">Annuler</a>
     </form>
