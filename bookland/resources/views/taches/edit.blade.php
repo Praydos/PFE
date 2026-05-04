@@ -1,359 +1,348 @@
 @extends('layouts.app')
 
 @push('styles')
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+{{-- Same CSS as create view --}}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-    /* ── Global design system (identical to previous forms) ── */
+    /* ===== FULL AGENDA CSS + form additions ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-        --bg-base:       #f5f6fa;
-        --bg-card:       #ffffff;
-        --bg-hover:      #f8f9fd;
-        --bg-subtle:     #f0f2f8;
-        --border:        #e4e7f0;
-        --border-md:     #d0d5e8;
-        --blue:          #5b8dee;
-        --blue-dark:     #3d6fd6;
-        --blue-light:    #eef3fd;
-        --blue-mid:      #dce8fb;
-        --teal:          #0cb8b6;
-        --teal-light:    #e6faf9;
-        --violet:        #7c6fcd;
-        --violet-light:  #f0eeff;
-        --amber:         #e8a020;
-        --amber-light:   #fff8ec;
-        --rose:          #e8506a;
-        --rose-light:    #fef0f2;
-        --green:         #28c76f;
-        --green-light:   #e8fbf0;
-        --text-primary:   #1a1f36;
-        --text-secondary: #525f7f;
-        --text-muted:     #9ba8c5;
-        --text-hint:      #bcc5dc;
-        --r-xs: 6px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px;
-        --shadow-xs: 0 1px 3px rgba(31,45,80,.06), 0 1px 2px rgba(31,45,80,.04);
-        --shadow-sm: 0 2px 8px rgba(31,45,80,.08), 0 1px 3px rgba(31,45,80,.05);
-        --shadow-md: 0 8px 24px rgba(31,45,80,.10), 0 2px 8px rgba(31,45,80,.06);
-        --shadow-blue: 0 4px 14px rgba(91,141,238,.35);
-        --font: 'DM Sans', sans-serif;
-        --font-mono: 'DM Mono', monospace;
-        --ease: cubic-bezier(.4,0,.2,1);
-        --t: .18s var(--ease);
-    }
+:root {
+    --bg:       #f5f6fa; --card:   #ffffff; --hover:  #f8f9fd; --subtle: #f0f2f8;
+    --border:   #e4e7f0; --border-2:#d0d5e8;
+    --blue:     #5b8dee; --blue-d: #3d6fd6; --blue-l: #eef3fd; --blue-m: #dce8fb;
+    --teal:     #0cb8b6; --teal-l: #e6faf9;
+    --violet:   #7c6fcd; --violet-l:#f0eeff;
+    --amber:    #e8a020; --amber-l:#fff8ec;
+    --rose:     #e8506a; --rose-l: #fef0f2;
+    --green:    #28c76f; --green-l:#e8fbf0;
+    --t1:#1a1f36; --t2:#525f7f; --t3:#9ba8c5; --t4:#bcc5dc;
+    --r1:6px; --r2:8px; --r3:12px; --r4:16px; --r5:20px;
+    --s1:0 1px 3px rgba(31,45,80,.06); --s2:0 2px 8px rgba(31,45,80,.08); --s3:0 8px 24px rgba(31,45,80,.10);
+    --sb:0 4px 14px rgba(91,141,238,.32);
+    --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+    --ease:cubic-bezier(.4,0,.2,1); --t:.17s var(--ease);
+}
 
-    body { font-family: var(--font); background: var(--bg-base); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-font-smoothing:antialiased; }
 
-    .zn-page { padding: 2rem 2.5rem 3rem; animation: pageIn .4s var(--ease) both; max-width: 1400px; margin: 0 auto; }
-    @keyframes pageIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+/* ── Page ──────────────────────────────────────────── */
+.ag-page { padding:2rem 2.5rem 3rem; animation:rise .4s var(--ease) both; }
+@keyframes rise { from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);} }
 
-    .zn-bc { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1.4rem; }
-    .zn-bc a { color: var(--text-muted); text-decoration: none; transition: color var(--t); }
-    .zn-bc a:hover { color: var(--blue); }
-    .zn-bc-sep { color: var(--text-hint); }
-    .zn-bc-cur { color: var(--text-secondary); }
+/* ── Breadcrumb ────────────────────────────────────── */
+.ag-bc { display:flex; align-items:center; gap:.4rem; font-size:.75rem; font-weight:500; color:var(--t3); margin-bottom:1.5rem; }
+.ag-bc a { color:var(--t3); text-decoration:none; transition:color var(--t); }
+.ag-bc a:hover { color:var(--blue); }
+.ag-bc-s { color:var(--t4); }
 
-    .zn-header { margin-bottom: 2rem; }
-    .zn-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.03em; color: var(--text-primary); line-height: 1.15; }
-    .zn-header p { font-size: .82rem; color: var(--text-muted); margin-top: .3rem; }
+/* ── Header ────────────────────────────────────────── */
+.ag-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1.5rem; margin-bottom:2rem; flex-wrap:wrap; }
+.ag-header-left h1 { font-size:1.6rem; font-weight:800; letter-spacing:-.03em; color:var(--t1); }
+.ag-header-left p  { font-size:.83rem; color:var(--t3); margin-top:.3rem; }
 
-    .btn-zn {
-        display: inline-flex; align-items: center; gap: .4rem;
-        padding: .56rem 1.1rem; border-radius: var(--r-sm);
-        font-family: var(--font); font-size: .82rem; font-weight: 600;
-        cursor: pointer; border: 1px solid transparent;
-        transition: all var(--t); text-decoration: none;
-        white-space: nowrap; letter-spacing: -.01em; line-height: 1;
-    }
-    .btn-zn svg { flex-shrink: 0; }
-    .btn-zn-primary { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: var(--shadow-blue); }
-    .btn-zn-primary:hover { background: var(--blue-dark); color: #fff; transform: translateY(-1px); }
-    .btn-zn-ghost { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border); box-shadow: var(--shadow-xs); }
-    .btn-zn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-md); text-decoration: none; }
+/* ── Stat cards ────────────────────────────────────── */
+.ag-stats { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1rem; margin-bottom:2rem; }
+.ag-stat {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:var(--r4); padding:1.2rem 1.35rem;
+    display:flex; align-items:center; gap:.9rem;
+    box-shadow:var(--s1); transition:all var(--t);
+    animation:rise .5s var(--ease) both;
+    position:relative; overflow:hidden;
+}
+.ag-stat::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; opacity:0; transition:opacity var(--t); border-radius:var(--r4) var(--r4) 0 0; }
+.ag-stat:hover { box-shadow:var(--s3); transform:translateY(-2px); border-color:var(--border-2); }
+.ag-stat:hover::before { opacity:1; }
+.ag-stat:nth-child(1){animation-delay:.05s;} .ag-stat:nth-child(1)::before{background:var(--blue);}
+.ag-stat:nth-child(2){animation-delay:.09s;} .ag-stat:nth-child(2)::before{background:var(--green);}
+.ag-stat:nth-child(3){animation-delay:.13s;} .ag-stat:nth-child(3)::before{background:var(--violet);}
+.ag-stat:nth-child(4){animation-delay:.17s;} .ag-stat:nth-child(4)::before{background:var(--teal);}
+.ag-stat:nth-child(5){animation-delay:.21s;} .ag-stat:nth-child(5)::before{background:var(--amber);}
 
-    .fp-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--r-xl);
-        box-shadow: var(--shadow-sm);
-        overflow: hidden;
-    }
+.stat-ico { width:38px; height:38px; border-radius:var(--r3); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.si-blue   { background:var(--blue-l);   color:var(--blue); }
+.si-green  { background:var(--green-l);  color:var(--green); }
+.si-violet { background:var(--violet-l); color:var(--violet); }
+.si-teal   { background:var(--teal-l);   color:var(--teal); }
+.si-amber  { background:var(--amber-l);  color:var(--amber); }
 
-    .fp-section {
-        padding: 2rem 2rem 1.5rem;
-        border-bottom: 1px solid var(--border);
-        scroll-margin-top: 1.5rem;
-    }
-    .fp-section:last-of-type { border-bottom: none; }
-    .fp-section-head {
-        display: flex; align-items: center; gap: .75rem;
-        margin-bottom: 1.6rem;
-    }
-    .fp-section-icon {
-        width: 34px; height: 34px; flex-shrink: 0;
-        border-radius: var(--r-md);
-        display: flex; align-items: center; justify-content: center;
-        background: var(--blue-light); color: var(--blue);
-    }
-    .fp-section-meta { flex: 1; }
-    .fp-section-title { font-size: .9rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
-    .fp-section-sub   { font-size: .74rem; color: var(--text-muted); margin-top: .1rem; }
+.stat-label { font-size:.68rem; font-weight:600; color:var(--t3); text-transform:uppercase; letter-spacing:.05em; }
+.stat-value { font-size:1.5rem; font-weight:800; color:var(--t1); line-height:1.1; letter-spacing:-.04em; margin-top:.04rem; }
 
-    .fp-row { display: grid; gap: 1rem; margin-bottom: 1rem; }
-    .fp-row:last-child { margin-bottom: 0; }
-    .fp-row-2 { grid-template-columns: repeat(2, 1fr); }
-    .fp-row-3 { grid-template-columns: repeat(3, 1fr); }
+/* ── Toolbar row ───────────────────────────────────── */
+.ag-toolbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.1rem; flex-wrap:wrap; }
 
-    .frm-group { display: flex; flex-direction: column; gap: .38rem; }
-    .frm-label { font-size: .77rem; font-weight: 600; color: var(--text-secondary); letter-spacing: -.01em; }
-    .frm-label .req { color: var(--rose); margin-left: .18rem; }
-    .frm-label .opt { font-size: .7rem; font-weight: 400; color: var(--text-muted); }
-    .frm-input, .frm-select {
-        width: 100%; padding: .6rem .88rem;
-        border: 1px solid var(--border); border-radius: var(--r-sm);
-        background: var(--bg-card); font-family: var(--font);
-        font-size: .83rem; color: var(--text-primary);
-        box-shadow: var(--shadow-xs);
-        transition: border-color var(--t), box-shadow var(--t);
-        outline: none;
-    }
-    .frm-input:focus, .frm-select:focus {
-        border-color: var(--blue);
-        box-shadow: 0 0 0 3px var(--blue-mid);
-    }
-    .frm-input.is-invalid, .frm-select.is-invalid {
-        border-color: var(--rose);
-        box-shadow: 0 0 0 3px rgba(232,80,106,.12);
-    }
-    .frm-error { font-size: .72rem; color: var(--rose); font-weight: 500; margin-top: .2rem; }
+/* ── Tab bar ───────────────────────────────────────── */
+.ag-tabs { display:flex; gap:.2rem; background:var(--card); border:1px solid var(--border); border-radius:var(--r3); padding:.3rem; box-shadow:var(--s1); flex-wrap:wrap; }
+.ag-tab {
+    padding:.44rem 1rem; border-radius:var(--r2);
+    font-size:.78rem; font-weight:600; color:var(--t3);
+    cursor:pointer; border:none; background:transparent;
+    font-family:var(--font); transition:all var(--t);
+    display:flex; align-items:center; gap:.35rem; white-space:nowrap;
+}
+.ag-tab:hover { color:var(--t1); background:var(--subtle); }
+.ag-tab.active { background:var(--blue); color:#fff; box-shadow:var(--sb); }
+.ag-tab .tab-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
 
-    .frm-select-wrap { position: relative; }
-    .frm-select-wrap::after {
-        content: ''; position: absolute; right: .88rem; top: 50%; transform: translateY(-50%);
-        width: 0; height: 0;
-        border-left: 4px solid transparent; border-right: 4px solid transparent;
-        border-top: 5px solid var(--text-muted); pointer-events: none;
-    }
-    .frm-select { padding-right: 2.2rem; cursor: pointer; }
+/* ── View toggle ───────────────────────────────────── */
+.ag-view-toggle { display:flex; gap:.25rem; background:var(--card); border:1px solid var(--border); border-radius:var(--r2); padding:.25rem; box-shadow:var(--s1); }
+.ag-view-btn { padding:.38rem .8rem; border-radius:6px; font-size:.77rem; font-weight:600; color:var(--t3); text-decoration:none; transition:all var(--t); display:flex; align-items:center; gap:.35rem; white-space:nowrap; }
+.ag-view-btn:hover { color:var(--t1); background:var(--subtle); text-decoration:none; }
+.ag-view-btn.active { background:var(--blue); color:#fff; box-shadow:var(--sb); }
 
-    /* Checkbox styling */
-    .checkbox-group {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        margin-top: 0.25rem;
-    }
-    .checkbox-group input[type="checkbox"] {
-        width: 1rem;
-        height: 1rem;
-        margin: 0;
-        accent-color: var(--blue);
-        cursor: pointer;
-    }
-    .checkbox-group label {
-        font-size: .83rem;
-        color: var(--text-secondary);
-        cursor: pointer;
-    }
+/* ── Primary button (for create actions) ───────────── */
+.btn-ag-primary {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+    box-shadow: var(--sb);
+}
+.btn-ag-primary:hover {
+    background: var(--blue-d);
+    border-color: var(--blue-d);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(91,141,238,.4);
+    text-decoration: none;
+}
 
-    /* Multi-select specific */
-    .frm-select[size] {
-        padding: 0.4rem 0.2rem;
-    }
-    .frm-select[size] option {
-        padding: 0.4rem 0.6rem;
-        border-radius: var(--r-xs);
-    }
-    .frm-select[size] option:checked {
-        background: var(--blue-light);
-        color: var(--blue-dark);
-    }
+/* ── Main card ─────────────────────────────────────── */
+.ag-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r5); box-shadow:var(--s2); overflow:hidden; }
+.ag-card-hd { padding:1rem 1.6rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.ag-card-title { font-size:.87rem; font-weight:700; color:var(--t1); display:flex; align-items:center; gap:.5rem; }
+.ag-pip { width:7px; height:7px; border-radius:50%; background:var(--blue); box-shadow:0 0 0 3px var(--blue-m); }
+.ag-card-count { font-size:.75rem; color:var(--t3); font-weight:500; }
+.ag-card-body { padding:1.5rem 1.6rem; }
+.ag-card-footer { padding:1rem 1.6rem; border-top:1px solid var(--border); background:var(--bg); display:flex; justify-content:flex-end; gap:0.6rem; }
 
-    .frm-hint {
-        font-size: .72rem;
-        color: var(--text-muted);
-        margin-top: .2rem;
-        display: flex;
-        align-items: center;
-        gap: .3rem;
-    }
+/* ── Form fields (agenda compatible) ───────────────── */
+.ag-form-group { margin-bottom: 1.25rem; }
+.ag-form-label { display: block; font-size: .8rem; font-weight: 600; color: var(--t2); letter-spacing: -.01em; margin-bottom: .35rem; }
+.ag-form-label .req { color: var(--rose); margin-left: .2rem; }
+.ag-form-control,
+.ag-form-select {
+    width: 100%; padding: .62rem .9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    background: var(--card);
+    font-family: var(--font);
+    font-size: .84rem;
+    color: var(--t1);
+    box-shadow: var(--s1);
+    transition: all var(--t);
+    outline: none;
+}
+.ag-form-control:focus,
+.ag-form-select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-m);
+}
+textarea.ag-form-control { resize: vertical; }
+.ag-form-select { cursor: pointer; }
 
-    .fp-footer {
-        padding: 1.25rem 2rem;
-        background: linear-gradient(to bottom, #fafbff, #fff);
-        border-top: 1px solid var(--border);
-        display: flex; align-items: center; gap: .75rem;
-    }
-    .fp-footer-spacer { flex: 1; }
-    .fp-req-note { font-size: .74rem; color: var(--text-muted); }
-    .fp-req-note span { color: var(--rose); }
+/* Checkbox */
+.ag-checkbox {
+    display: flex; align-items: center; gap: .5rem; cursor: pointer;
+}
+.ag-checkbox input { width: 1rem; height: 1rem; margin: 0; accent-color: var(--blue); cursor: pointer; }
+.ag-checkbox span { font-size: .84rem; color: var(--t2); }
 
-    .zn-alert {
-        display: flex; align-items: flex-start; gap: .75rem;
-        padding: 1rem 1.25rem; border-radius: var(--r-lg);
-        border: 1px solid; margin-bottom: 1.5rem; font-size: .82rem;
-    }
-    .zn-alert-danger { background: var(--rose-light); border-color: rgba(232,80,106,.25); color: #b83450; }
-    .zn-alert ul { padding-left: 1.2rem; margin-top: .3rem; }
-    .zn-alert li { margin-bottom: .15rem; }
+/* ── Info grid (for show views) ────────────────────── */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.info-item {
+    font-size: 0.84rem;
+    color: var(--t2);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+.info-label {
+    font-weight: 600;
+    color: var(--t1);
+    margin-right: 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
-    @media (max-width: 680px) {
-        .zn-page { padding: 1.25rem 1rem 2rem; }
-        .fp-row-2, .fp-row-3 { grid-template-columns: 1fr; }
-        .fp-footer { flex-wrap: wrap; }
-        .fp-footer-spacer { display: none; }
-        .btn-zn { width: 100%; justify-content: center; }
-    }
+/* Badges (from original style) */
+.dr-badge {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .22rem .65rem; border-radius: 20px;
+    font-size: .7rem; font-weight: 600; white-space: nowrap;
+}
+.bd-green { background: var(--green-l); color: var(--green); }
+.bd-amber { background: var(--amber-l); color: var(--amber); }
+.bd-blue  { background: var(--blue-l);  color: var(--blue); }
+.bd-teal  { background: var(--teal-l);  color: var(--teal); }
+.bd-none  { background: var(--subtle);  color: var(--t3); }
+
+/* ── FullCalendar overrides ────────────────────────── */
+.ag-calendar-wrap { padding:1.5rem; }
+
+.fc { font-family:var(--font) !important; color:var(--t1) !important; }
+
+/* Toolbar */
+.fc .fc-toolbar.fc-header-toolbar { margin-bottom:1.25rem !important; flex-wrap:wrap; gap:.5rem; }
+.fc .fc-toolbar-title { font-size:1rem !important; font-weight:700 !important; color:var(--t1) !important; letter-spacing:-.02em; }
+
+/* Buttons */
+.fc .fc-button { font-family:var(--font) !important; font-size:.78rem !important; font-weight:600 !important; padding:.38rem .9rem !important; border-radius:var(--r2) !important; border:1px solid var(--border) !important; background:var(--card) !important; color:var(--t2) !important; box-shadow:var(--s1) !important; transition:all var(--t) !important; }
+.fc .fc-button:hover { background:var(--hover) !important; color:var(--t1) !important; border-color:var(--border-2) !important; }
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active { background:var(--blue) !important; border-color:var(--blue) !important; color:#fff !important; box-shadow:var(--sb) !important; }
+.fc .fc-button-primary:focus { box-shadow:0 0 0 3px var(--blue-m) !important; }
+
+/* Table headers */
+.fc .fc-col-header-cell { background:var(--subtle) !important; border-color:var(--border) !important; }
+.fc .fc-col-header-cell-cushion { font-size:.73rem !important; font-weight:700 !important; text-transform:uppercase !important; letter-spacing:.07em !important; color:var(--t3) !important; text-decoration:none !important; padding:.55rem .5rem !important; }
+
+/* Day cells */
+.fc .fc-daygrid-day { background:var(--card) !important; border-color:var(--border) !important; transition:background var(--t); }
+.fc .fc-daygrid-day:hover { background:var(--hover) !important; }
+.fc .fc-daygrid-day.fc-day-today { background:var(--blue-l) !important; }
+.fc .fc-daygrid-day-number { font-size:.78rem !important; font-weight:600 !important; color:var(--t2) !important; text-decoration:none !important; padding:.4rem .5rem !important; }
+.fc .fc-day-today .fc-daygrid-day-number { color:var(--blue) !important; font-weight:800 !important; }
+
+/* Events */
+.fc .fc-event { border:none !important; border-radius:var(--r1) !important; font-size:.72rem !important; font-weight:600 !important; padding:.15rem .45rem !important; cursor:pointer; transition:opacity var(--t), transform var(--t); }
+.fc .fc-event:hover { opacity:.85; transform:translateY(-1px); }
+.fc .fc-event-title { font-weight:600 !important; }
+.fc .fc-event-time { font-family:var(--mono) !important; font-size:.65rem !important; opacity:.8; }
+
+/* Scrollbar */
+.fc .fc-scroller::-webkit-scrollbar { width:4px; height:4px; }
+.fc .fc-scroller::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+/* List view */
+.fc .fc-list-event:hover td { background:var(--hover) !important; }
+.fc .fc-list-event-title a { color:var(--t1) !important; font-weight:600 !important; font-size:.84rem !important; text-decoration:none !important; }
+.fc .fc-list-day-cushion { background:var(--subtle) !important; font-size:.73rem !important; font-weight:700 !important; text-transform:uppercase !important; letter-spacing:.07em !important; color:var(--t3) !important; }
+.fc .fc-list-table td { border-color:var(--border) !important; }
+.fc .fc-list-empty { color:var(--t3) !important; font-size:.84rem !important; }
+
+/* ── List / table view ─────────────────────────────── */
+.ag-table { width:100%; border-collapse:collapse; }
+.ag-table thead tr { border-bottom:1px solid var(--border); }
+.ag-table th { padding:.8rem 1.2rem; font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--t4); text-align:left; background:var(--subtle); white-space:nowrap; }
+.ag-table td { padding:.88rem 1.2rem; font-size:.83rem; color:var(--t2); border-bottom:1px solid var(--border); vertical-align:middle; }
+.ag-table tbody tr { transition:background var(--t); }
+.ag-table tbody tr:hover { background:var(--hover); }
+.ag-table tbody tr:last-child td { border-bottom:none; }
+
+/* Date cell */
+.ag-date-cell { font-family:var(--mono); font-size:.78rem; color:var(--t2); }
+.ag-time-cell { font-family:var(--mono); font-size:.76rem; color:var(--t3); }
+
+/* Title cell */
+.ag-title-cell a { color:var(--t1); font-weight:600; text-decoration:none; font-size:.84rem; letter-spacing:-.01em; }
+.ag-title-cell a:hover { color:var(--blue); }
+
+/* Type badges */
+.ag-type-badge { display:inline-flex; align-items:center; gap:.25rem; padding:.18rem .6rem; border-radius:20px; font-size:.69rem; font-weight:600; border:1px solid transparent; white-space:nowrap; }
+.type-action    { background:var(--blue-l);   color:var(--blue);   border-color:var(--blue-m); }
+.type-examen    { background:var(--violet-l); color:var(--violet); border-color:rgba(124,111,205,.2); }
+.type-formation { background:var(--teal-l);   color:#0a9997;       border-color:rgba(12,184,182,.2); }
+.type-event     { background:var(--amber-l);  color:var(--amber);  border-color:rgba(232,160,32,.2); }
+.type-specimen  { background:var(--green-l);  color:#1aaa5e;       border-color:rgba(40,199,111,.2); }
+.type-task      { background:var(--subtle);   color:var(--t2);     border-color:var(--border); }
+.type-default   { background:var(--subtle);   color:var(--t3);     border-color:var(--border); }
+
+/* Compte cell */
+.ag-compte { display:flex; align-items:center; gap:.35rem; font-size:.81rem; }
+.ag-compte-dot { width:5px; height:5px; border-radius:50%; background:var(--teal); flex-shrink:0; }
+
+/* Delegate cell */
+.ag-dlg { display:flex; align-items:center; gap:.4rem; }
+.ag-dlg-av { width:22px; height:22px; border-radius:50%; background:linear-gradient(135deg,#5b8dee,#6c63ff); display:flex; align-items:center; justify-content:center; font-size:.55rem; font-weight:700; color:#fff; flex-shrink:0; }
+
+/* General button (ghost) */
+.btn-ag { display:inline-flex; align-items:center; gap:.35rem; padding:.34rem .7rem; border-radius:var(--r2); font-family:var(--font); font-size:.75rem; font-weight:600; cursor:pointer; border:1px solid transparent; transition:all var(--t); text-decoration:none; white-space:nowrap; line-height:1; }
+.btn-ag-ghost { background:var(--card); color:var(--t2); border-color:var(--border); box-shadow:var(--s1); }
+.btn-ag-ghost:hover { background:var(--hover); color:var(--t1); border-color:var(--border-2); text-decoration:none; }
+
+/* Empty state */
+.ag-empty { padding:4rem 2rem; text-align:center; }
+.ag-empty-icon { width:52px; height:52px; border-radius:var(--r3); background:var(--subtle); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; color:var(--t4); }
+.ag-empty h3 { font-size:.95rem; font-weight:700; color:var(--t2); }
+.ag-empty p  { font-size:.82rem; color:var(--t3); margin-top:.3rem; }
+
+/* Pagination */
+.ag-pagination { padding:1rem 1.6rem; border-top:1px solid var(--border); background:var(--bg); display:flex; align-items:center; justify-content:flex-end; }
+
+/* Responsive */
+@media(max-width:768px) {
+    .ag-page { padding:1.25rem 1rem 2rem; }
+    .ag-header { flex-direction:column; gap:1rem; }
+    .ag-stats { grid-template-columns:1fr 1fr; }
+    .ag-toolbar { flex-direction:column; align-items:flex-start; }
+    .ag-table th, .ag-table td { padding:.7rem .9rem; }
+    .info-grid { grid-template-columns: 1fr; }
+}
+@media(max-width:480px) { .ag-stats { grid-template-columns:1fr; } }
 </style>
 @endpush
 
 @section('content')
-<div class="zn-page">
+<div class="ag-page">
 
     {{-- Breadcrumb --}}
-    <div class="zn-bc">
+    <div class="ag-bc">
         <a href="{{ route('taches.index') }}">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
         </a>
-        <span class="zn-bc-sep">›</span>
+        <span class="ag-bc-s">›</span>
         <a href="{{ route('taches.index') }}">Tâches</a>
-        <span class="zn-bc-sep">›</span>
-        <span class="zn-bc-cur">{{ isset($tache) ? 'Modifier la tâche' : 'Nouvelle tâche' }}</span>
+        <span class="ag-bc-s">›</span>
+        <span style="color:var(--t2);font-weight:600;">Modifier</span>
     </div>
 
-    <div class="zn-header">
-        <h1>{{ isset($tache) ? 'Modifier la tâche' : 'Nouvelle tâche' }}</h1>
-        <p>{{ isset($tache) ? 'Mettez à jour les informations de la tâche.' : 'Créez une tâche planifiée.' }}</p>
-    </div>
-
-    @if($errors->any())
-    <div class="zn-alert zn-alert-danger">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:.1rem"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <div>
-            <strong style="display:block;margin-bottom:.3rem;">Veuillez corriger les erreurs suivantes&nbsp;:</strong>
-            <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+    {{-- Header --}}
+    <div class="ag-header">
+        <div class="ag-header-left">
+            <h1>Modifier la tâche</h1>
+            <p>Mettez à jour la tâche</p>
         </div>
     </div>
-    @endif
 
-    <div class="fp-card">
-        <form method="POST" action="{{ isset($tache) ? route('taches.update', $tache) : route('taches.store') }}">
-            @csrf
-            @if(isset($tache)) @method('PUT') @endif
-
-            @php
-                $isEdit = isset($tache);
-                $defaultObjet = old('objet', $isEdit ? $tache->objet : '');
-                $defaultDescription = old('description', $isEdit ? $tache->description : '');
-                $defaultDatePlanif = old('date_planification', $isEdit ? $tache->date_planification->format('Y-m-d') : '');
-                $defaultDateFin = old('date_fin', $isEdit && $tache->date_fin ? $tache->date_fin->format('Y-m-d') : '');
-                $defaultAllDay = old('all_day', $isEdit ? $tache->all_day : false);
-                $defaultLieu = old('lieu', $isEdit ? $tache->lieu : '');
-                $defaultContacts = old('contacts', $isEdit ? ($tache->contacts->pluck('id')->toArray() ?? []) : []);
-            @endphp
-
-            <div class="fp-section">
-                <div class="fp-section-head">
-                    <div class="fp-section-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
-                    </div>
-                    <div class="fp-section-meta">
-                        <div class="fp-section-title">Détails de la tâche</div>
-                        <div class="fp-section-sub">Objet, dates, lieu et contacts</div>
-                    </div>
-                </div>
-
-                {{-- Objet --}}
-                <div class="frm-group">
-                    <label class="frm-label" for="objet">Objet <span class="req">*</span></label>
-                    <input type="text" name="objet" id="objet"
-                           class="frm-input {{ $errors->has('objet') ? 'is-invalid' : '' }}"
-                           value="{{ $defaultObjet }}" required>
-                    @error('objet')<span class="frm-error">{{ $message }}</span>@enderror
-                </div>
-                <br>
-
-                {{-- Description --}}
-                <div class="frm-group">
-                    <label class="frm-label" for="description">Description</label>
-                    <textarea name="description" id="description" class="frm-input" rows="2">{{ $defaultDescription }}</textarea>
-                </div>
-<br>
-                {{-- Dates (3 columns) --}}
-                <div class="fp-row fp-row-3">
-                    <div class="frm-group">
-                        <label class="frm-label" for="date_planification">Date planification <span class="req">*</span></label>
-                        <input type="date" name="date_planification" id="date_planification"
-                               class="frm-input {{ $errors->has('date_planification') ? 'is-invalid' : '' }}"
-                               value="{{ $defaultDatePlanif }}" required>
-                        @error('date_planification')<span class="frm-error">{{ $message }}</span>@enderror
-                    </div>
-                    <div class="frm-group">
-                        <label class="frm-label" for="date_fin">Date fin</label>
-                        <input type="date" name="date_fin" id="date_fin"
-                               class="frm-input {{ $errors->has('date_fin') ? 'is-invalid' : '' }}"
-                               value="{{ $defaultDateFin }}">
-                        @error('date_fin')<span class="frm-error">{{ $message }}</span>@enderror
-                    </div>
-                    <div class="frm-group" style="justify-content: flex-end;">
-                        <div class="checkbox-group" style="margin-top: 0.2rem;">
-                            <input type="checkbox" name="all_day" id="all_day" value="1" {{ $defaultAllDay ? 'checked' : '' }}>
-                            <label for="all_day">Toute la journée</label>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Lieu --}}
-                <div class="frm-group">
-                    <label class="frm-label" for="lieu">Lieu</label>
-                    <input type="text" name="lieu" id="lieu"
-                           class="frm-input {{ $errors->has('lieu') ? 'is-invalid' : '' }}"
-                           value="{{ $defaultLieu }}">
-                    @error('lieu')<span class="frm-error">{{ $message }}</span>@enderror
-                </div>
-
-                <br>
-                
-
-                {{-- Contacts (multi-select) --}}
-                <div class="frm-group">
-                    <label class="frm-label" for="contacts">Contacts (plusieurs)</label>
-                    <select name="contacts[]" id="contacts" class="frm-select" multiple size="4">
-                        @foreach($contacts as $c)
-                            <option value="{{ $c->id }}" {{ in_array($c->id, $defaultContacts) ? 'selected' : '' }}>
-                                {{ $c->prenom }} {{ $c->nom }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <div class="frm-hint">
-                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs contacts
-                    </div>
-                    @error('contacts')<span class="frm-error">{{ $message }}</span>@enderror
-                </div>
+    {{-- Card --}}
+    <div class="ag-card">
+        <div class="ag-card-hd">
+            <div class="ag-card-title">
+                <span class="ag-pip"></span>
+                Formulaire
             </div>
-
-            <div class="fp-footer">
-                <p class="fp-req-note"><span>*</span> Champs obligatoires</p>
-                <div class="fp-footer-spacer"></div>
-                <a href="{{ route('taches.index') }}" class="btn-zn btn-zn-ghost">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </div>
+        <form method="POST" action="{{ route('taches.update', $tache) }}" novalidate>
+            @csrf
+            @method('PUT')
+            <div class="ag-card-body">
+                @include('taches._form')
+            </div>
+            <div class="ag-card-footer">
+                <a href="{{ route('taches.index') }}" class="btn-ag btn-ag-ghost">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="19" y1="12" x2="5" y2="12"/>
+                        <polyline points="12 19 5 12 12 5"/>
                     </svg>
                     Annuler
                 </a>
-                <button type="submit" class="btn-zn btn-zn-primary">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <button type="submit" class="btn-ag btn-ag-primary">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
-                    {{ isset($tache) ? 'Enregistrer les modifications' : 'Créer la tâche' }}
+                    Mettre à jour
                 </button>
             </div>
         </form>
