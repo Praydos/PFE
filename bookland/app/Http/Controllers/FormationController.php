@@ -148,6 +148,8 @@ class FormationController extends Controller
         $user = Auth::user();
         $comptes = Compte::where('delegue_id', $user->id)->with('ville', 'zone')->get();
         $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+        $villes = $this->getUserVilles($user); // helper
+        $zones = Zone::all();
         $types = [
             'Formation méthode', 'Présentation méthode', 'Accompagnement pédagogique',
             'Leçon modèle', 'Intégration de classe', 'Audit de classe', 'Formation Examen CAMBRIDGE'
@@ -155,7 +157,7 @@ class FormationController extends Controller
         $cibles = ['Direction', 'Enseignants', 'Parents'];
         $statuts = ['demande' => 'Demandée', 'planifiee' => 'Planifiée', 'annulee' => 'Annulée', 'reportee' => 'Reportée', 'realisee' => 'Réalisée'];
         $currentYear = $this->getCurrentYear();
-        return view('formations.edit', compact('formation', 'comptes', 'years', 'types', 'cibles', 'statuts', 'currentYear'));
+        return view('formations.edit', compact('formation', 'comptes', 'years', 'types', 'cibles', 'statuts', 'currentYear', 'villes', 'zones'));
     }
 
     public function update(Request $request, Formation $formation)
