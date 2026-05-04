@@ -34,4 +34,6 @@ class Tache extends Model
         if (empty($this->contacts)) return collect();
         return Contact::whereIn('id', $this->contacts)->get();
     }
+
+    
 }

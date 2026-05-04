@@ -3,9 +3,7 @@
 @push('styles')
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-    /* ===== FULL CSS FROM ZONES EXAMPLE ===== */
-    /* Copy the entire <style> block from the zones example here */
-    /* (Essential parts included below – replace with the complete block from zones index) */
+    /* ── Global design system (identical to previous forms) ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -46,25 +44,19 @@
 
     body { font-family: var(--font); background: var(--bg-base); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
 
-    .zn-page { padding: 2rem 2.5rem 3rem; animation: pageIn .4s var(--ease) both; max-width: 800px; margin: 0 auto; }
-    @keyframes pageIn {
-        from { opacity: 0; transform: translateY(12px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
+    .zn-page { padding: 2rem 2.5rem 3rem; animation: pageIn .4s var(--ease) both; max-width: 1400px; margin: 0 auto; }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ── Breadcrumb ──────────────────────────────────────── */
     .zn-bc { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1.4rem; }
     .zn-bc a { color: var(--text-muted); text-decoration: none; transition: color var(--t); }
     .zn-bc a:hover { color: var(--blue); }
     .zn-bc-sep { color: var(--text-hint); }
     .zn-bc-cur { color: var(--text-secondary); }
 
-    /* ── Header ──────────────────────────────────────────── */
     .zn-header { margin-bottom: 2rem; }
-    .zn-header h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -.03em; color: var(--text-primary); line-height: 1.15; margin: 0; }
-    .zn-header p { font-size: .83rem; color: var(--text-muted); margin-top: .3rem; }
+    .zn-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.03em; color: var(--text-primary); line-height: 1.15; }
+    .zn-header p { font-size: .82rem; color: var(--text-muted); margin-top: .3rem; }
 
-    /* ── Buttons ─────────────────────────────────────────── */
     .btn-zn {
         display: inline-flex; align-items: center; gap: .4rem;
         padding: .56rem 1.1rem; border-radius: var(--r-sm);
@@ -75,69 +67,94 @@
     }
     .btn-zn svg { flex-shrink: 0; }
     .btn-zn-primary { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: var(--shadow-blue); }
-    .btn-zn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); color: #fff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(91,141,238,.4); }
+    .btn-zn-primary:hover { background: var(--blue-dark); color: #fff; transform: translateY(-1px); }
     .btn-zn-ghost { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border); box-shadow: var(--shadow-xs); }
     .btn-zn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-md); text-decoration: none; }
 
-    /* ── Card ────────────────────────────────────────────── */
-    .zn-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--shadow-sm); overflow: hidden; }
-    .zn-card-header { padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .55rem; background: linear-gradient(to bottom, #fafbff, #fff); }
-    .zn-card-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 3px rgba(232,160,32,.2); }
-    .zn-card-title { font-size: .88rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.01em; }
-    .zn-card-body { padding: 1.75rem 1.6rem; }
+    .fp-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--r-xl);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
 
-    /* ── Form Fields ───────────────────────────────────── */
-    .frm-group {
-        display: flex; flex-direction: column; gap: .45rem;
-        margin-bottom: 1.25rem;
+    .fp-section {
+        padding: 2rem 2rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        scroll-margin-top: 1.5rem;
     }
+    .fp-section:last-of-type { border-bottom: none; }
+    .fp-section-head {
+        display: flex; align-items: center; gap: .75rem;
+        margin-bottom: 1.6rem;
+    }
+    .fp-section-icon {
+        width: 34px; height: 34px; flex-shrink: 0;
+        border-radius: var(--r-md);
+        display: flex; align-items: center; justify-content: center;
+        background: var(--blue-light); color: var(--blue);
+    }
+    .fp-section-meta { flex: 1; }
+    .fp-section-title { font-size: .9rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
+    .fp-section-sub   { font-size: .74rem; color: var(--text-muted); margin-top: .1rem; }
+
+    .frm-group { display: flex; flex-direction: column; gap: .38rem; margin-bottom: 1.25rem; }
     .frm-group:last-of-type { margin-bottom: 0; }
-    .frm-label {
-        font-size: .8rem; font-weight: 600;
-        color: var(--text-secondary); letter-spacing: -.01em;
-    }
-    .frm-input,
-    .frm-select {
-        width: 100%; padding: .62rem .9rem;
+    .frm-label { font-size: .77rem; font-weight: 600; color: var(--text-secondary); letter-spacing: -.01em; }
+    .frm-input, .frm-select {
+        width: 100%; padding: .6rem .88rem;
         border: 1px solid var(--border); border-radius: var(--r-sm);
         background: var(--bg-card); font-family: var(--font);
-        font-size: .84rem; color: var(--text-primary);
+        font-size: .83rem; color: var(--text-primary);
         box-shadow: var(--shadow-xs);
         transition: border-color var(--t), box-shadow var(--t);
-        outline: none; appearance: none; -webkit-appearance: none;
+        outline: none;
     }
-    .frm-input:focus,
-    .frm-select:focus {
-        border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-mid);
+    .frm-input:focus, .frm-select:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px var(--blue-mid);
     }
-    textarea.frm-input { resize: vertical; }
+    .frm-input.is-invalid, .frm-select.is-invalid {
+        border-color: var(--rose);
+        box-shadow: 0 0 0 3px rgba(232,80,106,.12);
+    }
+    .frm-error { font-size: .72rem; color: var(--rose); font-weight: 500; margin-top: .2rem; }
 
-    /* Select wrapper with custom arrow */
     .frm-select-wrap { position: relative; }
     .frm-select-wrap::after {
-        content: '';
-        position: absolute; right: .9rem; top: 50%; transform: translateY(-50%);
+        content: ''; position: absolute; right: .88rem; top: 50%; transform: translateY(-50%);
         width: 0; height: 0;
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-top: 5px solid var(--text-muted);
-        pointer-events: none;
+        border-left: 4px solid transparent; border-right: 4px solid transparent;
+        border-top: 5px solid var(--text-muted); pointer-events: none;
     }
     .frm-select { padding-right: 2.2rem; cursor: pointer; }
 
-    /* Footer actions */
-    .fp-footer {
-        padding: 1.1rem 1.6rem;
-        border-top: 1px solid var(--border);
-        background: var(--bg-base);
-        display: flex; align-items: center; justify-content: flex-end;
-        gap: .6rem;
-        margin-top: 1.5rem;
-    }
+    textarea.frm-input { resize: vertical; min-height: 80px; }
 
-    @media (max-width: 768px) {
+    .fp-footer {
+        padding: 1.25rem 2rem;
+        background: linear-gradient(to bottom, #fafbff, #fff);
+        border-top: 1px solid var(--border);
+        display: flex; align-items: center; gap: .75rem;
+    }
+    .fp-footer-spacer { flex: 1; }
+    .fp-req-note { font-size: .74rem; color: var(--text-muted); }
+    .fp-req-note span { color: var(--rose); }
+
+    .zn-alert {
+        display: flex; align-items: flex-start; gap: .75rem;
+        padding: 1rem 1.25rem; border-radius: var(--r-lg);
+        border: 1px solid; margin-bottom: 1.5rem; font-size: .82rem;
+    }
+    .zn-alert-danger { background: var(--rose-light); border-color: rgba(232,80,106,.25); color: #b83450; }
+    .zn-alert ul { padding-left: 1.2rem; margin-top: .3rem; }
+    .zn-alert li { margin-bottom: .15rem; }
+
+    @media (max-width: 680px) {
         .zn-page { padding: 1.25rem 1rem 2rem; }
-        .fp-footer { flex-direction: column-reverse; }
+        .fp-footer { flex-wrap: wrap; }
+        .fp-footer-spacer { display: none; }
         .btn-zn { width: 100%; justify-content: center; }
     }
 </style>
@@ -162,63 +179,88 @@
         <span class="zn-bc-cur">Feedback</span>
     </div>
 
-    {{-- Header --}}
     <div class="zn-header">
         <h1>Feedback du BSS {{ $bss->numero }}</h1>
         <p>Ajoutez le résultat de la livraison, la date du feedback et mettez à jour le contrôle document</p>
     </div>
 
-    {{-- Form card --}}
-    <div class="zn-card">
-        <div class="zn-card-header">
-            <span class="zn-card-pip"></span>
-            <span class="zn-card-title">Formulaire de feedback</span>
+    @if($errors->any())
+    <div class="zn-alert zn-alert-danger">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:.1rem"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+            <strong style="display:block;margin-bottom:.3rem;">Veuillez corriger les erreurs suivantes&nbsp;:</strong>
+            <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
         </div>
-        <div class="zn-card-body">
-            <form method="POST" action="{{ route('bss.update', $bss) }}">
-                @csrf
-                @method('PUT')
+    </div>
+    @endif
 
-                <div class="frm-group">
-                    <label class="frm-label" for="feedback">Feedback (résultat de la livraison)</label>
-                    <textarea name="feedback" id="feedback" class="frm-input" rows="3">{{ old('feedback', $bss->feedback) }}</textarea>
-                </div>
+    <div class="fp-card">
+        <form method="POST" action="{{ route('bss.update', $bss) }}">
+            @csrf
+            @method('PUT')
 
-                <div class="frm-group">
-                    <label class="frm-label" for="date_feedback">Date du feedback</label>
-                    <input type="date" name="date_feedback" id="date_feedback" class="frm-input" value="{{ old('date_feedback', now()->format('Y-m-d')) }}">
-                </div>
-
-                <div class="frm-group">
-                    <label class="frm-label" for="controle_document">Contrôle document physique</label>
-                    <div class="frm-select-wrap">
-                        <select name="controle_document" id="controle_document" class="frm-select">
-                            <option value="">— Sélectionnez —</option>
-                            <option value="OK" {{ $bss->controle_document == 'OK' ? 'selected' : '' }}>OK</option>
-                            <option value="Absence signature" {{ $bss->controle_document == 'Absence signature' ? 'selected' : '' }}>Absence signature</option>
-                            <option value="Absence cachet" {{ $bss->controle_document == 'Absence cachet' ? 'selected' : '' }}>Absence cachet</option>
-                            <option value="Absence Document" {{ $bss->controle_document == 'Absence Document' ? 'selected' : '' }}>Absence Document</option>
-                        </select>
+            <div class="fp-section">
+                <div class="fp-section-head">
+                    <div class="fp-section-icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <div class="fp-section-meta">
+                        <div class="fp-section-title">Feedback de livraison</div>
+                        <div class="fp-section-sub">Résultat, date et contrôle documentaire</div>
                     </div>
                 </div>
 
-                <div class="fp-footer" style="margin-top: 1rem;">
-                    <button type="submit" class="btn-zn btn-zn-primary">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        Enregistrer
-                    </button>
-                    <a href="{{ route('bss.show', $bss) }}" class="btn-zn btn-zn-ghost">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <line x1="19" y1="12" x2="5" y2="12"/>
-                            <polyline points="12 19 5 12 12 5"/>
-                        </svg>
-                        Annuler
-                    </a>
+                {{-- Feedback (textarea) --}}
+                <div class="frm-group">
+                    <label class="frm-label" for="feedback">Feedback (résultat de la livraison)</label>
+                    <textarea name="feedback" id="feedback" class="frm-input {{ $errors->has('feedback') ? 'is-invalid' : '' }}" rows="4">{{ old('feedback', $bss->feedback) }}</textarea>
+                    @error('feedback')<span class="frm-error">{{ $message }}</span>@enderror
                 </div>
-            </form>
-        </div>
+
+                {{-- Date feedback --}}
+                <div class="frm-group">
+                    <label class="frm-label" for="date_feedback">Date du feedback</label>
+                    <input type="date" name="date_feedback" id="date_feedback"
+                           class="frm-input {{ $errors->has('date_feedback') ? 'is-invalid' : '' }}"
+                           value="{{ old('date_feedback', $bss->date_feedback ? $bss->date_feedback->format('Y-m-d') : now()->format('Y-m-d')) }}">
+                    @error('date_feedback')<span class="frm-error">{{ $message }}</span>@enderror
+                </div>
+
+                {{-- Contrôle document --}}
+                <div class="frm-group">
+                    <label class="frm-label" for="controle_document">Contrôle document physique</label>
+                    <div class="frm-select-wrap">
+                        <select name="controle_document" id="controle_document" class="frm-select {{ $errors->has('controle_document') ? 'is-invalid' : '' }}">
+                            <option value="">— Sélectionnez —</option>
+                            <option value="OK" {{ old('controle_document', $bss->controle_document) == 'OK' ? 'selected' : '' }}>OK</option>
+                            <option value="Absence signature" {{ old('controle_document', $bss->controle_document) == 'Absence signature' ? 'selected' : '' }}>Absence signature</option>
+                            <option value="Absence cachet" {{ old('controle_document', $bss->controle_document) == 'Absence cachet' ? 'selected' : '' }}>Absence cachet</option>
+                            <option value="Absence Document" {{ old('controle_document', $bss->controle_document) == 'Absence Document' ? 'selected' : '' }}>Absence Document</option>
+                        </select>
+                    </div>
+                    @error('controle_document')<span class="frm-error">{{ $message }}</span>@enderror
+                </div>
+            </div>
+
+            <div class="fp-footer">
+                <p class="fp-req-note"><span>*</span> Champs obligatoires</p>
+                <div class="fp-footer-spacer"></div>
+                <a href="{{ route('bss.show', $bss) }}" class="btn-zn btn-zn-ghost">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                    </svg>
+                    Annuler
+                </a>
+                <button type="submit" class="btn-zn btn-zn-primary">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Enregistrer
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection

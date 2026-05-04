@@ -1,12 +1,9 @@
 @extends('layouts.app')
 
 @push('styles')
-{{-- Same CSS block as in convert view (full zones style) --}}
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-    /* ===== FULL CSS FROM ZONES EXAMPLE ===== */
-    /* Paste the entire <style> block from the zones index here */
-    /* (We'll include the essential parts; replace with the complete block) */
+    /* ── Global design system (identical to previous forms) ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -47,11 +44,8 @@
 
     body { font-family: var(--font); background: var(--bg-base); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
 
-    .zn-page { padding: 2rem 2.5rem 3rem; animation: pageIn .4s var(--ease) both; max-width: 900px; margin: 0 auto; }
-    @keyframes pageIn {
-        from { opacity: 0; transform: translateY(12px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
+    .zn-page { padding: 2rem 2.5rem 3rem; animation: pageIn .4s var(--ease) both; max-width: 1400px; margin: 0 auto; }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
     .zn-bc { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1.4rem; }
     .zn-bc a { color: var(--text-muted); text-decoration: none; transition: color var(--t); }
@@ -60,8 +54,8 @@
     .zn-bc-cur { color: var(--text-secondary); }
 
     .zn-header { margin-bottom: 2rem; }
-    .zn-header h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -.03em; color: var(--text-primary); line-height: 1.15; margin: 0; }
-    .zn-header p { font-size: .83rem; color: var(--text-muted); margin-top: .3rem; }
+    .zn-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.03em; color: var(--text-primary); line-height: 1.15; }
+    .zn-header p { font-size: .82rem; color: var(--text-muted); margin-top: .3rem; }
 
     .btn-zn {
         display: inline-flex; align-items: center; gap: .4rem;
@@ -71,62 +65,156 @@
         transition: all var(--t); text-decoration: none;
         white-space: nowrap; letter-spacing: -.01em; line-height: 1;
     }
+    .btn-zn svg { flex-shrink: 0; }
     .btn-zn-primary { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: var(--shadow-blue); }
     .btn-zn-primary:hover { background: var(--blue-dark); color: #fff; transform: translateY(-1px); }
     .btn-zn-ghost { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border); box-shadow: var(--shadow-xs); }
-    .btn-zn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-md); }
+    .btn-zn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-md); text-decoration: none; }
+    .btn-zn-danger { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.18); }
+    .btn-zn-danger:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
+    .btn-zn-sm { padding: .38rem .72rem; font-size: .75rem; }
 
-    .zn-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--shadow-sm); overflow: hidden; }
-    .zn-card-header { padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .55rem; background: linear-gradient(to bottom, #fafbff, #fff); }
-    .zn-card-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 3px rgba(232,160,32,.2); }
-    .zn-card-title { font-size: .88rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.01em; }
-    .zn-card-body { padding: 1.75rem 1.6rem; }
+    .fp-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--r-xl);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
 
-    .frm-group {
-        display: flex; flex-direction: column; gap: .45rem;
-        margin-bottom: 1.25rem;
+    .fp-section {
+        padding: 2rem 2rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        scroll-margin-top: 1.5rem;
     }
-    .frm-label {
-        font-size: .8rem; font-weight: 600;
-        color: var(--text-secondary); letter-spacing: -.01em;
+    .fp-section:last-of-type { border-bottom: none; }
+    .fp-section-head {
+        display: flex; align-items: center; gap: .75rem;
+        margin-bottom: 1.6rem;
     }
-    .frm-label .req { color: var(--rose); margin-left: .2rem; }
+    .fp-section-icon {
+        width: 34px; height: 34px; flex-shrink: 0;
+        border-radius: var(--r-md);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .fp-section-icon.blue  { background: var(--blue-light);   color: var(--blue); }
+    .fp-section-icon.amber { background: var(--amber-light);  color: var(--amber); }
+    .fp-section-meta { flex: 1; }
+    .fp-section-title { font-size: .9rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
+    .fp-section-sub   { font-size: .74rem; color: var(--text-muted); margin-top: .1rem; }
+
+    .fp-row { display: grid; gap: 1rem; margin-bottom: 1rem; }
+    .fp-row:last-child { margin-bottom: 0; }
+    .fp-row-2 { grid-template-columns: repeat(2, 1fr); }
+    .fp-row-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .frm-group { display: flex; flex-direction: column; gap: .38rem; }
+    .frm-label { font-size: .77rem; font-weight: 600; color: var(--text-secondary); letter-spacing: -.01em; }
+    .frm-label .req { color: var(--rose); margin-left: .18rem; }
     .frm-input, .frm-select {
-        width: 100%; padding: .62rem .9rem;
+        width: 100%; padding: .6rem .88rem;
         border: 1px solid var(--border); border-radius: var(--r-sm);
         background: var(--bg-card); font-family: var(--font);
-        font-size: .84rem; color: var(--text-primary);
+        font-size: .83rem; color: var(--text-primary);
         box-shadow: var(--shadow-xs);
-        transition: all var(--t);
+        transition: border-color var(--t), box-shadow var(--t);
         outline: none;
     }
     .frm-input:focus, .frm-select:focus {
-        border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-mid);
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px var(--blue-mid);
     }
+    .frm-input.is-invalid, .frm-select.is-invalid {
+        border-color: var(--rose);
+        box-shadow: 0 0 0 3px rgba(232,80,106,.12);
+    }
+    .frm-error { font-size: .72rem; color: var(--rose); font-weight: 500; margin-top: .2rem; }
+
     .frm-select-wrap { position: relative; }
     .frm-select-wrap::after {
-        content: '';
-        position: absolute; right: .9rem; top: 50%; transform: translateY(-50%);
+        content: ''; position: absolute; right: .88rem; top: 50%; transform: translateY(-50%);
         width: 0; height: 0;
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-top: 5px solid var(--text-muted);
-        pointer-events: none;
+        border-left: 4px solid transparent; border-right: 4px solid transparent;
+        border-top: 5px solid var(--text-muted); pointer-events: none;
     }
     .frm-select { padding-right: 2.2rem; cursor: pointer; }
 
-    .card-footer {
-        padding: 1.1rem 1.6rem;
-        border-top: 1px solid var(--border);
-        background: var(--bg-base);
-        display: flex; align-items: center; justify-content: flex-end;
-        gap: .6rem;
-        margin-top: 1.5rem;
+    /* Product row – custom flex layout (more than 3 columns) */
+    .product-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .product-row .frm-group {
+        flex: 1;
+        min-width: 150px;
+        margin-bottom: 0;
+    }
+    .product-row .remove-btn {
+        flex-shrink: 0;
+        margin-bottom: 0;
+    }
+    .product-row .remove-btn button {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all var(--t);
+        color: var(--text-muted);
+    }
+    .product-row .remove-btn button:hover {
+        background: var(--rose-light);
+        color: var(--rose);
+        border-color: rgba(232,80,106,.2);
     }
 
-    @media (max-width: 768px) {
+    /* Readonly fields styling */
+    .frm-input[readonly] {
+        background: var(--bg-subtle);
+        cursor: not-allowed;
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 1rem 0;
+    }
+
+    .fp-footer {
+        padding: 1.25rem 2rem;
+        background: linear-gradient(to bottom, #fafbff, #fff);
+        border-top: 1px solid var(--border);
+        display: flex; align-items: center; gap: .75rem;
+    }
+    .fp-footer-spacer { flex: 1; }
+    .fp-req-note { font-size: .74rem; color: var(--text-muted); }
+    .fp-req-note span { color: var(--rose); }
+
+    .zn-alert {
+        display: flex; align-items: flex-start; gap: .75rem;
+        padding: 1rem 1.25rem; border-radius: var(--r-lg);
+        border: 1px solid; margin-bottom: 1.5rem; font-size: .82rem;
+    }
+    .zn-alert-danger { background: var(--rose-light); border-color: rgba(232,80,106,.25); color: #b83450; }
+    .zn-alert ul { padding-left: 1.2rem; margin-top: .3rem; }
+    .zn-alert li { margin-bottom: .15rem; }
+
+    @media (max-width: 680px) {
         .zn-page { padding: 1.25rem 1rem 2rem; }
-        .card-footer { flex-direction: column-reverse; }
+        .fp-row-2, .fp-row-3 { grid-template-columns: 1fr; }
+        .product-row { flex-direction: column; align-items: stretch; }
+        .product-row .remove-btn { align-self: flex-start; }
+        .fp-footer { flex-wrap: wrap; }
+        .fp-footer-spacer { display: none; }
         .btn-zn { width: 100%; justify-content: center; }
     }
 </style>
@@ -154,52 +242,378 @@
         <p>Créez une adoption directement sans passer par un BSS</p>
     </div>
 
-    <div class="zn-card">
-        <div class="zn-card-header">
-            <span class="zn-card-pip"></span>
-            <span class="zn-card-title">Formulaire d'adoption</span>
+    @if($errors->any())
+    <div class="zn-alert zn-alert-danger">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:.1rem"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+            <strong style="display:block;margin-bottom:.3rem;">Veuillez corriger les erreurs suivantes&nbsp;:</strong>
+            <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
         </div>
-        <div class="zn-card-body">
-            <form method="POST" action="{{ route('adoptions.store') }}">
-                @csrf
-                @include('adoptions._form', ['adoption' => null])
-                <div class="card-footer">
-                    <button type="submit" class="btn-zn btn-zn-primary">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        Enregistrer
-                    </button>
-                    <a href="{{ route('adoptions.index') }}" class="btn-zn btn-zn-ghost">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <line x1="19" y1="12" x2="5" y2="12"/>
-                            <polyline points="12 19 5 12 12 5"/>
-                        </svg>
-                        Annuler
-                    </a>
+    </div>
+    @endif
+
+    <div class="fp-card">
+        <form method="POST" action="{{ route('adoptions.store') }}" id="adoption-form">
+            @csrf
+
+            {{-- Section 1 : Informations de l'adoption --}}
+            <div class="fp-section">
+                <div class="fp-section-head">
+                    <div class="fp-section-icon blue">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+                    </div>
+                    <div class="fp-section-meta">
+                        <div class="fp-section-title">Informations de l'adoption</div>
+                        <div class="fp-section-sub">Compte, contact, année scolaire, date et méthode</div>
+                    </div>
                 </div>
-            </form>
-        </div>
+
+                <div class="fp-row fp-row-2">
+                    {{-- Compte --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="compte_id">Compte <span class="req">*</span></label>
+                        <div class="frm-select-wrap">
+                            <select name="compte_id" id="compte_id" class="frm-select {{ $errors->has('compte_id') ? 'is-invalid' : '' }}" required>
+                                <option value="">-- Sélectionnez --</option>
+                                @foreach($comptes as $c)
+                                    <option value="{{ $c->id }}" {{ old('compte_id') == $c->id ? 'selected' : '' }}>{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('compte_id')<span class="frm-error">{{ $message }}</span>@enderror
+                    </div>
+
+                    {{-- Année scolaire --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="annee_scolaire_id">Année scolaire <span class="req">*</span></label>
+                        <div class="frm-select-wrap">
+                            <select name="annee_scolaire_id" id="annee_scolaire_id" class="frm-select {{ $errors->has('annee_scolaire_id') ? 'is-invalid' : '' }}" required>
+                                @foreach($years as $y)
+                                    <option value="{{ $y->id }}" {{ old('annee_scolaire_id', ($currentYear->id ?? '')) == $y->id ? 'selected' : '' }}>{{ $y->libelle }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('annee_scolaire_id')<span class="frm-error">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+
+                <div class="fp-row fp-row-2">
+                    {{-- Date adoption --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="date_adoption">Date adoption <span class="req">*</span></label>
+                        <input type="date" name="date_adoption" id="date_adoption"
+                               class="frm-input {{ $errors->has('date_adoption') ? 'is-invalid' : '' }}"
+                               value="{{ old('date_adoption', now()->format('Y-m-d')) }}" required>
+                        @error('date_adoption')<span class="frm-error">{{ $message }}</span>@enderror
+                    </div>
+
+                    {{-- Contact --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="contact_id">Contact <span class="req">*</span></label>
+                        <div class="frm-select-wrap">
+                            <select name="contact_id" id="contact_id" class="frm-select {{ $errors->has('contact_id') ? 'is-invalid' : '' }}" required>
+                                <option value="">-- Sélectionnez d'abord un compte --</option>
+                            </select>
+                        </div>
+                        @error('contact_id')<span class="frm-error">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+
+                <div class="fp-row">
+                    {{-- Méthode --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="methode">Méthode <span class="req">*</span></label>
+                        <input type="text" name="methode" id="methode"
+                               class="frm-input {{ $errors->has('methode') ? 'is-invalid' : '' }}"
+                               value="{{ old('methode') }}" required>
+                        @error('methode')<span class="frm-error">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+            </div>
+
+            {{-- Section 2 : Produits adoptés --}}
+            <div class="fp-section">
+                <div class="fp-section-head">
+                    <div class="fp-section-icon amber">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </div>
+                    <div class="fp-section-meta">
+                        <div class="fp-section-title">Produits adoptés</div>
+                        <div class="fp-section-sub">Sélectionnez les produits et renseignez les niveaux/cycles</div>
+                    </div>
+                </div>
+
+                <div id="products-container"></div>
+
+                <button type="button" id="add-product" class="btn-zn btn-zn-ghost btn-zn-sm" style="margin-top: .5rem;">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Ajouter un produit
+                </button>
+            </div>
+
+            <div class="fp-footer">
+                <p class="fp-req-note"><span>*</span> Champs obligatoires</p>
+                <div class="fp-footer-spacer"></div>
+                <a href="{{ route('adoptions.index') }}" class="btn-zn btn-zn-ghost">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                    </svg>
+                    Annuler
+                </a>
+                <button type="submit" class="btn-zn btn-zn-primary">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Enregistrer
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
+@php
+    $productsData = $products->map(function($p) {
+        return [
+            'id' => $p->id,
+            'name' => $p->titre . ' (' . ($p->isbn_13 ?? $p->isbn_10) . ')',
+            'isbn' => $p->isbn_13 ?? $p->isbn_10 ?? '',
+            'sous_categorie' => $p->sous_categorie ?? '',
+        ];
+    });
+@endphp
+
 <script>
-    document.getElementById('compte_id').addEventListener('change', function() {
-    const compteId = this.value;
-    const contactSelect = document.querySelector('select[name="contact_id"]');
-    if (!compteId) {
-        contactSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
-        return;
-    }
-    fetch(`/api/comptes/${compteId}/contacts`)
-        .then(r => r.json())
-        .then(data => {
-            let html = '<option value="">-- Sélectionnez un contact --</option>';
-            data.forEach(c => {
-                html += `<option value="${c.id}">${c.prenom} ${c.nom} (${c.fonction || ''})</option>`;
+    document.addEventListener('DOMContentLoaded', function() {
+        const compteSelect = document.getElementById('compte_id');
+        const yearSelect = document.getElementById('annee_scolaire_id');
+        const contactSelect = document.getElementById('contact_id');
+        let currentNiveaux = [];
+        let productIndex = 0;
+
+        // ── Load contacts based on compte ──
+        function loadContacts() {
+            const compteId = compteSelect.value;
+            if (!compteId) {
+                contactSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
+                return;
+            }
+            fetch(`/api/comptes/${compteId}/contacts`)
+                .then(r => r.json())
+                .then(data => {
+                    let html = '<option value="">-- Sélectionnez un contact --</option>';
+                    data.forEach(c => {
+                        html += `<option value="${c.id}">${c.prenom} ${c.nom} (${c.fonction || ''})</option>`;
+                    });
+                    contactSelect.innerHTML = html;
+                    const defaultContactId = '{{ old('contact_id') }}';
+                    if (defaultContactId) contactSelect.value = defaultContactId;
+                })
+                .catch(err => console.error('Erreur chargement contacts:', err));
+        }
+
+        // ── Load niveaux for the compte and populate all rows ──
+        function loadNiveauxForRows() {
+            const compteId = compteSelect.value;
+            if (!compteId) {
+                document.querySelectorAll('.niveau-select').forEach(sel => {
+                    sel.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
+                });
+                return;
+            }
+            fetch(`/api/comptes/${compteId}/niveaux`)
+                .then(r => r.json())
+                .then(data => {
+                    currentNiveaux = data;
+                    const options = '<option value="">-- Sélectionnez un niveau --</option>' + data.map(n => `<option value="${n}">${n}</option>`).join('');
+                    document.querySelectorAll('.niveau-select').forEach(sel => {
+                        sel.innerHTML = options;
+                    });
+                    // After loading, trigger quantity fetch for each row
+                    document.querySelectorAll('.product-row').forEach(row => fetchQuantityForRow(row));
+                })
+                .catch(err => console.error('Erreur chargement niveaux:', err));
+        }
+
+        // ── Fetch quantity for a single row ──
+        function fetchQuantityForRow(row) {
+            const compteId = compteSelect.value;
+            const yearId = yearSelect.value;
+            const niveauSelect = row.querySelector('.niveau-select');
+            const cycleSelect = row.querySelector('.cycle-select');
+            const quantityInput = row.querySelector('.quantity-input');
+            const niveau = niveauSelect?.value;
+            const cycle = cycleSelect?.value;
+
+            if (!compteId || !yearId || !niveau || !cycle) {
+                if (quantityInput) quantityInput.value = '';
+                return;
+            }
+
+            fetch(`/api/comptes/${compteId}/effectif?annee_scolaire_id=${yearId}&niveau=${encodeURIComponent(niveau)}&cycle=${encodeURIComponent(cycle)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.effectif_valide !== null && data.effectif_valide > 0) {
+                        quantityInput.value = data.effectif_valide;
+                    } else {
+                        quantityInput.value = '';
+                    }
+                })
+                .catch(err => console.error('Erreur chargement effectif:', err));
+        }
+
+        // ── Product data from PHP ──
+        const productsData = @json($productsData);
+
+        // ── Create a new product row ──
+        function createProductRow(index) {
+            const row = document.createElement('div');
+            row.className = 'product-row';
+
+            let productOptions = '<option value="">-- Sélectionnez --</option>';
+            productsData.forEach(p => {
+                productOptions += `<option value="${p.id}" data-isbn="${p.isbn}" data-sous-categorie="${p.sous_categorie}">${p.name}</option>`;
             });
-            contactSelect.innerHTML = html;
+
+            row.innerHTML = `
+                <div class="frm-group">
+                    <label class="frm-label">Produit *</label>
+                    <div class="frm-select-wrap">
+                        <select name="products[${index}][product_id]" class="frm-select product-select" required>
+                            ${productOptions}
+                        </select>
+                    </div>
+                </div>
+                <div class="frm-group">
+                    <label class="frm-label">Type adoption *</label>
+                    <div class="frm-select-wrap">
+                        <select name="products[${index}][type_adoption]" class="frm-select type-select" required>
+                            <option value="">-- Sélectionnez --</option>
+                            <option value="BOOKLAND">BOOKLAND</option>
+                            <option value="ESPRIT_DU_LIVRE">ESPRIT DU LIVRE</option>
+                            <option value="CONCURRENT">CONCURRENT</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="frm-group">
+                    <label class="frm-label">ISBN</label>
+                    <input type="text" name="products[${index}][isbn]" class="frm-input isbn-input" readonly>
+                </div>
+                <div class="frm-group">
+                    <label class="frm-label">Sous-catégorie</label>
+                    <input type="text" name="products[${index}][sous_categorie]" class="frm-input sous-categorie-input" readonly>
+                </div>
+                <div class="frm-group">
+                    <label class="frm-label">Niveau</label>
+                    <div class="frm-select-wrap">
+                        <select name="products[${index}][niveau]" class="frm-select niveau-select" required>
+                            <option value="">-- Niveau --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="frm-group">
+                    <label class="frm-label">Cycle</label>
+                    <div class="frm-select-wrap">
+                        <select name="products[${index}][cycle]" class="frm-select cycle-select" required>
+                            <option value="">-- Cycle --</option>
+                            <option value="primaire">Primaire</option>
+                            <option value="college">Collège</option>
+                            <option value="Lycée">Lycée</option>
+                            <option value="Learners">Learners</option>
+                            <option value="Pre-teens">Pre-teens</option>
+                            <option value="Teens">Teens</option>
+                            <option value="Adults">Adults</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="frm-group">
+                    <label class="frm-label">Quantité</label>
+                    <input type="number" name="products[${index}][quantity]" class="frm-input quantity-input" readonly required>
+                </div>
+                <div class="remove-btn">
+                    <button type="button" class="remove-product" title="Supprimer ce produit">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            `;
+
+            // Product select change: fill ISBN and sous-catégorie
+            const productSelect = row.querySelector('.product-select');
+            productSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const isbn = selectedOption.dataset.isbn || '';
+                const sousCategorie = selectedOption.dataset.sousCategorie || '';
+                row.querySelector('.isbn-input').value = isbn;
+                row.querySelector('.sous-categorie-input').value = sousCategorie;
+            });
+
+            return row;
+        }
+
+        // ── Attach events to a row (niveau / cycle change, remove) ──
+        function attachRowEvents(row) {
+            const niveauSelect = row.querySelector('.niveau-select');
+            const cycleSelect = row.querySelector('.cycle-select');
+            const removeBtn = row.querySelector('.remove-product');
+
+            if (niveauSelect) {
+                niveauSelect.addEventListener('change', () => fetchQuantityForRow(row));
+            }
+            if (cycleSelect) {
+                cycleSelect.addEventListener('change', () => fetchQuantityForRow(row));
+            }
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                    if (document.querySelectorAll('.product-row').length > 1) {
+                        row.remove();
+                    } else {
+                        alert('Vous devez conserver au moins un produit.');
+                    }
+                });
+            }
+        }
+
+        // ── Add a new product row ──
+        function addProductRow() {
+            productIndex++;
+            const container = document.getElementById('products-container');
+            const newRow = createProductRow(productIndex);
+            container.appendChild(newRow);
+            attachRowEvents(newRow);
+            // If niveaux already loaded, populate the new row's niveau dropdown
+            if (currentNiveaux.length > 0) {
+                const options = '<option value="">-- Sélectionnez un niveau --</option>' + currentNiveaux.map(n => `<option value="${n}">${n}</option>`).join('');
+                newRow.querySelector('.niveau-select').innerHTML = options;
+            }
+        }
+
+        // ── Initial product row ──
+        productIndex = 0;
+        const container = document.getElementById('products-container');
+        const initialRow = createProductRow(0);
+        container.appendChild(initialRow);
+        attachRowEvents(initialRow);
+
+        // ── Add product button ──
+        document.getElementById('add-product').addEventListener('click', addProductRow);
+
+        // ── Event listeners for compte and year changes ──
+        compteSelect.addEventListener('change', function() {
+            loadContacts();
+            loadNiveauxForRows();
         });
-});
+        yearSelect.addEventListener('change', function() {
+            document.querySelectorAll('.product-row').forEach(row => fetchQuantityForRow(row));
+        });
+
+        // ── Initial load if compte already selected ──
+        if (compteSelect.value) {
+            loadContacts();
+            loadNiveauxForRows();
+        }
+    });
 </script>
 @endsection
