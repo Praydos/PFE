@@ -803,7 +803,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                         {{ strtoupper(substr($contact->prenom,0,1) . substr($contact->nom,0,1)) }}
                                     </div>
                                     <div>
-                                        <div class="user-name">{{ $contact->prenom }} {{ $contact->nom }}</div>
+                                        
+                                        <div class="user-name"><a href="{{ route('contacts.show', $contact->id) }}">{{ $contact->prenom }} {{ $contact->nom }}</a></div>
                                         <div class="user-email">{{ $contact->email ?? '-' }}</div>
                                     </div>
                                 </div>
