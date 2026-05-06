@@ -109,11 +109,11 @@ class AgendaController extends Controller
 
             // 2. Fix the loop — skip null results
             if ($tab === 'all' || $tab === 'tasks') {
-    $tasks = $this->getTasks($user, $start, $end);
-    foreach ($tasks as $task) {
-        $e = $this->formatTaskEvent($task);
-        if ($e) $calendarEvents[] = $e;
-    }
+            $tasks = $this->getTasks($user, $start, $end);
+            foreach ($tasks as $task) {
+                $e = $this->formatTaskEvent($task);
+                if ($e) $calendarEvents[] = $e;
+            }
 }
 
             return response()->json($calendarEvents);
@@ -201,24 +201,30 @@ class AgendaController extends Controller
         ];
     }
 
+   // Fix formatEventEvent — remove compte dependency, use ville instead
     private function formatEventEvent($event)
     {
-        if (!$event->compte) return null;
-        $compte = $event->compte;
-        $title = 'Événement: ' . ($event->type ?? 'N/A') . ' – ' . ($compte->etablissement ?? 'N/A');
+        if (!$event->date_event) return null; // ← was checking $event->compte
+
+        $title = 'Événement: ' . ($event->type ?? 'N/A')
+            . ' – ' . ($event->ville->nom ?? 'N/A');
+
+        $delegateName = $event->delegate
+            ? trim(($event->delegate->prenom ?? '') . ' ' . ($event->delegate->nom ?? ''))
+            : '—';
+
         return [
             'title' => $title,
             'start' => $event->date_event->toDateString(),
-            'url' => route('events.show', $event),
+            'url'   => route('events.show', $event),
             'color' => '#28a745',
-            'id' => $event->id,
-            
+            'id'    => $event->id,
             'extendedProps' => [
-                'type' => 'event',
-                'compte' => $compte->etablissement ?? '',
-                'ville' => $compte->ville->nom ?? '',
-                'zone' => $compte->zone->name ?? '',
-                'delegate' => $event->delegate->prenom . ' ' . $event->delegate->nom,
+                'type'     => 'event',
+                'compte'   => $event->ville->nom ?? '',   // reusing 'compte' key so the tooltip still works
+                'ville'    => $event->ville->nom ?? '',
+                'zone'     => $event->zone->name ?? '',
+                'delegate' => $delegateName,
             ],
         ];
     }
@@ -283,9 +289,11 @@ class AgendaController extends Controller
         })->values();
     }
 
+    // Fix getEvents — load ville/zone instead of compte
     private function getEvents($user, $start, $end)
     {
-        $query = Event::with(['compte', 'delegate']);
+        $query = Event::with(['ville', 'zone', 'delegate']); // ← was ['compte', 'delegate']
+
         if ($user->role === 'delegue') {
             $query->where('delegue_id', $user->id);
         } elseif ($user->role === 'rbo') {
@@ -406,10 +414,6 @@ class AgendaController extends Controller
             ],
         ];
     }
-
-
-
-
 
 
     public function rescheduleEvent(Request $request, $type, $id)
