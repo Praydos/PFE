@@ -23,6 +23,17 @@ class BssController extends Controller
         return AnneeScolaire::where('is_active', true)->first() ?? AnneeScolaire::latest('date_debut')->first();
     }
 
+    // Add this helper alongside getCurrentYear()
+    private function getPreviousYear()
+    {
+        $current = $this->getCurrentYear();
+        if (!$current) return null;
+
+        return AnneeScolaire::where('date_debut', '<', $current->date_debut)
+            ->orderBy('date_debut', 'desc')
+            ->first();
+    }
+
     // List BSS (role‑based)
     public function index(Request $request)
     {
@@ -120,22 +131,39 @@ class BssController extends Controller
         return redirect()->back()->withErrors(['error' => 'Année scolaire active non trouvée.']);
     }
 
+    // Collect both current and previous year IDs
+    $previousYear = $this->getPreviousYear();
+    $yearIds = collect([$currentYear->id]);
+    if ($previousYear) {
+        $yearIds->push($previousYear->id);
+    }
+
     // Check already delivered
+    // Block if product was already delivered to this compte in current or previous year
     $alreadyDelivered = [];
     foreach ($validated['products'] as $item) {
-        $already = BssLigne::whereHas('bss', function ($q) use ($validated, $currentYear) {
+        $already = BssLigne::whereHas('bss', function ($q) use ($validated, $yearIds) {
             $q->where('compte_id', $validated['compte_id'])
-              ->where('annee_scolaire_id', $currentYear->id)
-              ->where('statut', '!=', 'refuse');
+            ->whereIn('annee_scolaire_id', $yearIds->all())
+            ->where('statut', '!=', 'refuse');
         })->where('product_id', $item['product_id'])->exists();
+
         if ($already) {
             $product = Product::find($item['product_id']);
-            $alreadyDelivered[] = $product->titre . ' (' . ($product->isbn_13 ?? $product->isbn_10) . ')';
+            $yearLabel = $previousYear ? "({$currentYear->libelle} ou {$previousYear->libelle})" : "({$currentYear->libelle})";
+            $alreadyDelivered[] = $product->titre
+                . ' (' . ($product->isbn_13 ?? $product->isbn_10) . ') '
+                . $yearLabel;
         }
     }
+
     if (!empty($alreadyDelivered)) {
         return redirect()->back()
-            ->withErrors(['products' => 'Ces produits ont déjà été livrés à ce compte cette année : ' . implode(', ', $alreadyDelivered) . '. Veuillez les retirer du BSS.'])
+            ->withErrors([
+                'products' => 'Ces produits ont déjà été livrés à ce compte cette année ou l\'année précédente : '
+                    . implode(', ', $alreadyDelivered)
+                    . '. Un seul spécimen par an et par an précédent est autorisé.',
+            ])
             ->withInput();
     }
 

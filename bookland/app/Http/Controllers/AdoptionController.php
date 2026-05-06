@@ -19,6 +19,16 @@ class AdoptionController extends Controller
         return AnneeScolaire::where('is_active', true)->first() ?? AnneeScolaire::latest('date_debut')->first();
     }
 
+    private function getPreviousYear()
+{
+    $current = $this->getCurrentYear();
+    if (!$current) return null;
+
+    return AnneeScolaire::where('date_debut', '<', $current->date_debut)
+        ->orderBy('date_debut', 'desc')
+        ->first();
+}
+
     // List adoptions (role‑based)
     public function index(Request $request)
     {
@@ -83,39 +93,54 @@ class AdoptionController extends Controller
         'products.*.sous_categorie' => 'nullable|string|max:255',
     ]);
 
+    $previousYear = $this->getPreviousYear();
+    $yearIds = collect([$validated['annee_scolaire_id']]);
+    // Also block if a BSS was delivered in the previous year for this product+compte
+    if ($previousYear) {
+        $yearIds->push($previousYear->id);
+    }
+
 
 
         
 
-        $errors = [];
+    $errors = [];
 $createdCount = 0;
 
 foreach ($validated['products'] as $product) {
-    $exists = Adoption::where('compte_id', $validated['compte_id'])
+    // Check manual adoption duplicates across current + previous year
+    $adoptionExists = Adoption::where('compte_id', $validated['compte_id'])
         ->where('product_id', $product['product_id'])
-        ->where('annee_scolaire_id', $validated['annee_scolaire_id'])
+        ->whereIn('annee_scolaire_id', $yearIds->all())
         ->exists();
 
-    if ($exists) {
-        $errors[] = "Le produit ID {$product['product_id']} a déjà été adopté.";
+    // Also check if a BSS specimen was already delivered in current or previous year
+    $bssExists = BssLigne::whereHas('bss', function ($q) use ($validated, $yearIds) {
+        $q->where('compte_id', $validated['compte_id'])
+          ->whereIn('annee_scolaire_id', $yearIds->all())
+          ->where('statut', '!=', 'refuse');
+    })->where('product_id', $product['product_id'])->exists();
+
+    if ($adoptionExists || $bssExists) {
+        $errors[] = "Le produit ID {$product['product_id']} a déjà été livré ou adopté pour ce compte cette année ou l'année précédente.";
         continue;
     }
 
     Adoption::create([
-        'compte_id' => $validated['compte_id'],
-        'product_id' => $product['product_id'],
-        'contact_id' => $validated['contact_id'],
-        'methode' => $validated['methode'],
-        'annee_scolaire_id' => $validated['annee_scolaire_id'],
-        'quantity' => $product['quantity'],
-        'date_adoption' => $validated['date_adoption'],
-        'delegate_id' => $user->id,
-        'niveau' => $product['niveau'],
-        'cycle' => $product['cycle'],
-        'bss_ligne_id' => null,
-        'type_adoption' => $product['type_adoption'],
-        'isbn' => $product['isbn'],
-        'sous_categorie' => $product['sous_categorie'],
+        'compte_id'        => $validated['compte_id'],
+        'product_id'       => $product['product_id'],
+        'contact_id'       => $validated['contact_id'],
+        'methode'          => $validated['methode'],
+        'annee_scolaire_id'=> $validated['annee_scolaire_id'],
+        'quantity'         => $product['quantity'],
+        'date_adoption'    => $validated['date_adoption'],
+        'delegate_id'      => $user->id,
+        'niveau'           => $product['niveau'],
+        'cycle'            => $product['cycle'],
+        'bss_ligne_id'     => null,
+        'type_adoption'    => $product['type_adoption'],
+        'isbn'             => $product['isbn'],
+        'sous_categorie'   => $product['sous_categorie'],
     ]);
     $createdCount++;
 }
@@ -206,6 +231,10 @@ if ($createdCount > 0) {
         $annee_scolaire_id = $this->getCurrentYear()->id;
         $date_adoption = $request->date_adoption ?? now()->toDateString();
 
+        $previousYear = $this->getPreviousYear();
+        $yearIds = collect([$annee_scolaire_id]);
+        if ($previousYear) $yearIds->push($previousYear->id);
+
         $created = 0;
         foreach ($validated['products'] as $item) {
             $bssLigne = BssLigne::find($item['bss_ligne_id']);
@@ -214,9 +243,9 @@ if ($createdCount > 0) {
             }
 
             $exists = Adoption::where('compte_id', $compte_id)
-                ->where('product_id', $item['product_id'])
-                ->where('annee_scolaire_id', $annee_scolaire_id)
-                ->exists();
+    ->where('product_id', $item['product_id'])
+    ->whereIn('annee_scolaire_id', $yearIds->all())
+    ->exists();
 
             if ($exists) {
                 continue; // or return error

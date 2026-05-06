@@ -246,12 +246,14 @@
                     </svg>
                     Annuler
                 </a>
-                <button type="submit" class="btn-zn btn-zn-primary" onclick="return confirm('Confirmer le retour des articles sélectionnés ?')">
+                <button type="submit" class="btn-zn btn-zn-primary" onclick="confirmRetour()">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
                     Créer le bon de retour
                 </button>
+               
+
             </div>
         </form>
     </div>
@@ -260,6 +262,15 @@
 
 @push('scripts')
 <script>
+function confirmRetour() {
+    if (confirm('Voulez-vous exécuter le retour des articles sélectionnés ? Cette action est irréversible.')) {
+        document.getElementById('retour-form').submit();
+    }
+}
+
+
+
+
     document.querySelectorAll('.line-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const index = this.dataset.index;
