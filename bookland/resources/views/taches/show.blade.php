@@ -310,6 +310,48 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
                 <div class="info-item"><span class="info-label">Contacts</span> {{ $tache->contactsList->pluck('prenom')->join(', ') ?: '-' }}</div>
             </div>
         </div>
+
+        {{-- Buttons --}}
+        {{-- cancel Recurence --}}
+        {{-- Show only if this task is part of a recurring series --}}
+        @if($tache->recurrence_frequence || $tache->parent_tache_id)
+        <div style="margin-top:1.5rem; padding:1.25rem; background:#fef0f2; border:1px solid rgba(232,80,106,.2); border-radius:12px;">
+            <div style="font-size:.85rem; font-weight:700; color:#b83450; margin-bottom:.75rem; display:flex; align-items:center; gap:.4rem;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.5 9a9 9 0 0114.5-3.5L23 10M1 14l5 4.5A9 9 0 0020.5 15"/>
+                </svg>
+                Tâche récurrente — Annuler la récurrence
+            </div>
+
+            <form method="POST" action="{{ route('taches.cancelRecurrence', $tache) }}"
+                onsubmit="return confirm('Confirmer la suppression des occurrences sélectionnées ?')">
+                @csrf
+
+                <div style="display:flex; flex-direction:column; gap:.5rem; margin-bottom:1rem;">
+                    <label style="font-size:.82rem; color:#525f7f; display:flex; align-items:center; gap:.5rem; cursor:pointer;">
+                        <input type="radio" name="scope" value="this_and_following" checked>
+                        Supprimer <strong>cette occurrence et les suivantes</strong>
+                    </label>
+                    <label style="font-size:.82rem; color:#525f7f; display:flex; align-items:center; gap:.5rem; cursor:pointer;">
+                        <input type="radio" name="scope" value="all">
+                        Supprimer <strong>toute la série</strong> (toutes les occurrences)
+                    </label>
+                </div>
+
+                <button type="submit"
+                        style="display:inline-flex; align-items:center; gap:.35rem; padding:.45rem 1rem;
+                            border-radius:8px; font-size:.8rem; font-weight:600; cursor:pointer;
+                            background:#e8506a; color:#fff; border:none;">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                    Annuler la récurrence
+                </button>
+            </form>
+        </div>
+        @endif
+        {{-- Buttons --}}
         <div class="ag-card-footer" style="padding:1rem 1.6rem; border-top:1px solid var(--border); background:var(--bg); display:flex; justify-content:flex-end; gap:0.6rem;">
             <a href="{{ route('taches.index') }}" class="btn-ag btn-ag-ghost">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

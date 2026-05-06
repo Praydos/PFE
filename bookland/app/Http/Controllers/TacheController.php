@@ -214,4 +214,64 @@ class TacheController extends Controller
         }
         return $dates;
     }
+
+
+    public function cancelRecurrence(Request $request, Tache $tache)
+    {
+        $this->authorizeEdit($tache);
+
+        $scope = $request->input('scope', 'this_and_following');
+
+        // Resolve the root parent of the series
+        $parent = $tache->parent_tache_id
+            ? Tache::findOrFail($tache->parent_tache_id)
+            : $tache;
+
+        switch ($scope) {
+
+            case 'this_and_following':
+                // Delete this child + all siblings on or after this date
+                $parent->children()
+                    ->where('date_planification', '>=', $tache->date_planification->toDateString())
+                    ->delete();
+
+                // If the task IS the parent, also clear its own recurrence fields
+                if (!$tache->parent_tache_id) {
+                    $parent->update([
+                        'recurrence_frequence'  => null,
+                        'recurrence_intervalle' => null,
+                        'recurrence_fin'        => null,
+                    ]);
+                    return redirect()->route('taches.show', $parent)
+                        ->with('success', 'Récurrences futures supprimées.');
+                }
+
+                // If it was a child, delete the child itself too
+                $tache->delete();
+
+                // Shorten the parent's recurrence_fin to the day before this task
+                $parent->update([
+                    'recurrence_fin' => $tache->date_planification->subDay()->toDateString(),
+                ]);
+
+                return redirect()->route('taches.show', $parent)
+                    ->with('success', 'Cette occurrence et les suivantes ont été supprimées.');
+
+            case 'all':
+                // Wipe every child in the series
+                $parent->children()->delete();
+
+                // Clear recurrence on the parent so it becomes a one-off task
+                $parent->update([
+                    'recurrence_frequence'  => null,
+                    'recurrence_intervalle' => null,
+                    'recurrence_fin'        => null,
+                ]);
+
+                return redirect()->route('taches.show', $parent)
+                    ->with('success', 'Toute la série de récurrence a été supprimée.');
+        }
+
+        return redirect()->route('taches.show', $tache);
+    }
 }
