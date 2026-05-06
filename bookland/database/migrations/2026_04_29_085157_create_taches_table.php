@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string("objet");
             $table->text("description")->nullable();
             $table->date('date_planification')->nullable();
+            //add HEURE DE L’ACTION
+            $table->time('heure')->nullable()->after('date_planification');
             $table->string('lieu')->nullable();
             //multiple contacts
             $table->json('contacts')->nullable();
@@ -26,6 +28,12 @@ return new class extends Migration
             $table->boolean('is_validated')->default(false);
             //delegue_id
             $table->foreignId('delegue_id')->constrained('users')->onDelete('cascade');
+
+            // add repitition
+            $table->enum('recurrence_frequence', ['daily', 'weekly', 'monthly', 'yearly'])->nullable();
+            $table->integer('recurrence_intervalle')->nullable();
+            $table->date('recurrence_fin')->nullable();
+            $table->foreignId('parent_tache_id')->nullable()->constrained('taches')->onDelete('set null');
 
             //rapel et notification for later
             $table->timestamps();

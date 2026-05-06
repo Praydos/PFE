@@ -10,9 +10,12 @@ class Tache extends Model
     use HasFactory;
 
     protected $fillable = [
-        'objet', 'description', 'date_planification', 'lieu', 'contacts',
-        'all_day', 'date_fin', 'date_validation', 'is_validated', 'delegue_id'
+        'objet', 'description', 'date_planification', 'heure', 'lieu',
+        'contacts', 'all_day', 'date_fin', 'recurrence_frequence',
+        'recurrence_intervalle', 'recurrence_fin', 'parent_tache_id',
+        'date_validation', 'is_validated', 'delegue_id'
     ];
+
 
     protected $casts = [
         'contacts' => 'array',
@@ -21,7 +24,20 @@ class Tache extends Model
         'date_validation' => 'date',
         'all_day' => 'boolean',
         'is_validated' => 'boolean',
+        // 'heure' => 'datetime:H:i',
+        'recurrence_intervalle' => 'integer',
+        'recurrence_fin' => 'date',
     ];
+
+    public function parent()
+    {
+        return $this->belongsTo(Tache::class, 'parent_tache_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Tache::class, 'parent_tache_id');
+    }
 
     public function delegate()
     {

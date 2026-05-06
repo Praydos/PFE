@@ -24,6 +24,10 @@
         <label class="ag-form-label">Date planification <span class="req">*</span></label>
         <input type="date" name="date_planification" class="ag-form-control" value="{{ $defaultDatePlanif }}" required>
     </div>
+     <div class="ag-form-group" style="flex:1;">
+        <label>Heure</label>
+        <input type="time" name="heure" class="form-control" value="{{ old('heure', isset($tache) ? $tache->heure : '') }}">
+    </div>
     <div class="ag-form-group" style="flex:1;">
         <label class="ag-form-label">Date fin</label>
         <input type="date" name="date_fin" class="ag-form-control" value="{{ $defaultDateFin }}">

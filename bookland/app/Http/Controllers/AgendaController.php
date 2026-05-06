@@ -107,17 +107,22 @@ class AgendaController extends Controller
                 }
             }
 
+            // 2. Fix the loop — skip null results
             if ($tab === 'all' || $tab === 'tasks') {
-                $tasks = $this->getTasks($user, $start, $end);
-                foreach ($tasks as $task) {
-                    $calendarEvents[] = $this->formatTaskEvent($task);
-                }
-            }
+    $tasks = $this->getTasks($user, $start, $end);
+    foreach ($tasks as $task) {
+        $e = $this->formatTaskEvent($task);
+        if ($e) $calendarEvents[] = $e;
+    }
+}
 
             return response()->json($calendarEvents);
+       // 3. Make the catch actually log so you can see future errors
         } catch (\Exception $e) {
-            Log::error('Agenda events error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            return response()->json(['error' => 'Internal server error'], 500);
+            Log::error('Agenda events error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500); // ← show real message
         }
     }
 
@@ -375,18 +380,29 @@ class AgendaController extends Controller
         return $query->get();
     }
 
+    
+    
     private function formatTaskEvent($task)
     {
+        if (!$task->delegate) return null;
+
+        $dateStr = $task->date_planification instanceof \Carbon\Carbon
+            ? $task->date_planification->toDateString()
+            : \Carbon\Carbon::parse($task->date_planification)->toDateString();
+
+        // heure is now a plain "H:i" or "H:i:s" string — safe to concat
+        $heure = $task->heure ? substr($task->heure, 0, 5) : null; // ensure "H:i" only
+        $start = $dateStr . ($heure ? 'T' . $heure : '');
+
         return [
-            'id' => $task->id,
+            'id'    => $task->id,
             'title' => $task->objet,
-            'start' => $task->date_planification->toDateString(),
-            'url' => route('taches.show', $task),
+            'start' => $start,
+            'url'   => route('taches.show', $task),
             'color' => '#9ba8c5',
-            'type' => 'task',
             'extendedProps' => [
-                'type' => 'task',
-                'delegate' => $task->delegate->prenom . ' ' . $task->delegate->nom,
+                'type'     => 'task',
+                'delegate' => trim(($task->delegate->prenom ?? '') . ' ' . ($task->delegate->nom ?? '')),
             ],
         ];
     }

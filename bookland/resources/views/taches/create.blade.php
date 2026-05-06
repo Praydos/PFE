@@ -253,6 +253,13 @@
                 $defaultAllDay = old('all_day', $isEdit ? $tache->all_day : false);
                 $defaultLieu = old('lieu', $isEdit ? $tache->lieu : '');
                 $defaultContacts = old('contacts', $isEdit ? ($tache->contacts->pluck('id')->toArray() ?? []) : []);
+                $defaultHeure = old('heure', $isEdit ? $tache->heure : '');
+                $defaultRecurrenceFreq = old('recurrence_frequence', $isEdit ? $tache->recurrence_frequence : '');
+                $defaultRecurrenceInterval = old('recurrence_intervalle', $isEdit ? $tache->recurrence_interval : 1);
+                $defaultRecurrenceEnd = old(
+                    'recurrence_fin',
+                    $isEdit && $tache->recurrence_end_date ? $tache->recurrence_end_date->format('Y-m-d') : ''
+                );
             @endphp
 
             <div class="fp-section">
@@ -286,29 +293,36 @@
                     <textarea name="description" id="description" class="frm-input" rows="2">{{ $defaultDescription }}</textarea>
                 </div>
 <br>
-                {{-- Dates (3 columns) --}}
-                <div class="fp-row fp-row-3">
-                    <div class="frm-group">
-                        <label class="frm-label" for="date_planification">Date planification <span class="req">*</span></label>
-                        <input type="date" name="date_planification" id="date_planification"
-                               class="frm-input {{ $errors->has('date_planification') ? 'is-invalid' : '' }}"
-                               value="{{ $defaultDatePlanif }}" required>
-                        @error('date_planification')<span class="frm-error">{{ $message }}</span>@enderror
-                    </div>
-                    <div class="frm-group">
-                        <label class="frm-label" for="date_fin">Date fin</label>
-                        <input type="date" name="date_fin" id="date_fin"
-                               class="frm-input {{ $errors->has('date_fin') ? 'is-invalid' : '' }}"
-                               value="{{ $defaultDateFin }}">
-                        @error('date_fin')<span class="frm-error">{{ $message }}</span>@enderror
-                    </div>
-                    <div class="frm-group" style="justify-content: flex-end;">
-                        <div class="checkbox-group" style="margin-top: 0.2rem;">
-                            <input type="checkbox" name="all_day" id="all_day" value="1" {{ $defaultAllDay ? 'checked' : '' }}>
-                            <label for="all_day">Toute la journée</label>
-                        </div>
-                    </div>
-                </div>
+                {{-- Dates + Heure --}}
+<div class="fp-row fp-row-3">
+    {{-- Date --}}
+    <div class="frm-group">
+        <label class="frm-label" for="date_planification">
+            Date planification <span class="req">*</span>
+        </label>
+        <input type="date" name="date_planification" id="date_planification"
+               class="frm-input {{ $errors->has('date_planification') ? 'is-invalid' : '' }}"
+               value="{{ $defaultDatePlanif }}" required>
+        @error('date_planification')<span class="frm-error">{{ $message }}</span>@enderror
+    </div>
+
+    {{-- Heure --}}
+    <div class="frm-group">
+        <label class="frm-label" for="heure">Heure</label>
+        <input type="time" name="heure" id="heure"
+               class="frm-input"
+               value="{{ $defaultHeure }}">
+    </div>
+
+    {{-- All day --}}
+    <div class="frm-group" style="justify-content: flex-end;">
+        <div class="checkbox-group">
+            <input type="checkbox" name="all_day" id="all_day" value="1"
+                   {{ $defaultAllDay ? 'checked' : '' }}>
+            <label for="all_day">Toute la journée</label>
+        </div>
+    </div>
+</div>
 
                 {{-- Lieu --}}
                 <div class="frm-group">
@@ -320,6 +334,59 @@
                 </div>
 
                 <br>
+
+                <div class="fp-section">
+    <div class="fp-section-head">
+        <div class="fp-section-icon" style="background: var(--violet-light); color: var(--violet);">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.5 9a9 9 0 0114.5-3.5L23 10M1 14l5 4.5A9 9 0 0020.5 15"/>
+            </svg>
+        </div>
+        <div class="fp-section-meta">
+            <div class="fp-section-title">Récurrence</div>
+            <div class="fp-section-sub">Configurer une répétition automatique</div>
+        </div>
+    </div>
+
+    <div class="fp-row fp-row-3">
+        {{-- Frequence --}}
+        <div class="frm-group">
+            <label class="frm-label">Répéter</label>
+            <div class="frm-select-wrap">
+                <select name="recurrence_frequence" class="frm-select">
+                    <option value="">Aucune</option>
+                    <option value="daily" {{ $defaultRecurrenceFreq == 'daily' ? 'selected' : '' }}>Quotidienne</option>
+                    <option value="weekly" {{ $defaultRecurrenceFreq == 'weekly' ? 'selected' : '' }}>Hebdomadaire</option>
+                    <option value="monthly" {{ $defaultRecurrenceFreq == 'monthly' ? 'selected' : '' }}>Mensuelle</option>
+                    <option value="yearly" {{ $defaultRecurrenceFreq == 'yearly' ? 'selected' : '' }}>Annuelle</option>
+                </select>
+            </div>
+        </div>
+
+        {{-- Interval --}}
+        <div class="frm-group">
+            <label class="frm-label">Tous les N</label>
+            <input type="number" name="recurrence_intervalle"
+                   class="frm-input"
+                   value="{{ $defaultRecurrenceInterval }}" min="1" type="number">
+        </div>
+
+        {{-- End date --}}
+        {{-- Date fin --}}
+        <div class="frm-group" style="margin-top: 1rem;">
+            <label class="frm-label" for="date_fin">
+                Date de fin
+                <span class="opt">(optionnelle)</span>
+            </label>
+            <input type="date" name="date_fin" id="date_fin"
+                class="frm-input {{ $errors->has('date_fin') ? 'is-invalid' : '' }}"
+                value="{{ $defaultDateFin }}">
+            @error('date_fin')<span class="frm-error">{{ $message }}</span>@enderror
+        </div>
+    </div>
+</div>
                 
 
                 {{-- Contacts (multi-select) --}}
