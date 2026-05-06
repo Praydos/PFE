@@ -97,6 +97,68 @@ class ContactController extends Controller
             ->with('success', 'Contact créé avec succès.');
     }
 
+
+    public function show(Contact $contact)
+{
+    $user = Auth::user();
+ 
+    // ── Access control ─────────────────────────────────────────────────────
+    if ($user->role === 'delegue') {
+        // Delegate can only view contacts linked to their own comptes
+        $hasAccess = $contact->comptes()->where('delegue_id', $user->id)->exists();
+        if (!$hasAccess) abort(403);
+ 
+    } elseif ($user->role === 'rbo') {
+        // RBO can view contacts linked to comptes of delegates they supervise
+        $delegateIds = $this->getRboDelegueIds($user);
+        $hasAccess = $contact->comptes()
+            ->whereIn('delegue_id', $delegateIds)
+            ->exists();
+        if (!$hasAccess) abort(403);
+    }
+    // Admin: no restriction
+ 
+    // ── Load relationships ──────────────────────────────────────────────────
+    $contact->load([
+        'ville',
+        'comptes.ville',
+        // Load events through the pivot, ordered most-recent first
+        'events' => function ($q) {
+            $q->with(['ville', 'anneeScolaire', 'delegate'])
+              ->orderBy('date_event', 'desc');
+        },
+    ]);
+ 
+    // ── Aggregate stats for the event history card ──────────────────────────
+    $eventStats = [
+        'total'    => $contact->events->count(),
+        'present'  => $contact->events->where('pivot.statut', 'present')->count(),
+        'accepte'  => $contact->events->where('pivot.statut', 'accepte')->count(),
+        'decline'  => $contact->events->where('pivot.statut', 'decline')->count(),
+        'invite'   => $contact->events->where('pivot.statut', 'invite')->count(),
+        'rate'     => 0,
+    ];
+ 
+    if ($eventStats['total'] > 0) {
+        $eventStats['rate'] = round(
+            ($eventStats['present'] / $eventStats['total']) * 100,
+            1
+        );
+    }
+ 
+    // Human-readable statut labels
+    $statuts = [
+        'invite'  => 'Invité',
+        'accepte' => 'Accepté',
+        'decline' => 'Décliné',
+        'present' => 'Présent',
+    ];
+ 
+    return view('contacts.show', compact('contact', 'eventStats', 'statuts'));
+}
+
+
+
     public function edit(Contact $contact)
     {
         $villes = Ville::all();

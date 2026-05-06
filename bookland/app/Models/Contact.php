@@ -31,6 +31,13 @@ class Contact extends Model
                     
     }
 
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'event_contact')
+                    ->withPivot('statut')
+                    ->withTimestamps();
+    }
+
 
     //is affected by the pivot table
     

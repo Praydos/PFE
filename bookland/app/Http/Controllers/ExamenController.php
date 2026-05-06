@@ -56,7 +56,9 @@ class ExamenController extends Controller
     $langues = ['Français', 'Anglais', 'Arabe', 'Espagnol'];
     $organismes = ['Cambridge Assessment English', 'TOEFL', 'IELTS', 'Other'];
     $niveauxCECR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Pre-A1'];
-    $niveauxScolaires = ['CP', 'CE1', 'CE2', 'CM1', 'CM2', '6ème', '5ème', '4ème', '3ème', '2ème', '1ère', 'Terminale'];
+    $niveauxScolaires = ['CP', 'CE1', 'CE2', 'CM1', 'CM2', 
+    '6ème primaire', '5ème primaire', '4ème primaire', '3ème primaire', '2ème primaire', '1ère primaire', 
+    '3ème college', '2ème college', '1ère college', '3ème lycee', '2ème lycee', '1ère lycee'];
 
     $selectedCompteId = request('compte_id');
     if ($selectedCompteId && $comptes->contains('id', $selectedCompteId)) {
