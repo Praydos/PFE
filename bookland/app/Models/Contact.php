@@ -39,6 +39,13 @@ class Contact extends Model
     }
 
 
+   public function compteHistory()
+{
+    return $this->hasMany(CompteContact::class)
+        ->orderByDesc('date_debut');
+}
+
+
     //is affected by the pivot table
     
 }

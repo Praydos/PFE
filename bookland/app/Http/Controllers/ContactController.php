@@ -8,6 +8,7 @@ use App\Models\Ville;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use App\Models\CompteContact;   
 
 use Illuminate\Support\Facades\Auth;
 
@@ -263,26 +264,56 @@ class ContactController extends Controller
 
 public function updateComptes(Request $request, Contact $contact)
 {
-    $user = auth()->user();
-    
     $request->validate([
         'compte_ids' => 'array',
         'compte_ids.*' => 'exists:comptes,id'
     ]);
-    
-    // Get the selected comptes and check their ville_id
-    $selectedComptes = Compte::whereIn('id', $request->compte_ids ?? [])->get();
-    foreach ($selectedComptes as $compte) {
-        if ($compte->ville_id !== $contact->ville_id) {
-            return response()->json([
-                'error' => "Le compte {$compte->etablissement} n'appartient pas à la même ville que le contact."
-            ], 422);
-        }
+
+    $newCompteIds = $request->compte_ids ?? [];
+
+    // Current active assignments
+    $currentAssignments = CompteContact::where('contact_id', $contact->id)
+        ->whereNull('date_fin')
+        ->get();
+
+    $currentCompteIds = $currentAssignments->pluck('compte_id')->toArray();
+
+    /*
+    |--------------------------------------------------------------------------
+    | CLOSE REMOVED ASSIGNMENTS
+    |--------------------------------------------------------------------------
+    */
+
+    $removedCompteIds = array_diff($currentCompteIds, $newCompteIds);
+
+    CompteContact::where('contact_id', $contact->id)
+        ->whereIn('compte_id', $removedCompteIds)
+        ->whereNull('date_fin')
+        ->update([
+            'date_fin' => now()
+        ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE NEW ASSIGNMENTS
+    |--------------------------------------------------------------------------
+    */
+
+    $addedCompteIds = array_diff($newCompteIds, $currentCompteIds);
+
+    foreach ($addedCompteIds as $compteId) {
+
+        CompteContact::create([
+            'contact_id' => $contact->id,
+            'compte_id' => $compteId,
+            'date_debut' => now(),
+            'date_fin' => null,
+        ]);
     }
-    
-    $contact->comptes()->sync($request->compte_ids ?? []);
-    
-    return response()->json(['success' => true]);
+
+    return response()->json([
+        'success' => true
+    ]);
 }
 
 

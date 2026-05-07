@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Compte;
 use App\Models\Contact;
+use App\Models\CompteContact;
 use Illuminate\Database\Seeder;
 
 class ContactSeeder extends Seeder
@@ -23,7 +24,12 @@ class ContactSeeder extends Seeder
                 $contact = Contact::factory()->create([
                     'ville_id' => $compte->ville_id,
                 ]);
-                $contact->comptes()->attach($compte->id);
+                CompteContact::create([
+                    'contact_id' => $contact->id,
+                    'compte_id' => $compte->id,
+                    'date_debut' => now(),
+                    'date_fin' => null,
+                ]);
             }
         }
 
