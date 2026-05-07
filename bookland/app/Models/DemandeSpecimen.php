@@ -14,7 +14,7 @@ class DemandeSpecimen extends Model
     protected $fillable = [
         'type', 'compte_id', 'contact_id', 'delegue_id', 'annee_scolaire_id',
         'ville_id', 'zone_id', 'date_demande', 'description', 'statut',
-        'valide_par', 'date_validation', 'bss_id'
+        'valide_par', 'date_validation', 'bss_id', 'original_bss_id', 'generated_bss_id'
     ];
 
     protected $casts = [
