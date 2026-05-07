@@ -23,7 +23,8 @@ return new class extends Migration
             $table->enum('statut', ['demande', 'valide', 'decline', 'annule'])->default('demande');
             $table->foreignId('valide_par')->nullable()->constrained('users')->onDelete('set null');
             $table->datetime('date_validation')->nullable();
-            $table->foreignId('bss_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('original_bss_id')->nullable()->constrained('bsses')->onDelete('set null');
+            $table->foreignId('generated_bss_id')->nullable()->constrained('bsses')->onDelete('set null');
             $table->timestamps();
         });
     }

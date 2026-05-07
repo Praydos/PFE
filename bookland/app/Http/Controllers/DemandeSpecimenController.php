@@ -96,6 +96,16 @@ class DemandeSpecimenController extends Controller
         if (!$currentYear) {
             return redirect()->back()->withErrors(['error' => 'Année scolaire active non trouvée.']);
         }
+        
+        $previousYear = AnneeScolaire::where('date_debut', '<', $currentYear->date_debut)
+            ->orderBy('date_debut', 'desc')
+            ->first();
+
+        $yearIds = [$currentYear->id];
+
+        if ($previousYear) {
+            $yearIds[] = $previousYear->id;
+        }
 
         // For type=etablissement, auto-set ville/zone from compte
         if ($validated['type'] === 'etablissement') {
@@ -105,6 +115,31 @@ class DemandeSpecimenController extends Controller
         } else {
             $villeId = $validated['ville_id'];
             $zoneId = $validated['zone_id'];
+        }
+
+        $linkedBss = null;
+
+        foreach ($validated['products'] as $item) {
+
+            $existingLine = BssLigne::where('product_id', $item['product_id'])
+                ->whereHas('bss', function ($q) use ($validated, $yearIds) {
+                    $q->where('compte_id', $validated['compte_id'])
+                    ->whereIn('annee_scolaire_id', $yearIds)
+                    ->whereIn('statut', ['valide', 'livre']);
+                })
+                ->with('bss')
+                ->first();
+
+            if ($existingLine) {
+                $linkedBss = $existingLine->bss;
+                break;
+            }
+        }
+
+        if (!$linkedBss) {
+            return back()->withErrors([
+                'products' => 'Aucune livraison précédente trouvée. Veuillez créer un BSS normal.'
+            ]);
         }
 
         $demande = DemandeSpecimen::create([
@@ -118,6 +153,7 @@ class DemandeSpecimenController extends Controller
             'date_demande' => now()->toDateString(),
             'description' => $validated['description'] ?? null,
             'statut' => 'demande',
+            'original_bss_id' => $linkedBss->id,
         ]);
 
         foreach ($validated['products'] as $item) {
@@ -276,7 +312,7 @@ class DemandeSpecimenController extends Controller
             'statut' => 'valide',
             'valide_par' => $user->id,
             'date_validation' => now(),
-            'bss_id' => $bss->id,
+            'generated_bss_id' => $bss->id,
         ]);
 
         return redirect()->route('demandes-specimens.index')->with('success', 'Demande approuvée. BSS généré : ' . $bss->numero);
