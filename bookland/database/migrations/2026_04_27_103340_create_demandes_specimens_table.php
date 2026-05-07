@@ -24,7 +24,7 @@ return new class extends Migration
             $table->foreignId('valide_par')->nullable()->constrained('users')->onDelete('set null');
             $table->datetime('date_validation')->nullable();
             $table->foreignId('original_bss_id')->nullable()->constrained('bsses')->onDelete('set null');
-            $table->foreignId('generated_bss_id')->nullable()->constrained('bsses')->onDelete('set null');
+            $table->string('generated_bss_id')->nullable()->change();
             $table->timestamps();
         });
     }

@@ -57,11 +57,14 @@ class DemandeSpecimen extends Model
         return $this->belongsTo(User::class, 'valide_par');
     }
 
-    public function bss()
+    // linked to the bss
+
+    public function originalBss()
     {
-        return $this->belongsTo(Bss::class);
+        return $this->belongsTo(Bss::class, 'original_bss_id');
     }
 
+ 
     public function lignes()
 {
     return $this->hasMany(DemandeLigne::class, 'demande_id');

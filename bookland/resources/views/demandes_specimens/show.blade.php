@@ -1,906 +1,403 @@
 @extends('layouts.app')
 
 @push('styles')
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{
-    --bg:#f4f7fb;
-    --card:#ffffff;
-    --card-2:#fafcff;
-    --line:#e7ecf5;
+    /* ===== FULL CSS FROM THE EXAMENS SHOW VIEW ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    --text:#1b2432;
-    --text-soft:#6b7280;
-    --text-muted:#9ca3af;
-
-    --blue:#4f7cff;
-    --blue-soft:#edf3ff;
-
-    --green:#22c55e;
-    --green-soft:#ecfdf3;
-
-    --amber:#f59e0b;
-    --amber-soft:#fff7e8;
-
-    --red:#ef4444;
-    --red-soft:#fef2f2;
-
-    --purple:#7c3aed;
-    --purple-soft:#f5f3ff;
-
-    --shadow-sm:0 2px 8px rgba(15,23,42,.05);
-    --shadow-md:0 10px 30px rgba(15,23,42,.08);
-
-    --radius-sm:10px;
-    --radius-md:16px;
-    --radius-lg:22px;
-
-    --transition:.2s cubic-bezier(.4,0,.2,1);
+:root {
+    --bg-base:       #f5f6fa;
+    --bg-card:       #ffffff;
+    --bg-hover:      #f8f9fd;
+    --bg-subtle:     #f0f2f8;
+    --border:        #e4e7f0;
+    --border-md:     #d0d5e8;
+    --blue:          #5b8dee;
+    --blue-dark:     #3d6fd6;
+    --blue-light:    #eef3fd;
+    --blue-mid:      #dce8fb;
+    --teal:          #0cb8b6;
+    --teal-light:    #e6faf9;
+    --violet:        #7c6fcd;
+    --violet-light:  #f0eeff;
+    --amber:         #e8a020;
+    --amber-light:   #fff8ec;
+    --rose:          #e8506a;
+    --rose-light:    #fef0f2;
+    --green:         #28c76f;
+    --green-light:   #e8fbf0;
+    --text-primary:   #1a1f36;
+    --text-secondary: #525f7f;
+    --text-muted:     #9ba8c5;
+    --text-hint:      #bcc5dc;
+    --r-xs: 6px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px;
+    --shadow-xs: 0 1px 3px rgba(31,45,80,.06), 0 1px 2px rgba(31,45,80,.04);
+    --shadow-sm: 0 2px 8px rgba(31,45,80,.08), 0 1px 3px rgba(31,45,80,.05);
+    --shadow-md: 0 8px 24px rgba(31,45,80,.10), 0 2px 8px rgba(31,45,80,.06);
+    --shadow-blue: 0 4px 14px rgba(91,141,238,.35);
+    --font: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --ease: cubic-bezier(.4,0,.2,1);
+    --t: .18s var(--ease);
 }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+body { font-family: var(--font); background: var(--bg-base); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+
+/* ── Page ──────────────────────────────────────────── */
+.zn-page { padding: 2rem 2.5rem 3rem; animation: pageIn .4s var(--ease) both; max-width: 1400px; margin: 0 auto; }
+@keyframes pageIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-body{
-    background:var(--bg);
-    font-family:'DM Sans',sans-serif;
-    color:var(--text);
+/* ── Breadcrumb ────────────────────────────────────── */
+.zn-bc { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1.4rem; }
+.zn-bc a { color: var(--text-muted); text-decoration: none; transition: color var(--t); }
+.zn-bc a:hover { color: var(--blue); }
+.zn-bc-sep { color: var(--text-hint); }
+.zn-bc-cur { color: var(--text-secondary); }
+
+/* ── Header ────────────────────────────────────────── */
+.zn-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.zn-header-left h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -.03em; color: var(--text-primary); line-height: 1.15; margin: 0; }
+.zn-header-left p { font-size: .83rem; color: var(--text-muted); margin-top: .3rem; }
+
+/* ── Buttons ───────────────────────────────────────── */
+.btn-zn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .56rem 1.1rem; border-radius: var(--r-sm);
+    font-family: var(--font); font-size: .82rem; font-weight: 600;
+    cursor: pointer; border: 1px solid transparent;
+    transition: all var(--t); text-decoration: none;
+    white-space: nowrap; letter-spacing: -.01em; line-height: 1;
+}
+.btn-zn svg { flex-shrink: 0; }
+.btn-zn-primary { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: var(--shadow-blue); }
+.btn-zn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); color: #fff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(91,141,238,.4); }
+.btn-zn-ghost { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border); box-shadow: var(--shadow-xs); }
+.btn-zn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-md); text-decoration: none; }
+.btn-zn-danger-ghost { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.2); }
+.btn-zn-danger-ghost:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
+.btn-zn-warning { background: var(--amber-light); color: var(--amber); border-color: rgba(232,160,32,.2); }
+.btn-zn-warning:hover { background: #ffefd4; color: var(--amber); text-decoration: none; }
+.btn-zn-danger { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.18); }
+.btn-zn-danger:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
+.btn-zn-info { background: var(--violet-light); color: var(--violet); border-color: rgba(124,111,205,.2); }
+.btn-zn-info:hover { background: #e8e5ff; color: var(--violet); text-decoration: none; }
+.btn-zn-sm { padding: .38rem .72rem; font-size: .75rem; }
+
+/* ── Card ──────────────────────────────────────────── */
+.zn-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 1.5rem; }
+.zn-card-header { padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .55rem; background: linear-gradient(to bottom, #fafbff, #fff); }
+.title-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 3px var(--blue-mid); }
+.zn-card-title { font-size: .88rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.01em; }
+.zn-card-body { padding: 1.5rem 1.6rem; }
+
+/* ── Info grid ──────────────────────────────────────── */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.info-item {
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+.info-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-right: 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+/* ── Table ─────────────────────────────────────────── */
+.zn-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.zn-table thead tr { border-bottom: 1px solid var(--border); }
+.zn-table th {
+    padding: .85rem 1.2rem; font-size: .69rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--text-hint); text-align: left;
+    background: var(--bg-base); white-space: nowrap;
+}
+.zn-table td { padding: .95rem 1.2rem; font-size: .83rem; color: var(--text-secondary); border-bottom: 1px solid var(--border); vertical-align: middle; }
+.zn-table tbody tr:hover { background: #f8f9fd; }
+
+/* Badges */
+.dr-badge {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .22rem .65rem; border-radius: 20px;
+    font-size: .7rem; font-weight: 600; white-space: nowrap;
+}
+.bd-teal { background: var(--teal-light); color: var(--teal); }
+.bd-blue { background: var(--blue-light); color: var(--blue); }
+.bd-green { background: var(--green-light); color: var(--green); }
+.bd-amber { background: var(--amber-light); color: var(--amber); }
+.bd-none { background: var(--bg-subtle); color: var(--text-muted); }
+
+/* Status update box (optional) */
+.status-update-box {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-subtle);
+    border-radius: var(--r-lg);
+}
+.frm-select-wrap {
+    position: relative;
+    display: inline-block;
+    width: auto;
+    min-width: 200px;
+}
+.frm-select-wrap .frm-select {
+    width: 100%;
+    padding: .62rem .9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    background: var(--bg-card);
+    font-family: var(--font);
+    font-size: .84rem;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-xs);
+    transition: all var(--t);
+    outline: none;
+    cursor: pointer;
+    padding-right: 2.2rem;
+}
+.frm-select-wrap::after {
+    content: '';
+    position: absolute;
+    right: .9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--text-muted);
+    pointer-events: none;
+}
+.frm-label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: -.01em;
 }
 
-.ds-page{
-    max-width:1450px;
-    margin:auto;
-    padding:2rem;
-    animation:fadeIn .35s ease;
+/* Footer */
+.card-footer {
+    padding: 1.1rem 1.6rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg-base);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .6rem;
 }
 
-@keyframes fadeIn{
-    from{
-        opacity:0;
-        transform:translateY(8px);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
+/* Modal (delegates style) */
+.dlg-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26,31,54,.42);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 1000;
+    display: none; align-items: center; justify-content: center; padding: 1rem;
+}
+.dlg-modal-overlay.visible { display: flex; animation: oIn .2s ease both; }
+@keyframes oIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.dlg-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-md);
+    border-radius: var(--r-xl);
+    width: 100%; max-width: 500px;
+    box-shadow: 0 20px 48px rgba(31,45,80,.13), 0 6px 16px rgba(31,45,80,.07);
+    overflow: hidden;
+    animation: mIn .28s cubic-bezier(.34,1.4,.64,1) both;
+}
+@keyframes mIn {
+    from { opacity: 0; transform: scale(.94) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.dlg-modal-hd {
+    padding: 1.25rem 1.5rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    background: linear-gradient(to bottom, #fafbff, #fff);
+}
+.dlg-modal-icon {
+    width: 38px; height: 38px;
+    border-radius: var(--r-md);
+    background: var(--blue-light);
+    border: 1px solid var(--blue-mid);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--blue); flex-shrink: 0;
+}
+.dlg-modal-titles { flex: 1; }
+.dlg-modal-titles h2 { font-size: .95rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
+.dlg-modal-titles p  { font-size: .76rem; color: var(--text-muted); margin-top: .18rem; }
+.dlg-modal-close {
+    width: 28px; height: 28px;
+    border-radius: var(--r-xs);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all var(--t);
+}
+.dlg-modal-close:hover { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.2); }
+.dlg-modal-body {
+    padding: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
-/* ================= HEADER ================= */
-
-.ds-topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:1rem;
-    margin-bottom:1.8rem;
-    flex-wrap:wrap;
-}
-
-.ds-breadcrumb{
-    display:flex;
-    align-items:center;
-    gap:.45rem;
-    font-size:.78rem;
-    color:var(--text-muted);
-    margin-bottom:.9rem;
-}
-
-.ds-breadcrumb a{
-    color:var(--text-muted);
-    text-decoration:none;
-    transition:var(--transition);
-}
-
-.ds-breadcrumb a:hover{
-    color:var(--blue);
-}
-
-.ds-title{
-    display:flex;
-    align-items:center;
-    gap:1rem;
-}
-
-.ds-title-icon{
-    width:58px;
-    height:58px;
-    border-radius:18px;
-    background:linear-gradient(135deg,#4f7cff,#6ea0ff);
-    color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 12px 28px rgba(79,124,255,.28);
-    flex-shrink:0;
-}
-
-.ds-title h1{
-    font-size:1.9rem;
-    font-weight:700;
-    letter-spacing:-.03em;
-}
-
-.ds-title p{
-    margin-top:.25rem;
-    color:var(--text-soft);
-    font-size:.88rem;
-}
-
-/* ================= BUTTONS ================= */
-
-.ds-actions{
-    display:flex;
-    gap:.7rem;
-    flex-wrap:wrap;
-}
-
-.ds-btn{
-    border:none;
-    outline:none;
-    cursor:pointer;
-    text-decoration:none;
-    display:inline-flex;
-    align-items:center;
-    gap:.55rem;
-    padding:.82rem 1.15rem;
-    border-radius:14px;
-    font-weight:600;
-    font-size:.84rem;
-    transition:var(--transition);
-}
-
-.ds-btn svg{
-    flex-shrink:0;
-}
-
-.ds-btn-primary{
-    background:var(--blue);
-    color:#fff;
-    box-shadow:0 10px 20px rgba(79,124,255,.25);
-}
-
-.ds-btn-primary:hover{
-    transform:translateY(-2px);
-    background:#3e6df7;
-}
-
-.ds-btn-warning{
-    background:var(--amber-soft);
-    color:var(--amber);
-}
-
-.ds-btn-warning:hover{
-    background:#ffefcc;
-}
-
-.ds-btn-danger{
-    background:var(--red-soft);
-    color:var(--red);
-}
-
-.ds-btn-danger:hover{
-    background:#ffe5e5;
-}
-
-.ds-btn-ghost{
-    background:#fff;
-    border:1px solid var(--line);
-    color:var(--text-soft);
-}
-
-.ds-btn-ghost:hover{
-    background:#fafcff;
-}
-
-/* ================= LAYOUT ================= */
-
-.ds-layout{
-    display:grid;
-    grid-template-columns:340px 1fr;
-    gap:1.5rem;
-}
-
-@media(max-width:1100px){
-    .ds-layout{
-        grid-template-columns:1fr;
-    }
-}
-
-/* ================= CARDS ================= */
-
-.ds-card{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:var(--radius-lg);
-    box-shadow:var(--shadow-sm);
-    overflow:hidden;
-}
-
-.ds-card-header{
-    padding:1.2rem 1.4rem;
-    border-bottom:1px solid var(--line);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    background:linear-gradient(to bottom,#fbfcff,#fff);
-}
-
-.ds-card-title{
-    display:flex;
-    align-items:center;
-    gap:.7rem;
-    font-weight:700;
-    font-size:.92rem;
-}
-
-.ds-card-title-dot{
-    width:10px;
-    height:10px;
-    border-radius:50%;
-    background:var(--blue);
-    box-shadow:0 0 0 5px rgba(79,124,255,.12);
-}
-
-.ds-card-body{
-    padding:1.4rem;
-}
-
-/* ================= STATUS ================= */
-
-.ds-status{
-    display:inline-flex;
-    align-items:center;
-    gap:.45rem;
-    padding:.5rem .9rem;
-    border-radius:999px;
-    font-size:.75rem;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-}
-
-.ds-status-demande{
-    background:var(--amber-soft);
-    color:var(--amber);
-}
-
-.ds-status-valide{
-    background:var(--green-soft);
-    color:var(--green);
-}
-
-.ds-status-decline{
-    background:var(--red-soft);
-    color:var(--red);
-}
-
-.ds-status-annule{
-    background:#f3f4f6;
-    color:#6b7280;
-}
-
-/* ================= INFO ================= */
-
-.ds-meta{
-    display:flex;
-    flex-direction:column;
-    gap:1rem;
-}
-
-.ds-meta-item{
-    padding-bottom:1rem;
-    border-bottom:1px dashed var(--line);
-}
-
-.ds-meta-item:last-child{
-    border-bottom:none;
-    padding-bottom:0;
-}
-
-.ds-meta-label{
-    font-size:.72rem;
-    font-weight:700;
-    color:var(--text-muted);
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    margin-bottom:.45rem;
-}
-
-.ds-meta-value{
-    font-size:.93rem;
-    color:var(--text);
-    font-weight:600;
-    line-height:1.5;
-}
-
-.ds-meta-sub{
-    margin-top:.2rem;
-    font-size:.78rem;
-    color:var(--text-soft);
-}
-
-/* ================= DESCRIPTION ================= */
-
-.ds-description{
-    background:var(--card-2);
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:1rem 1.1rem;
-    line-height:1.7;
-    color:var(--text-soft);
-    font-size:.9rem;
-}
-
-/* ================= TABLE ================= */
-
-.ds-table-wrap{
-    overflow:auto;
-}
-
-.ds-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-.ds-table thead th{
-    text-align:left;
-    padding:1rem;
-    font-size:.73rem;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-    color:var(--text-muted);
-    background:#f9fbff;
-    border-bottom:1px solid var(--line);
-    white-space:nowrap;
-}
-
-.ds-table tbody td{
-    padding:1rem;
-    border-bottom:1px solid var(--line);
-    vertical-align:middle;
-}
-
-.ds-table tbody tr:hover{
-    background:#fafcff;
-}
-
-.ds-product{
-    display:flex;
-    align-items:flex-start;
-    gap:.9rem;
-}
-
-.ds-product-cover{
-    width:48px;
-    height:48px;
-    border-radius:14px;
-    background:var(--blue-soft);
-    color:var(--blue);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-}
-
-.ds-product-title{
-    font-weight:700;
-    font-size:.9rem;
-    color:var(--text);
-}
-
-.ds-product-isbn{
-    margin-top:.2rem;
-    font-size:.76rem;
-    color:var(--text-muted);
-    font-family:'DM Mono',monospace;
-}
-
-.ds-qty{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    min-width:38px;
-    height:38px;
-    border-radius:12px;
-    background:var(--blue-soft);
-    color:var(--blue);
-    font-weight:700;
-}
-
-/* ================= BSS LINKS ================= */
-
-.ds-link-card{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:1rem;
-    padding:1rem 1.1rem;
-    border:1px solid var(--line);
-    border-radius:18px;
-    background:#fcfdff;
-    margin-bottom:.9rem;
-}
-
-.ds-link-card:last-child{
-    margin-bottom:0;
-}
-
-.ds-link-card-left{
-    display:flex;
-    align-items:center;
-    gap:.9rem;
-}
-
-.ds-link-icon{
-    width:46px;
-    height:46px;
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-.ds-link-icon.blue{
-    background:var(--blue-soft);
-    color:var(--blue);
-}
-
-.ds-link-icon.purple{
-    background:var(--purple-soft);
-    color:var(--purple);
-}
-
-.ds-link-label{
-    font-size:.74rem;
-    font-weight:700;
-    color:var(--text-muted);
-    text-transform:uppercase;
-    letter-spacing:.06em;
-}
-
-.ds-link-value{
-    margin-top:.18rem;
-    font-size:.92rem;
-    font-weight:700;
-    color:var(--text);
-}
-
-.ds-link-btn{
-    text-decoration:none;
-    font-size:.8rem;
-    font-weight:700;
-    color:var(--blue);
-}
-
-.ds-link-btn:hover{
-    text-decoration:underline;
-}
-
-/* ================= RESPONSIVE ================= */
-
-@media(max-width:768px){
-
-    .ds-page{
-        padding:1rem;
-    }
-
-    .ds-title{
-        align-items:flex-start;
-    }
-
-    .ds-title h1{
-        font-size:1.45rem;
-    }
-
-    .ds-actions{
-        width:100%;
-    }
-
-    .ds-btn{
-        flex:1;
-        justify-content:center;
-    }
+/* Responsive */
+@media (max-width: 768px) {
+    .zn-page { padding: 1.25rem 1rem 2rem; }
+    .info-grid { grid-template-columns: 1fr; }
+    .zn-table th, .zn-table td { padding: .75rem .9rem; }
+    .card-footer { flex-direction: column-reverse; }
+    .btn-zn { width: 100%; justify-content: center; }
+    .status-form { flex-direction: column; align-items: stretch; }
+    .status-form .frm-select-wrap { width: 100%; }
 }
 </style>
 @endpush
 
 @section('content')
-
-<div class="ds-page">
+<div class="zn-page">
 
     {{-- Breadcrumb --}}
-    <div class="ds-breadcrumb">
+    <div class="zn-bc">
+        <a href="{{ route('demandes-specimens.index') }}">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        </a>
+        <span class="zn-bc-sep">›</span>
         <a href="{{ route('demandes-specimens.index') }}">Demandes spéciales</a>
-        <span>›</span>
-        <span>#{{ $demandes_specimen->id }}</span>
+        <span class="zn-bc-sep">›</span>
+        <span class="zn-bc-cur">#{{ $demandes_specimen->id }}</span>
     </div>
 
     {{-- Header --}}
-    <div class="ds-topbar">
+    <div class="zn-header">
+        <div class="zn-header-left">
+            <h1>Demande spéciale #{{ $demandes_specimen->id }}</h1>
+            <p>{{ ucfirst($demandes_specimen->type) }} – {{ $demandes_specimen->date_demande->format('d/m/Y') }}</p>
+        </div>
+    </div>
 
-        <div>
-            <div class="ds-title">
-                <div class="ds-title-icon">
-                    <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" y1="3" x2="12" y2="15"/>
-                    </svg>
+    {{-- Main card --}}
+    <div class="zn-card">
+        <div class="zn-card-header">
+            <span class="title-pip"></span>
+            <span class="zn-card-title">Détails de la demande</span>
+        </div>
+        <div class="zn-card-body">
+            {{-- Info grid --}}
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">Type</span> {{ ucfirst($demandes_specimen->type) }}</div>
+                <div class="info-item"><span class="info-label">Compte</span> {{ $demandes_specimen->compte->etablissement ?? '-' }}</div>
+                <div class="info-item"><span class="info-label">Contact</span> {{ optional($demandes_specimen->contact)->prenom ?? '' }} {{ optional($demandes_specimen->contact)->nom ?? '-' }}</div>
+                <div class="info-item"><span class="info-label">Délégué</span> {{ $demandes_specimen->delegate->prenom }} {{ $demandes_specimen->delegate->nom }}</div>
+                <div class="info-item"><span class="info-label">Ville</span> {{ $demandes_specimen->ville->nom ?? '-' }}</div>
+                <div class="info-item"><span class="info-label">Zone</span> {{ $demandes_specimen->zone->name ?? '-' }}</div>
+                <div class="info-item"><span class="info-label">Old Bss</span> {{ $demandes_specimen->originalBss->numero ?? '-' }}</div>
+                <div class="info-item"><span class="info-label">Requête Spéciale Num</span> {{ $demandes_specimen->generatedBss->numero ?? '-' }}</div>
+                <div class="info-item"><span class="info-label">Date demande</span> {{ $demandes_specimen->date_demande->format('d/m/Y') }}</div>
+                <div class="info-item">
+                    <span class="info-label">Statut</span>
+                    <span class="dr-badge bd-{{ $demandes_specimen->statut }}">{{ ucfirst($demandes_specimen->statut) }}</span>
                 </div>
-
-                <div>
-                    <h1>Demande spéciale #{{ $demandes_specimen->id }}</h1>
-
-                    <p>
-                        {{ ucfirst($demandes_specimen->type) }}
-                        •
-                        {{ $demandes_specimen->date_demande->format('d/m/Y') }}
-                    </p>
+                @if($demandes_specimen->description)
+                <div class="info-item"><span class="info-label">Description</span> {{ $demandes_specimen->description }}</div>
+                @endif
+                @if($demandes_specimen->generatedBss)
+                <div class="info-item"><span class="info-label">BSS généré</span>
+                    <a href="{{ route('bss.show', $demandes_specimen->generatedBss) }}">{{ $demandes_specimen->generatedBss->numero }}</a>
                 </div>
+                @endif
+                @if($demandes_specimen->valide_par)
+                <div class="info-item"><span class="info-label">Validé par</span> {{ $demandes_specimen->validePar->prenom }} {{ $demandes_specimen->validePar->nom }} le {{ $demandes_specimen->date_validation->format('d/m/Y H:i') }}</div>
+                @endif
+            </div>
+
+            <hr>
+
+            <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem;">Produits demandés</h3>
+            <div class="table-responsive">
+                <table class="zn-table">
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Quantité</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($demandes_specimen->lignes as $ligne)
+                        <tr>
+                            <td><strong>{{ $ligne->product->titre }}</strong><br><small style="color:var(--text-muted);">{{ $ligne->product->isbn_13 ?? $ligne->product->isbn_10 }}</small></td>
+                            <td><span class="dr-badge bd-teal">{{ $ligne->quantity }}</span></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div class="ds-actions">
-
-            <a href="{{ route('demandes-specimens.index') }}" class="ds-btn ds-btn-ghost">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        {{-- Footer actions --}}
+        <div class="card-footer">
+            <a href="{{ route('demandes-specimens.index') }}" class="btn-zn btn-zn-ghost">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="19" y1="12" x2="5" y2="12"/>
                     <polyline points="12 19 5 12 12 5"/>
                 </svg>
                 Retour
             </a>
-
             @if($demandes_specimen->statut === 'demande' && auth()->user()->role === 'delegue' && $demandes_specimen->delegue_id === auth()->id())
-                <a href="{{ route('demandes-specimens.edit', $demandes_specimen) }}" class="ds-btn ds-btn-warning">
-                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <a href="{{ route('demandes-specimens.edit', $demandes_specimen) }}" class="btn-zn btn-zn-warning">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
                     </svg>
                     Modifier
                 </a>
             @endif
-
             @if($demandes_specimen->statut === 'demande' && in_array(auth()->user()->role, ['admin','rbo']))
-
-                <form method="POST" action="{{ route('demandes-specimens.validate', $demandes_specimen) }}">
+                <form method="POST" action="{{ route('demandes-specimens.validate', $demandes_specimen) }}" style="display:inline;">
                     @csrf
-
-                    <button
-                        type="submit"
-                        name="action"
-                        value="approve"
-                        class="ds-btn ds-btn-primary"
-                        onclick="return confirm('Générer le BSS correspondant ?')"
-                    >
-                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <button type="submit" name="action" value="approve" class="btn-zn btn-zn-success" onclick="return confirm('Générer le BSS correspondant ?')">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                             <polyline points="20 6 9 17 4 12"/>
                         </svg>
-
-                        Approuver
+                        Approuver (générer BSS)
                     </button>
                 </form>
-
-                <form method="POST" action="{{ route('demandes-specimens.validate', $demandes_specimen) }}">
+                <form method="POST" action="{{ route('demandes-specimens.validate', $demandes_specimen) }}" style="display:inline;">
                     @csrf
-
-                    <button
-                        type="submit"
-                        name="action"
-                        value="decline"
-                        class="ds-btn ds-btn-danger"
-                        onclick="return confirm('Refuser cette demande ?')"
-                    >
-                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
+                    <button type="submit" name="action" value="decline" class="btn-zn btn-zn-danger" onclick="return confirm('Refuser cette demande ?')">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                         </svg>
-
                         Refuser
                     </button>
                 </form>
-
             @endif
-
         </div>
     </div>
-
-    {{-- Layout --}}
-    <div class="ds-layout">
-
-        {{-- LEFT SIDEBAR --}}
-        <div>
-
-            {{-- General info --}}
-            <div class="ds-card" style="margin-bottom:1.5rem;">
-
-                <div class="ds-card-header">
-                    <div class="ds-card-title">
-                        <span class="ds-card-title-dot"></span>
-                        Informations
-                    </div>
-                </div>
-
-                <div class="ds-card-body">
-
-                    <div class="ds-meta">
-
-                        <div class="ds-meta-item">
-                            <div class="ds-meta-label">Statut</div>
-
-                            <div class="ds-meta-value">
-                                <span class="ds-status ds-status-{{ $demandes_specimen->statut }}">
-                                    {{ ucfirst($demandes_specimen->statut) }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="ds-meta-item">
-                            <div class="ds-meta-label">Compte</div>
-
-                            <div class="ds-meta-value">
-                                {{ $demandes_specimen->compte->etablissement ?? '-' }}
-                            </div>
-                        </div>
-
-                        <div class="ds-meta-item">
-                            <div class="ds-meta-label">Contact</div>
-
-                            <div class="ds-meta-value">
-                                {{ optional($demandes_specimen->contact)->prenom }}
-                                {{ optional($demandes_specimen->contact)->nom ?? '-' }}
-                            </div>
-                        </div>
-
-                        <div class="ds-meta-item">
-                            <div class="ds-meta-label">Délégué</div>
-
-                            <div class="ds-meta-value">
-                                {{ $demandes_specimen->delegate->prenom }}
-                                {{ $demandes_specimen->delegate->nom }}
-                            </div>
-                        </div>
-
-                        <div class="ds-meta-item">
-                            <div class="ds-meta-label">Ville / Zone</div>
-
-                            <div class="ds-meta-value">
-                                {{ $demandes_specimen->ville->nom ?? '-' }}
-                            </div>
-
-                            <div class="ds-meta-sub">
-                                {{ $demandes_specimen->zone->name ?? '-' }}
-                            </div>
-                        </div>
-
-                        <div class="ds-meta-item">
-                            <div class="ds-meta-label">Date de demande</div>
-
-                            <div class="ds-meta-value">
-                                {{ $demandes_specimen->date_demande->format('d/m/Y') }}
-                            </div>
-                        </div>
-
-                        @if($demandes_specimen->valide_par)
-
-                            <div class="ds-meta-item">
-                                <div class="ds-meta-label">Validation</div>
-
-                                <div class="ds-meta-value">
-                                    {{ $demandes_specimen->validePar->prenom }}
-                                    {{ $demandes_specimen->validePar->nom }}
-                                </div>
-
-                                <div class="ds-meta-sub">
-                                    {{ $demandes_specimen->date_validation->format('d/m/Y H:i') }}
-                                </div>
-                            </div>
-
-                        @endif
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            {{-- BSS links --}}
-            <div class="ds-card">
-
-                <div class="ds-card-header">
-                    <div class="ds-card-title">
-                        <span class="ds-card-title-dot"></span>
-                        Liens BSS
-                    </div>
-                </div>
-
-                <div class="ds-card-body">
-
-                    @if($demandes_specimen->originalBss)
-
-                        <div class="ds-link-card">
-
-                            <div class="ds-link-card-left">
-
-                                <div class="ds-link-icon purple">
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                    </svg>
-                                </div>
-
-                                <div>
-                                    <div class="ds-link-label">BSS original</div>
-
-                                    <div class="ds-link-value">
-                                        {{ $demandes_specimen->originalBss->numero }}
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <a href="{{ route('bss.show', $demandes_specimen->originalBss) }}" class="ds-link-btn">
-                                Voir
-                            </a>
-
-                        </div>
-
-                    @endif
-
-                    @if($demandes_specimen->generatedBss)
-
-                        <div class="ds-link-card">
-
-                            <div class="ds-link-card-left">
-
-                                <div class="ds-link-icon blue">
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path d="M12 5v14"/>
-                                        <path d="M5 12h14"/>
-                                    </svg>
-                                </div>
-
-                                <div>
-                                    <div class="ds-link-label">BSS généré</div>
-
-                                    <div class="ds-link-value">
-                                        {{ $demandes_specimen->generatedBss->numero }}
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <a href="{{ route('bss.show', $demandes_specimen->generatedBss) }}" class="ds-link-btn">
-                                Voir
-                            </a>
-
-                        </div>
-
-                    @endif
-
-                    @if(!$demandes_specimen->originalBss && !$demandes_specimen->generatedBss)
-
-                        <div style="text-align:center;padding:.7rem 0;color:var(--text-muted);font-size:.85rem;">
-                            Aucun BSS lié.
-                        </div>
-
-                    @endif
-
-                </div>
-
-            </div>
-
-        </div>
-
-        {{-- RIGHT CONTENT --}}
-        <div>
-
-            {{-- Description --}}
-            @if($demandes_specimen->description)
-
-                <div class="ds-card" style="margin-bottom:1.5rem;">
-
-                    <div class="ds-card-header">
-                        <div class="ds-card-title">
-                            <span class="ds-card-title-dot"></span>
-                            Description
-                        </div>
-                    </div>
-
-                    <div class="ds-card-body">
-
-                        <div class="ds-description">
-                            {{ $demandes_specimen->description }}
-                        </div>
-
-                    </div>
-
-                </div>
-
-            @endif
-
-            {{-- Products --}}
-            <div class="ds-card">
-
-                <div class="ds-card-header">
-                    <div class="ds-card-title">
-                        <span class="ds-card-title-dot"></span>
-                        Produits demandés
-                    </div>
-
-                    <div style="font-size:.8rem;color:var(--text-muted);font-weight:600;">
-                        {{ $demandes_specimen->lignes->count() }} produit(s)
-                    </div>
-                </div>
-
-                <div class="ds-table-wrap">
-
-                    <table class="ds-table">
-
-                        <thead>
-                            <tr>
-                                <th>Produit</th>
-                                <th width="120">Quantité</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            @foreach($demandes_specimen->lignes as $ligne)
-
-                                <tr>
-
-                                    <td>
-
-                                        <div class="ds-product">
-
-                                            <div class="ds-product-cover">
-                                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                                                </svg>
-                                            </div>
-
-                                            <div>
-
-                                                <div class="ds-product-title">
-                                                    {{ $ligne->product->titre }}
-                                                </div>
-
-                                                <div class="ds-product-isbn">
-                                                    {{ $ligne->product->isbn_13 ?? $ligne->product->isbn_10 ?? 'Aucun ISBN' }}
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-                                        <span class="ds-qty">
-                                            {{ $ligne->quantity }}
-                                        </span>
-                                    </td>
-
-                                </tr>
-
-                            @endforeach
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
 </div>
-
 @endsection

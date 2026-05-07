@@ -28,7 +28,7 @@ class DemandeSpecimenController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = DemandeSpecimen::with(['compte', 'contact', 'delegate', 'ville', 'zone', 'bss']);
+        $query = DemandeSpecimen::with(['compte', 'contact', 'delegate', 'ville', 'zone', 'originalBss', 'generatedBss']);
 
         if ($user->role === 'delegue') {
             $query->where('delegue_id', $user->id);
@@ -172,7 +172,7 @@ class DemandeSpecimenController extends Controller
     public function show(DemandeSpecimen $demandes_specimen)
     {
         $this->authorizeView($demandes_specimen);
-        $demandes_specimen->load('lignes.product', 'compte', 'contact', 'ville', 'zone', 'bss');
+        $demandes_specimen->load('lignes.product', 'compte', 'contact', 'ville', 'zone', 'originalBss', 'generatedBss');
         return view('demandes_specimens.show', compact('demandes_specimen'));
     }
 
@@ -265,6 +265,26 @@ class DemandeSpecimenController extends Controller
         return redirect()->route('demandes-specimens.index')->with('success', 'Demande supprimée.');
     }
 
+
+    //generate a special num for sp 
+    private function generateSpecialRequestNumber()
+    {
+        $year = now()->year;
+
+        $last = DemandeSpecimen::whereNotNull('generated_bss_id')
+            ->latest('id')
+            ->first();
+
+        $increment = 1;
+
+        if ($last) {
+            $lastNumber = intval(substr($last->generated_bss_id, -4));
+            $increment = $lastNumber + 1;
+        }
+
+        return 'RS-' . $year . '-' . str_pad($increment, 4, '0', STR_PAD_LEFT);
+    }
+
     // Validation by RBO/Admin
     public function validateRequest(Request $request, DemandeSpecimen $demandes_specimen)
 {
@@ -291,6 +311,7 @@ class DemandeSpecimenController extends Controller
             'statut' => 'decline',
             'valide_par' => $user->id,
             'date_validation' => now(),
+            'generated_bss_id' => $this->generateSpecialRequestNumber(),
         ]);
 
         return redirect()
