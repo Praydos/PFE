@@ -28,7 +28,7 @@ class DemandeSpecimenController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = DemandeSpecimen::with(['compte', 'contact', 'delegate', 'ville', 'zone', 'originalBss', 'generatedBss']);
+        $query = DemandeSpecimen::with(['compte', 'contact', 'delegate', 'ville', 'zone', 'originalBss']);
 
         if ($user->role === 'delegue') {
             $query->where('delegue_id', $user->id);
@@ -172,7 +172,7 @@ class DemandeSpecimenController extends Controller
     public function show(DemandeSpecimen $demandes_specimen)
     {
         $this->authorizeView($demandes_specimen);
-        $demandes_specimen->load('lignes.product', 'compte', 'contact', 'ville', 'zone', 'originalBss', 'generatedBss');
+        $demandes_specimen->load('lignes.product', 'compte', 'contact', 'ville', 'zone', 'originalBss');
         return view('demandes_specimens.show', compact('demandes_specimen'));
     }
 

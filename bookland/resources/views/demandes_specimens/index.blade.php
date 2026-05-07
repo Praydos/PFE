@@ -365,8 +365,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                             <span class="dr-badge bd-{{ $d->statut }}">{{ ucfirst($d->statut) }}</span>
                         </td>
                         <td>
-                            @if($d->bss)
-                                <a href="{{ route('bss.show', $d->bss) }}" class="btn-zn btn-zn-sm btn-zn-info">{{ $d->bss->numero }}</a>
+                            @if($d->originalBss)
+                                <a href="{{ route('bss.show', $d->originalBss) }}" class="btn-zn btn-zn-sm btn-zn-info">{{ $d->originalBss->numero }}</a>
                             @else
                                 <span class="text-muted">—</span>
                             @endif
