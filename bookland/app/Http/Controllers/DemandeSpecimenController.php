@@ -13,6 +13,7 @@ use App\Models\Bss;
 use App\Models\BssLigne;
 use App\Models\AnneeScolaire;
 use Illuminate\Http\Request;
+use App\Models\Action;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -96,7 +97,7 @@ class DemandeSpecimenController extends Controller
         if (!$currentYear) {
             return redirect()->back()->withErrors(['error' => 'Année scolaire active non trouvée.']);
         }
-        
+
         $previousYear = AnneeScolaire::where('date_debut', '<', $currentYear->date_debut)
             ->orderBy('date_debut', 'desc')
             ->first();
@@ -266,57 +267,112 @@ class DemandeSpecimenController extends Controller
 
     // Validation by RBO/Admin
     public function validateRequest(Request $request, DemandeSpecimen $demandes_specimen)
-    {
-        $user = Auth::user();
-        if (!in_array($user->role, ['admin', 'rbo'])) abort(403);
-        if ($demandes_specimen->statut !== 'demande') {
-            return redirect()->back()->with('error', 'Cette demande a déjà été traitée.');
-        }
+{
+    $user = Auth::user();
 
-        $action = $request->input('action');
-        if ($action === 'decline') {
-            $demandes_specimen->update([
-                'statut' => 'decline',
-                'valide_par' => $user->id,
-                'date_validation' => now(),
-            ]);
-            return redirect()->route('demandes-specimens.index')->with('success', 'Demande refusée.');
-        }
+    if (!in_array($user->role, ['admin', 'rbo'])) {
+        abort(403);
+    }
 
-        // Approve: generate BSS
-        // We must create a BSS with source = 'magasin'
-        $bssData = [
-            'numero' => $this->generateBssNumber(),
-            'compte_id' => $demandes_specimen->compte_id,
-            'contact_id' => $demandes_specimen->contact_id,
-            'delegate_id' => $demandes_specimen->delegue_id,
-            'annee_scolaire_id' => $demandes_specimen->annee_scolaire_id,
-            'date_bss' => now(),
-            'statut' => 'valide', // already approved, no need for further validation
-            'source' => 'magasin',
-        ];
-        $bss = Bss::create($bssData);
+    if ($demandes_specimen->statut !== 'demande') {
+        return redirect()->back()->with('error', 'Cette demande a déjà été traitée.');
+    }
 
-        foreach ($demandes_specimen->lignes as $ligne) {
-            BssLigne::create([
-                'bss_id' => $bss->id,
-                'product_id' => $ligne->product_id,
-                'quantity' => $ligne->quantity,
-                'source' => 'magasin',
-                'statut_ligne' => 'en_attente',
-            ]);
-        }
+    $action = $request->input('action');
 
-        // Link BSS to demande
+    /*
+    |--------------------------------------------------------------------------
+    | DECLINE
+    |--------------------------------------------------------------------------
+    */
+    if ($action === 'decline') {
+
+        $demandes_specimen->update([
+            'statut' => 'decline',
+            'valide_par' => $user->id,
+            'date_validation' => now(),
+        ]);
+
+        return redirect()
+            ->route('demandes-specimens.index')
+            ->with('success', 'Demande refusée.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDATE SPECIAL REQUEST
+    |--------------------------------------------------------------------------
+    */
+
+    DB::transaction(function () use ($demandes_specimen, $user) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | 1. VALIDATE REQUEST
+        |--------------------------------------------------------------------------
+        */
         $demandes_specimen->update([
             'statut' => 'valide',
             'valide_par' => $user->id,
             'date_validation' => now(),
-            'generated_bss_id' => $bss->id,
         ]);
 
-        return redirect()->route('demandes-specimens.index')->with('success', 'Demande approuvée. BSS généré : ' . $bss->numero);
-    }
+        /*
+        |--------------------------------------------------------------------------
+        | 2. CREATE COMMERCIAL ACTION
+        |--------------------------------------------------------------------------
+        */
+        $action = Action::create([
+            'objet' => 'Livraison Requête Spéciale',
+            'compte_id' => $demandes_specimen->compte_id,
+            'delegue_id' => $demandes_specimen->delegue_id,
+
+            'date_planification' => now()->toDateString(),
+
+            'heure' => now()->format('H:i'),
+
+            'type' => 'commercial',
+
+            'statut' => 'planifie',
+
+            'module_lie' => 'demande_specimen',
+
+            'module_id' => $demandes_specimen->id,
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. CREATE ACTION LINE
+        |--------------------------------------------------------------------------
+        */
+        $line = $action->lignes()->create([
+            'categorie' => 'Visite',
+
+            'action_type' => 'Livraison Spécimens – Requêtes Spéciales',
+
+            'moyen' => 'Visite',
+
+            'description' => $demandes_specimen->description,
+
+            // IMPORTANT:
+            // Link existing original BSS
+            'bss_id' => $demandes_specimen->original_bss_id,
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 4. OPTIONAL: LINK CONTACT
+        |--------------------------------------------------------------------------
+        */
+        if ($demandes_specimen->contact_id) {
+            $line->contacts()->sync([$demandes_specimen->contact_id]);
+        }
+    });
+
+    return redirect()
+        ->route('demandes-specimens.index')
+        ->with('success', 'Demande validée et action commerciale créée.');
+}
 
     private function generateBssNumber()
     {
