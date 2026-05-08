@@ -285,6 +285,356 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
     opacity: 1;
     transform: translateY(0);
 }
+
+/* ========================== Css for mini caledar widget ==========================*/
+/* ── Mini Calendar ─────────────────────────────────── */
+.ag-calendar-layout {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+}
+
+.ag-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.ag-main-calendar { flex: 1; min-width: 0; }
+
+/* Mini cal card */
+.mc-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r4);
+    overflow: hidden;
+}
+
+.mc-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .7rem .9rem .5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.mc-title {
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--t1);
+    letter-spacing: -.01em;
+    text-transform: capitalize;
+}
+
+.mc-nav { display: flex; gap: .15rem; }
+.mc-nav button {
+    width: 24px; height: 24px;
+    border: none; background: transparent; border-radius: 6px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--t3); transition: all var(--t); font-size: 16px; line-height: 1;
+}
+.mc-nav button:hover { background: var(--subtle); color: var(--t1); }
+
+.mc-grid { padding: .5rem .6rem .6rem; }
+
+.mc-dow {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: .2rem;
+}
+.mc-dow span {
+    text-align: center;
+    font-size: .6rem; font-weight: 700;
+    color: var(--t4); text-transform: uppercase; letter-spacing: .04em;
+    padding: .15rem 0;
+}
+
+.mc-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.mc-day {
+    position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    width: 100%; aspect-ratio: 1;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: .72rem; font-weight: 500;
+    color: var(--t2);
+    transition: all var(--t);
+    user-select: none;
+}
+.mc-day:hover:not(.mc-empty):not(.mc-today):not(.mc-selected) {
+    background: var(--subtle); color: var(--t1);
+}
+.mc-day.mc-empty   { cursor: default; pointer-events: none; }
+.mc-day.mc-today   { background: var(--blue); color: #fff; font-weight: 700; }
+.mc-day.mc-selected:not(.mc-today) {
+    background: var(--blue-l); color: var(--blue-d);
+    font-weight: 700; outline: 1.5px solid var(--blue-m);
+}
+.mc-day.mc-other   { color: var(--t4); }
+
+/* Event dots */
+.mc-dot {
+    position: absolute; bottom: 2px;
+    left: 50%; transform: translateX(-50%);
+    display: flex; gap: 1.5px;
+}
+.mc-dot span { width: 3px; height: 3px; border-radius: 50%; background: var(--blue); }
+.mc-day.mc-today .mc-dot span { background: rgba(255,255,255,.7); }
+.mc-day.mc-selected:not(.mc-today) .mc-dot span { background: var(--blue); }
+
+/* Today button */
+.mc-today-btn {
+    display: block; width: 100%;
+    text-align: center; font-size: .69rem; font-weight: 600;
+    color: var(--t3); padding: .45rem;
+    border-top: 1px solid var(--border);
+    cursor: pointer; transition: all var(--t);
+    background: transparent; border: none;
+    border-top: 1px solid var(--border);
+    font-family: var(--font);
+}
+.mc-today-btn:hover { background: var(--hover); color: var(--blue); }
+
+/* Selected day info panel */
+.mc-sel-info {
+    background: var(--blue-l); border: 1px solid var(--blue-m);
+    border-radius: var(--r3); padding: .65rem .9rem;
+    display: none;
+}
+.mc-sel-date { font-size: .75rem; font-weight: 700; color: var(--blue-d); margin-bottom: .2rem; text-transform: capitalize; }
+.mc-sel-count { font-size: .7rem; color: var(--t3); }
+.mc-sel-evts  { margin-top: .45rem; display: flex; flex-direction: column; gap: .2rem; }
+.mc-sel-evt   {
+    font-size: .7rem; font-weight: 600;
+    padding: .18rem .5rem; border-radius: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: pointer; text-decoration: none; display: block;
+}
+
+/* Legend */
+.mc-legend {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--r3); padding: .7rem .9rem;
+}
+.mc-legend-title {
+    font-size: .65rem; font-weight: 700; color: var(--t4);
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: .55rem;
+}
+.mc-legend-item {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .72rem; color: var(--t2);
+    padding: .18rem 0; cursor: pointer;
+    border-radius: 4px; transition: color var(--t);
+}
+.mc-legend-item:hover { color: var(--t1); }
+.mc-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Responsive: collapse sidebar below main on small screens */
+@media(max-width: 700px) {
+    .ag-calendar-layout { flex-direction: column; }
+    .ag-sidebar { width: 100%; }
+}
+/* day select create actions ================================= */
+
+/* ── Day panel create section ──────────────────────── */
+#dpCreateSection a {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .35rem .55rem;
+    border-radius: 6px;
+    font-size: .72rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: filter var(--t), transform var(--t);
+}
+#dpCreateSection a:hover {
+    filter: brightness(.94);
+    transform: translateX(2px);
+    text-decoration: none;
+}
+
+/* Selected day info panel — expanded */
+.mc-sel-info {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r4);
+    overflow: hidden;
+    display: none;
+}
+
+/* Override the blue-l header when the panel has create buttons */
+.mc-sel-info .mc-sel-date {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--blue-d);
+    padding: .65rem .85rem .1rem;
+    background: var(--blue-l);
+    border-bottom: 1px solid var(--blue-m);
+    text-transform: capitalize;
+}
+.mc-sel-info .mc-sel-count {
+    font-size: .67rem;
+    color: var(--t3);
+    padding: .1rem .85rem .5rem;
+    background: var(--blue-l);
+    border-bottom: 1px solid var(--blue-m);
+}
+.mc-sel-info .mc-sel-evts {
+    padding: .45rem .7rem;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+
+
+
+/* ── Modal ───────────────────────────────────── */
+
+.ag-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.45);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: all .2s ease;
+}
+
+.ag-modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.ag-modal {
+    width: 100%;
+    max-width: 520px;
+    background: var(--card);
+    border-radius: var(--r5);
+    border: 1px solid var(--border);
+    box-shadow: var(--s3);
+    overflow: hidden;
+
+    transform: translateY(10px) scale(.98);
+    transition: all .2s ease;
+}
+
+.ag-modal-overlay.show .ag-modal {
+    transform: translateY(0) scale(1);
+}
+
+.ag-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.2rem 1.3rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.ag-modal-head h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--t1);
+    margin-bottom: .2rem;
+}
+
+.ag-modal-head p {
+    font-size: .75rem;
+    color: var(--t3);
+}
+
+.ag-modal-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: none;
+    background: var(--subtle);
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--t2);
+    transition: all var(--t);
+}
+
+.ag-modal-close:hover {
+    background: var(--rose-l);
+    color: var(--rose);
+}
+
+.ag-modal-grid {
+    padding: 1.2rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: .8rem;
+}
+
+.ag-create-card {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1rem;
+    border-radius: var(--r3);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    background: var(--card);
+    transition: all var(--t);
+}
+
+.ag-create-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--s2);
+    border-color: var(--blue);
+    text-decoration: none;
+}
+
+.ag-create-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ag-create-card h4 {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--t1);
+    margin-bottom: .15rem;
+}
+
+.ag-create-card span {
+    font-size: .7rem;
+    color: var(--t3);
+}
+
+@media(max-width:600px){
+    .ag-modal {
+        margin: 1rem;
+    }
+
+    .ag-modal-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 </style>
 @endpush
 
@@ -362,20 +712,21 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
         </div>
     </div>
 
-    {{-- ═══ Calendar view ═══ --}}
-    @if($viewMode === 'calendar')
-    <div class="ag-card">
-        <div class="ag-card-hd">
-            <div class="ag-card-title">
-                <span class="ag-pip"></span>
-                Calendrier — {{ $tabDefs[$tab]['label'] ?? 'Fusionné' }}
-            </div>
-        </div>
-        <div class="ag-calendar-wrap">
-            <div id="calendar"></div>
+ {{-- ═══ Calendar view ═══ --}}
+@if($viewMode === 'calendar')
+<div class="ag-card">
+    <div class="ag-card-hd">
+        <div class="ag-card-title">
+            <span class="ag-pip"></span>
+            Calendrier — {{ $tabDefs[$tab]['label'] ?? 'Fusionné' }}
         </div>
     </div>
-    @endif
+
+    <div class="ag-calendar-wrap">
+        <div id="calendar"></div>
+    </div>
+</div>
+@endif
 
     {{-- ═══ List view ═══ --}}
     @if($viewMode === 'list')
@@ -483,123 +834,362 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
     @endif
 
 </div>
-@endsection
 
+
+{{-- ── Create Action Modal ───────────────────────── --}}
+<div id="agCreateModal" class="ag-modal-overlay">
+    <div class="ag-modal">
+        
+        <div class="ag-modal-head">
+            <div>
+                <h3>Créer un élément</h3>
+                <p id="agModalDate"></p>
+            </div>
+
+            <button type="button" class="ag-modal-close" id="agModalClose">
+                ✕
+            </button>
+        </div>
+
+        <div class="ag-modal-grid" id="agModalGrid"></div>
+
+    </div>
+</div>
+
+
+@endsection
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+
 <script>
 (function () {
+
     const viewMode   = '{{ $viewMode }}';
     const currentTab = '{{ $tab }}';
+    const userRole   = '{{ Auth::user()->role }}';
 
-    /* ── Toast helper ───────────────────────── */
-    function showToast(message) {
-        let toast = document.createElement('div');
-        toast.className = 'ag-toast';
-        toast.innerText = message;
-        document.body.appendChild(toast);
+    // ── Toast ──────────────────────────────────────────
+    function showToast(msg) {
 
-        setTimeout(() => toast.classList.add('show'), 50);
+        const t = document.createElement('div');
+
+        t.className = 'ag-toast';
+        t.innerText = msg;
+
+        document.body.appendChild(t);
+
+        setTimeout(() => t.classList.add('show'), 50);
 
         setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
+
+            t.classList.remove('show');
+
+            setTimeout(() => t.remove(), 300);
+
         }, 2500);
+
     }
 
-    /* ── Tab switching ──────────────────────── */
+    // ── Tab switching ──────────────────────────────────
     document.querySelectorAll('.ag-tab').forEach(btn => {
+
         btn.addEventListener('click', () => {
-            window.location.href = '{{ route("agenda.index") }}?view=' + viewMode + '&tab=' + btn.dataset.tab;
+
+            window.location.href =
+                '{{ route("agenda.index") }}?view=' +
+                viewMode +
+                '&tab=' +
+                btn.dataset.tab;
+
         });
+
     });
 
-    /* ── FullCalendar ───────────────────────── */
-    if (viewMode === 'calendar') {
-        const calendarEl = document.getElementById('calendar');
-        if (!calendarEl) return;
+    if (viewMode !== 'calendar') return;
 
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listMonth'
-            },
-            events: '{{ route("agenda.events") }}?tab=' + currentTab,
-            editable: true,
-            droppable: true,
+    // ── Modal Elements ─────────────────────────────────
+    const modal      = document.getElementById('agCreateModal');
+    const modalGrid  = document.getElementById('agModalGrid');
+    const modalDate  = document.getElementById('agModalDate');
+    const modalClose = document.getElementById('agModalClose');
 
+    // ── Open Modal ─────────────────────────────────────
+    function openCreateModal(dateStr) {
 
-            /* ✅ FIXES */
-            snapDuration: { days: 1 },
-            allDayMaintainDuration: true,
-            eventDragMinDistance: 5,
-            fixedMirrorParent: document.body,
+        modalDate.innerText = 'Date sélectionnée : ' + dateStr;
 
-            eventDrop: function(info) {
-                const el = info.el;
+        const actions = [
 
-                // 🎯 Bounce animation
-                el.classList.add('drop-animate');
-                setTimeout(() => el.classList.remove('drop-animate'), 300);
-
-                const event = info.event;
-                const newDate = event.start.toISOString().slice(0, 10);
-                const type = event.extendedProps.type;
-                const id = event.id;
-
-                if (!type || !id) {
-                    el.classList.add('shake');
-                    setTimeout(() => el.classList.remove('shake'), 300);
-                    showToast("Impossible de modifier ❌");
-                    info.revert();
-                    return;
-                }
-
-                const baseUrl = '{{ url("/agenda/event") }}';
-
-                fetch(`${baseUrl}/${type}/${id}/reschedule`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({ new_date: newDate })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.success) {
-                        el.classList.add('shake');
-                        setTimeout(() => el.classList.remove('shake'), 300);
-
-                        showToast(data.error || "Erreur lors du déplacement ❌");
-                        info.revert();
-                    } else {
-                        showToast("Événement déplacé ✔");
-                        calendar.refetchEvents();
-                    }
-                })
-                .catch(() => {
-                    el.classList.add('shake');
-                    setTimeout(() => el.classList.remove('shake'), 300);
-
-                    showToast("Erreur réseau ⚠");
-                    info.revert();
-                });
+            {
+                title: 'Action',
+                subtitle: 'Créer une action',
+                color: 'var(--blue-l)',
+                iconColor: 'var(--blue)',
+                icon: '📌',
+                url: '{{ route("actions.create") }}?date_planification=' + dateStr
             },
 
-            eventClick: function(info) {
-                if (info.event.url) {
-                    window.location.href = info.event.url;
-                }
+            {
+                title: 'Examen',
+                subtitle: 'Planifier un examen',
+                color: 'var(--violet-l)',
+                iconColor: 'var(--violet)',
+                icon: '🧪',
+                url: '{{ route("examens.create") }}?date_examen=' + dateStr
             },
 
-            height: 'auto',
+            {
+                title: 'BSS',
+                subtitle: 'Nouvelle demande',
+                color: 'var(--green-l)',
+                iconColor: 'var(--green)',
+                icon: '📦',
+                url: '{{ route("bss.create") }}?date_livraison_prevue=' + dateStr
+            },
+
+            {
+                title: 'Formation',
+                subtitle: 'Nouvelle formation',
+                color: 'var(--teal-l)',
+                iconColor: 'var(--teal)',
+                icon: '🎓',
+                url: '{{ route("formations.create") }}?date=' + dateStr
+            },
+
+            {
+                title: 'Événement',
+                subtitle: 'Créer un événement',
+                color: 'var(--amber-l)',
+                iconColor: 'var(--amber)',
+                icon: '📅',
+                url: '{{ route("events.create") }}?date_event=' + dateStr
+            },
+
+            {
+                title: 'Tâche',
+                subtitle: 'Créer une tâche',
+                color: 'var(--subtle)',
+                iconColor: 'var(--t2)',
+                icon: '✅',
+                url: '{{ route("taches.create") }}?date_planification=' + dateStr
+            }
+
+        ];
+
+        modalGrid.innerHTML = actions.map(action => `
+            <a href="${action.url}" class="ag-create-card">
+
+                <div class="ag-create-icon"
+                     style="background:${action.color}; color:${action.iconColor};">
+                    ${action.icon}
+                </div>
+
+                <div>
+                    <h4>${action.title}</h4>
+                    <span>${action.subtitle}</span>
+                </div>
+
+            </a>
+        `).join('');
+
+        modal.classList.add('show');
+
+    }
+
+    // ── Close Modal ────────────────────────────────────
+    function closeCreateModal() {
+
+        modal.classList.remove('show');
+
+    }
+
+    if (modalClose) {
+
+        modalClose.addEventListener('click', closeCreateModal);
+
+    }
+
+    if (modal) {
+
+        modal.addEventListener('click', function(e) {
+
+            if (e.target === modal) {
+
+                closeCreateModal();
+
+            }
+
         });
 
-        calendar.render();
     }
+
+    document.addEventListener('keydown', function(e) {
+
+        if (e.key === 'Escape') {
+
+            closeCreateModal();
+
+        }
+
+    });
+
+    // ══════════════════════════════════════════════════
+    // FullCalendar
+    // ══════════════════════════════════════════════════
+
+    const calendarEl = document.getElementById('calendar');
+
+    if (!calendarEl) return;
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+
+        initialView: 'dayGridMonth',
+
+        locale: 'fr',
+
+        firstDay: 1,
+
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+        },
+
+        events: '{{ route("agenda.events") }}?tab=' + currentTab,
+
+        editable: true,
+
+        droppable: true,
+
+        snapDuration: { days: 1 },
+
+        allDayMaintainDuration: true,
+
+        eventDragMinDistance: 5,
+
+        fixedMirrorParent: document.body,
+
+        height: 'auto',
+
+        // ── Click on day ───────────────────────────────
+        dateClick: function(info) {
+
+            if (userRole === 'rbo') {
+                return;
+            }
+
+            const dateStr = info.dateStr.split('T')[0];
+
+            openCreateModal(dateStr);
+
+        },
+
+        // ── Drag & drop ───────────────────────────────
+        eventDrop: function(info) {
+
+            const el = info.el;
+
+            el.classList.add('drop-animate');
+
+            setTimeout(() => {
+                el.classList.remove('drop-animate');
+            }, 300);
+
+            const event   = info.event;
+            const newDate = event.start.toISOString().slice(0, 10);
+            const type    = event.extendedProps.type;
+            const id      = event.id;
+
+            if (!type || !id) {
+
+                el.classList.add('shake');
+
+                setTimeout(() => {
+                    el.classList.remove('shake');
+                }, 300);
+
+                showToast('Impossible de modifier ❌');
+
+                info.revert();
+
+                return;
+            }
+
+            fetch(`{{ url('/agenda/event') }}/${type}/${id}/reschedule`, {
+
+                method: 'PATCH',
+
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN':
+                        document.querySelector('meta[name="csrf-token"]').content
+                },
+
+                body: JSON.stringify({
+                    new_date: newDate
+                })
+
+            })
+
+            .then(r => r.json())
+
+            .then(data => {
+
+                if (!data.success) {
+
+                    el.classList.add('shake');
+
+                    setTimeout(() => {
+                        el.classList.remove('shake');
+                    }, 300);
+
+                    showToast(data.error || 'Erreur lors du déplacement ❌');
+
+                    info.revert();
+
+                } else {
+
+                    showToast('Événement déplacé ✔');
+
+                    calendar.refetchEvents();
+
+                }
+
+            })
+
+            .catch(() => {
+
+                el.classList.add('shake');
+
+                setTimeout(() => {
+                    el.classList.remove('shake');
+                }, 300);
+
+                showToast('Erreur réseau ⚠');
+
+                info.revert();
+
+            });
+
+        },
+
+        // ── Event click ───────────────────────────────
+        eventClick: function(info) {
+
+            if (info.event.url) {
+
+                info.jsEvent.preventDefault();
+
+                window.location.href = info.event.url;
+
+            }
+
+        },
+
+    });
+
+    calendar.render();
+
 })();
 </script>
 @endpush

@@ -68,7 +68,7 @@ class FormationController extends Controller
 
 
 
-    public function create()
+    public function create(Request $request)
     {
         $user = Auth::user();
         if ($user->role !== 'delegue') abort(403);
@@ -96,8 +96,10 @@ class FormationController extends Controller
             $defaultVilleId = $compte->ville_id;
             $defaultZoneId = $compte->zone_id;
         }
+        
+        $defaultDate = $request->get('date_demande', now()->toDateString());
 
-        return view('formations.create', compact('comptes', 'currentYear', 'years', 'types', 'cibles', 'villes', 'zones', 'selectedCompteId', 'defaultVilleId', 'defaultZoneId'));
+        return view('formations.create', compact('comptes', 'currentYear', 'years', 'types', 'cibles', 'villes', 'zones', 'selectedCompteId', 'defaultVilleId', 'defaultZoneId', 'defaultDate'));
     }
 
     public function store(Request $request)

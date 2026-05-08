@@ -74,7 +74,7 @@ private $requiresExamen = [
 ];
 
 // In the create method:
-public function create()
+public function create(Request $request)
 {
     $user = Auth::user();
     if ($user->role !== 'delegue') abort(403);
@@ -101,9 +101,16 @@ public function create()
     $requiresRetour = $this->requiresRetour;
     $requiresExamen = $this->requiresExamen;
 
+
+    $defaultDate = $request->get('date_planification', now()->toDateString());
+    $prefilledDate = $request->get(
+    'date_planification',
+    now()->toDateString()
+    );
+
     return view('actions.create', compact(
         'comptes', 'categories', 'products', 'examens', 'bssList', 'retoursList',
-        'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen', 'selectedCompteId'
+        'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen', 'selectedCompteId', 'defaultDate', 'prefilledDate'
     ));
 }
 

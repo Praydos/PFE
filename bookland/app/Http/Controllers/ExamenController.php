@@ -46,7 +46,7 @@ class ExamenController extends Controller
     }
 
     // Create form
-    public function create()
+    public function create(Request $request)
 {
     $user = Auth::user();
     if ($user->role !== 'delegue') abort(403);
@@ -67,7 +67,9 @@ class ExamenController extends Controller
         // You can also pre‑fill the contact list (but that's already done in AJAX)
     }
 
-    return view('examens.create', compact('comptes', 'currentYear', 'years', 'langues', 'organismes', 'niveauxCECR', 'niveauxScolaires', 'selectedCompteId'));
+    $defaultDate = $request->get('date_examen', now()->toDateString());
+
+    return view('examens.create', compact('comptes', 'currentYear', 'years', 'langues', 'organismes', 'niveauxCECR', 'niveauxScolaires', 'selectedCompteId', 'defaultDate'));
 }
 
     // Store new examen

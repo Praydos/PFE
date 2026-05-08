@@ -52,12 +52,13 @@ class TacheController extends Controller
         return view('taches.index', compact('taches'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $user = Auth::user();
         if ($user->role !== 'delegue') abort(403);
         $contacts = Contact::whereHas('comptes', fn($q) => $q->where('delegue_id', $user->id))->get();
-        return view('taches.create', compact('contacts'));
+        $defaultDate = $request->get('date_planification', now()->toDateString());
+        return view('taches.create', compact('contacts', 'defaultDate'));
     }
 
     public function store(Request $request)

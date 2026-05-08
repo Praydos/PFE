@@ -25,7 +25,8 @@ class Zone extends Model
 
     public function delegates()
     {
-        return $this->belongsToMany(User::class, 'delegue_zone', 'zone_id', 'delegue_id');
+        return $this->belongsToMany(User::class, 'delegue_zone', 'zone_id', 'delegue_id')
+        ->where('role', 'delegue');;
     }
 
     public function comptes()

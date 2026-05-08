@@ -1,8 +1,8 @@
 @php
     $isEdit                  = isset($action);
     $defaultObjet            = old('objet',                  $isEdit ? $action->objet                                    : '');
-    $defaultCompteId = old('compte_id', $isEdit ? $action->compte_id : ($selectedCompteId ?? ''));
-    $defaultDate             = old('date_planification',     $isEdit ? $action->date_planification->format('Y-m-d')       : '');
+    $defaultCompteId         = old('compte_id', $isEdit ? $action->compte_id : ($selectedCompteId ?? ''));
+    // $defaultDate             = old('date_planification',     $isEdit ? $action->date_planification->format('Y-m-d')       : '');
     $defaultHeure            = old('heure',                  $isEdit ? $action->heure                                    : '');
     $defaultDuree            = old('duree',                  $isEdit ? $action->duree                                    : '');
     $defaultLieu             = old('lieu',                   $isEdit ? $action->lieu                                     : '');
@@ -11,6 +11,12 @@
     $defaultRecurrenceFreq   = old('recurrence_frequence',   $isEdit ? $action->recurrence_frequence                     : '');
     $defaultRecurrenceInt    = old('recurrence_intervalle',  $isEdit ? $action->recurrence_intervalle                    : '');
     $defaultRecurrenceFin    = old('recurrence_fin',         $isEdit && $action->recurrence_fin ? $action->recurrence_fin->format('Y-m-d') : '');
+    $defaultDate = old(
+    'date_planification',
+    $isEdit
+        ? $action->date_planification->format('Y-m-d')
+        : ($prefilledDate ?? now()->toDateString())
+);
 @endphp
 
 {{-- ── Objet & Compte ─────────────────────────────── --}}
@@ -71,7 +77,7 @@
         </label>
         <input type="date" name="date_planification" id="date_planification"
                class="ac-input {{ $errors->has('date_planification') ? 'err' : '' }}"
-               value="{{ $defaultDate }}" required>
+               value="{{ old('date_planification', $defaultDate) }}" required>
         @error('date_planification')
             <span class="ac-error"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ $message }}</span>
         @enderror
@@ -165,6 +171,11 @@
     </div>
 
 </div>
+
+
+
+
+
 
 <script>
 (function () {

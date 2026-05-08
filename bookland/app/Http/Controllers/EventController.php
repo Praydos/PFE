@@ -65,7 +65,7 @@ class EventController extends Controller
     }
 
     // Create form
-    public function create()
+    public function create(Request $request)
 {
     $user = Auth::user();
     if ($user->role !== 'delegue') abort(403);
@@ -87,8 +87,9 @@ class EventController extends Controller
             $defaultZoneId = $compte->zone_id;
         }
     }
+    $defaultDate = $request->get('date_event', now()->toDateString());
 
-    return view('events.create', compact('villes', 'currentYear', 'years', 'types', 'editeurs', 'defaultVilleId', 'defaultZoneId'));
+    return view('events.create', compact('villes', 'currentYear', 'years', 'types', 'editeurs', 'defaultVilleId', 'defaultZoneId', 'defaultDate'));
 }
 
     // Store event

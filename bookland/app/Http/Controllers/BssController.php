@@ -69,7 +69,7 @@ class BssController extends Controller
     }
 
     // Show creation form
-    public function create()
+    public function create(Request $request)
 {
     $user = Auth::user();
     if ($user->role !== 'delegue') abort(403);
@@ -96,8 +96,9 @@ class BssController extends Controller
     $lastBss = Bss::whereYear('created_at', now()->year)->orderBy('id', 'desc')->first();
     $increment = $lastBss ? intval(substr($lastBss->numero, -4)) + 1 : 1;
     $numero = 'BSS-' . now()->year . '-' . str_pad($increment, 4, '0', STR_PAD_LEFT);
+    $defaultDate = $request->get('date_livraison_prevue', now()->toDateString());
 
-    return view('bss.create', compact('comptes', 'contacts', 'consignations', 'numero', 'currentYear', 'selectedCompteId'));
+    return view('bss.create', compact('comptes', 'contacts', 'consignations', 'numero', 'currentYear', 'selectedCompteId', 'defaultDate'));
 }
 
     // Store new BSS
