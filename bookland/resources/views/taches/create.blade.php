@@ -248,7 +248,7 @@
                 $isEdit = isset($tache);
                 $defaultObjet = old('objet', $isEdit ? $tache->objet : '');
                 $defaultDescription = old('description', $isEdit ? $tache->description : '');
-                $defaultDatePlanif = old('date_planification', $isEdit ? $tache->date_planification->format('Y-m-d') : '');
+                // $defaultDatePlanif = old('date_planification', $isEdit ? $tache->date_planification->format('Y-m-d') : '');
                 $defaultDateFin = old('date_fin', $isEdit && $tache->date_fin ? $tache->date_fin->format('Y-m-d') : '');
                 $defaultAllDay = old('all_day', $isEdit ? $tache->all_day : false);
                 $defaultLieu = old('lieu', $isEdit ? $tache->lieu : '');
@@ -259,6 +259,12 @@
                 $defaultRecurrenceEnd = old(
                     'recurrence_fin',
                     $isEdit && $tache->recurrence_end_date ? $tache->recurrence_end_date->format('Y-m-d') : ''
+                );
+                $defaultDatePlanif = old(
+                    'date_planification',
+                    $isEdit
+                        ? $tache->date_planification->format('Y-m-d')
+                        : ($defaultDate ?? now()->toDateString())
                 );
             @endphp
 
@@ -300,9 +306,12 @@
         <label class="frm-label" for="date_planification">
             Date planification <span class="req">*</span>
         </label>
-        <input type="date" name="date_planification" id="date_planification"
-               class="frm-input {{ $errors->has('date_planification') ? 'is-invalid' : '' }}"
-               value="{{ $defaultDatePlanif }}" required>
+        <input type="date"
+                name="date_planification"
+                id="date_planification"
+                class="frm-input {{ $errors->has('date_planification') ? 'is-invalid' : '' }}"
+                value="{{ $defaultDatePlanif }}"
+                required>
         @error('date_planification')<span class="frm-error">{{ $message }}</span>@enderror
     </div>
 

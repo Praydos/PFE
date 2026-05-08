@@ -252,13 +252,21 @@
                 $isEdit = isset($bss);
                 $defaultCompteId = old('compte_id', $isEdit ? $bss->compte_id : ($selectedCompteId ?? ''));
                 $defaultContactId = old('contact_id', $isEdit ? $bss->contact_id : '');
-                $defaultDateLivraison = old('date_livraison_prevue', $isEdit ? ($bss->date_livraison_prevue ? $bss->date_livraison_prevue->format('Y-m-d') : '') : '');
+                // $defaultDateLivraison = old('date_livraison_prevue', $isEdit ? ($bss->date_livraison_prevue ? $bss->date_livraison_prevue->format('Y-m-d') : '') : '');
                 $defaultMoyenContact = old('moyen_contact', $isEdit ? $bss->moyen_contact : '');
                 $defaultRecupereParType = old('recupere_par_type', $isEdit ? $bss->recupere_par_type : '');
                 $defaultRecupereParNom = old('recupere_par_nom_contact', $isEdit ? $bss->recupere_par_nom_contact : '');
                 $defaultNumeroExpedition = old('numero_expedition', $isEdit ? $bss->numero_expedition : '');
                 $defaultControleDocument = old('controle_document', $isEdit ? $bss->controle_document : '');
                 $products = old('products', $isEdit ? ($bss->items ?? []) : []);
+                $defaultDateLivraison = old(
+                    'date_livraison_prevue',
+                    $isEdit
+                        ? ($bss->date_livraison_prevue
+                            ? $bss->date_livraison_prevue->format('Y-m-d')
+                            : '')
+                        : ($defaultDate ?? now()->toDateString())
+                );
             @endphp
 
             {{-- Section 1 : Identification --}}
