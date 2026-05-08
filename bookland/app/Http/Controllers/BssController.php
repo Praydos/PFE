@@ -12,6 +12,7 @@ use App\Models\AnneeScolaire;
 use App\Models\User;
 use App\Models\Action;
 use App\Models\ActionLine;
+use App\Support\YearLock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -256,6 +257,7 @@ class BssController extends Controller
     // Edit feedback (only after validation)
     public function edit(Bss $bss)
     {
+        
         $user = Auth::user();
         // Only delegate who created it can edit feedback, and only if status is 'valide'
         if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'valide') {
@@ -267,6 +269,7 @@ class BssController extends Controller
     // Update feedback and document control
     public function update(Request $request, Bss $bss)
 {
+    YearLock::check($bss);
     $user = Auth::user();
     if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'valide') {
         abort(403);
@@ -320,6 +323,7 @@ class BssController extends Controller
     // Admin only: delete BSS (only if status != 'livre' and not validated? optional)
     public function destroy(Bss $bss)
     {
+        YearLock::check($bss);
         if (Auth::user()->role !== 'admin') abort(403);
         // Optionally restore consignation stock if source was consignation and not yet delivered
         foreach ($bss->lignes as $ligne) {

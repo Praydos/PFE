@@ -687,7 +687,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         @endif
     </div>
 
-    {{-- Stat Cards --}}
+    {{-- Stat Cards
     <div class="dr-stats">
         @if (auth()->user()->role == 'rbo' || auth()->user()->role == 'admin')
             <div class="dr-stat-card">
@@ -721,7 +721,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         </div>
         @endif
         
-    </div>
+    </div> --}}
 
     {{-- Tabs --}}
     <div class="dr-tabs-bar">

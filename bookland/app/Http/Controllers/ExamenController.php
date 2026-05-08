@@ -9,6 +9,7 @@ use App\Models\Contact;
 use App\Models\Action;
 use App\Models\ActionLine;
 use App\Models\AnneeScolaire;
+use App\Support\YearLock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -164,6 +165,7 @@ class ExamenController extends Controller
     // Edit form (only for certain statuts? we allow edit if not closed)
    public function edit(Examen $examen)
 {
+    
     $user = Auth::user();
     $this->authorizeEdit($examen);
     $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
@@ -179,6 +181,7 @@ class ExamenController extends Controller
     // Update
    public function update(Request $request, Examen $examen)
 {
+    YearLock::check($examen);
     $this->authorizeEdit($examen);
     $validated = $request->validate([
         'compte_id' => 'required|exists:comptes,id',
@@ -235,6 +238,7 @@ class ExamenController extends Controller
     // Delete
     public function destroy(Examen $examen)
     {
+        YearLock::check($examen);
         $this->authorizeEdit($examen);
         $examen->delete();
         return redirect()->route('examens.index')->with('success', 'Examen supprimé.');
@@ -243,6 +247,7 @@ class ExamenController extends Controller
     // Change status (quick action from list or detail)
     public function changeStatus(Request $request, Examen $examen)
     {
+        YearLock::check($examen);
         $user = Auth::user();
         if (!in_array($user->role, ['admin', 'rbo']) && $examen->delegate_id !== $user->id) {
             abort(403);

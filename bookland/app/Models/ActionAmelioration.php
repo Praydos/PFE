@@ -48,4 +48,9 @@ class ActionAmelioration extends Model
     {
         return $this->belongsTo(User::class, 'responsable_efficacite_id');
     }
+
+    public function anneeScolaire()
+    {
+        return $this->belongsTo(AnneeScolaire::class);
+    }
 }

@@ -51,5 +51,10 @@ class Tache extends Model
         return Contact::whereIn('id', $this->contacts)->get();
     }
 
+    public function anneeScolaire()
+    {
+        return $this->belongsTo(AnneeScolaire::class);
+    }
+
     
 }

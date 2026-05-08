@@ -42,4 +42,10 @@ class AnneeScolaire extends Model
         $this->is_closed = true;
         $this->save();
     }
+
+    //helper: to  check if the year is closed
+    public function isLocked()
+    {
+        return $this->is_closed;    
+    }
 }

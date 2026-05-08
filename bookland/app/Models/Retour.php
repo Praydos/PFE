@@ -27,4 +27,9 @@ class Retour extends Model
                     ->withPivot('quantite_retournee')
                     ->withTimestamps();
     }
+
+    public function anneeScolaire()
+    {
+        return $this->belongsTo(AnneeScolaire::class);
+    }
 }

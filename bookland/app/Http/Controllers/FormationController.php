@@ -8,6 +8,7 @@ use App\Models\Contact;
 use App\Models\Zone;
 use App\Models\Ville;
 use App\Models\AnneeScolaire;
+USE App\Support\YearLock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -144,6 +145,7 @@ class FormationController extends Controller
 
     public function edit(Formation $formation)
     {
+        
         $this->authorizeEdit($formation);
         $user = Auth::user();
         $comptes = Compte::where('delegue_id', $user->id)->with('ville', 'zone')->get();
@@ -162,6 +164,7 @@ class FormationController extends Controller
 
     public function update(Request $request, Formation $formation)
 {
+    YearLock::check($formation);
     $this->authorizeEdit($formation);
     $validated = $request->validate([
         'compte_id' => 'required|exists:comptes,id',
@@ -184,6 +187,7 @@ class FormationController extends Controller
 
     public function destroy(Formation $formation)
     {
+        YearLock::check($formation);
         $this->authorizeEdit($formation);
         $formation->delete();
         return redirect()->route('formations.index')->with('success', 'Formation supprimée.');

@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\Bss;
 use App\Models\BssLigne;
 use App\Models\AnneeScolaire;
+use App\Support\YearLock;
 use Illuminate\Http\Request;
 use App\Models\Action;
 use Illuminate\Support\Facades\Auth;
@@ -179,6 +180,7 @@ class DemandeSpecimenController extends Controller
     // Edit (only for demande status)
     public function edit(DemandeSpecimen $demandes_specimen)
     {
+        
         $this->authorizeEdit($demandes_specimen);
         if ($demandes_specimen->statut !== 'demande') {
             return redirect()->route('demandes-specimens.index')->with('error', 'Seules les demandes en attente peuvent être modifiées.');
@@ -195,6 +197,7 @@ class DemandeSpecimenController extends Controller
     // Update
     public function update(Request $request, DemandeSpecimen $demandes_specimen)
     {
+        YearLock::check($demandes_specimen);
         $this->authorizeEdit($demandes_specimen);
         if ($demandes_specimen->statut !== 'demande') abort(403);
 
@@ -257,6 +260,7 @@ class DemandeSpecimenController extends Controller
     // Delete (only admin or if still demande)
     public function destroy(DemandeSpecimen $demandes_specimen)
     {
+        YearLock::check($demandes_specimen);
         $user = Auth::user();
         if ($user->role !== 'admin' && ($demandes_specimen->statut !== 'demande' || $demandes_specimen->delegue_id !== $user->id)) {
             abort(403);

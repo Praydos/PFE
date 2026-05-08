@@ -8,6 +8,7 @@ use App\Models\Compte;
 use App\Models\Ville;
 use App\Models\Zone;
 use App\Models\AnneeScolaire;
+use App\Support\YearLock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -241,6 +242,7 @@ class EventController extends Controller
     // Update contact status (from show view)
     public function updateStatus(Request $request, Event $event, Contact $contact)
     {
+        YearLock::check($event);
         $user = Auth::user();
         if ($user->role !== 'delegue' || $event->delegue_id !== $user->id) abort(403);
 
@@ -256,6 +258,7 @@ class EventController extends Controller
     // Edit event (only basic info, not contacts)
     public function edit(Event $event)
     {
+        
         $this->authorizeEdit($event);
         $villes = $this->getDelegateVilles();
         $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
@@ -267,6 +270,7 @@ class EventController extends Controller
 
     public function update(Request $request, Event $event)
     {
+        YearLock::check($event);
         $this->authorizeEdit($event);
         $validated = $request->validate([
             'ville_id' => 'required|exists:villes,id',
@@ -287,6 +291,7 @@ class EventController extends Controller
 
     public function destroy(Event $event)
     {
+        YearLock::check($event);
         $this->authorizeEdit($event);
         $event->delete();
         return redirect()->route('events.index')->with('success', 'Événement supprimé.');

@@ -6,6 +6,7 @@ use App\Models\Action;
 use App\Models\ActionLine;
 use App\Models\Compte;
 use App\Models\Bss;
+use App\Support\YearLock;
 use App\Models\Contact;
 use App\Models\Product;
 use App\Models\Examen;
@@ -265,6 +266,7 @@ public function create()
 
     public function edit(Action $action)
     {
+        
         $this->authorizeEdit($action);
         $user = Auth::user();
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
@@ -283,6 +285,7 @@ public function create()
 
     public function update(Request $request, Action $action)
     {
+        YearLock::check($action);
         $this->authorizeEdit($action);
         // Similar validation as store, but without recurrence generation.
         // We'll update the action header and lines (replace lines).
@@ -327,6 +330,7 @@ public function create()
 
     public function destroy(Action $action)
     {
+        YearLock::check($action);
         $this->authorizeEdit($action);
         $action->delete();
         return redirect()->route('actions.index')->with('success', 'Action supprimée.');

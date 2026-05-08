@@ -57,4 +57,8 @@ class Action extends Model
     {
         return $this->hasMany(ActionLine::class);
     }
+    public function anneeScolaire()
+    {
+        return $this->belongsTo(AnneeScolaire::class);
+    }
 }
