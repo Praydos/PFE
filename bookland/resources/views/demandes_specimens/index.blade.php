@@ -343,7 +343,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                         <th>Délégué</th>
                         <th>Date demande</th>
                         <th>Statut</th>
-                        <th>BSS</th>
+                        <th>Old BSS associé</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
