@@ -88,8 +88,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/products', [ProductController::class, 'index'])
     ->name('products.index')->middleware('role:admin,rbo,delegue');
-    Route::get('/products/{product}', [ProductController::class, 'show'])
-    ->name('products.show')->middleware('role:admin,rbo,delegue');
+  
 
     Route::get('/users/{user}/assigned-zones',[UserController::class, 'getAssignedZones'])
     ->name('users.assigned-zones')
@@ -123,12 +122,13 @@ Route::middleware('auth')->group(function () {
             [VilleController::class, 'assignZone'])->name('villes.assignZone');
 
         //products routes for admin only
+        
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-        Route::post('/products/create', [ProductController::class, 'store'])->name('products.store');
-        route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-        route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-        route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
-       
+        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+        
 
         // Zone ↔ Delegate detachment
         Route::post('/zones/{zone}/detach-delegate/{delegate}',
@@ -168,6 +168,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/consignations/{consignation}', [ConsignationController::class, 'destroy'])->name('consignations.destroy');
 
     });
+      Route::get('/products/{product}', [ProductController::class, 'show'])
+    ->name('products.show')->middleware('role:admin,rbo,delegue');
 
     // ── delegue and Admin ───────────────────────────────────────────────────
     Route::middleware('role:admin,delegue')->group(function () {

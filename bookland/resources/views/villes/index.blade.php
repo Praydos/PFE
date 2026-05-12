@@ -6,35 +6,35 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --bg-base:       #f5f6fa;
+    --bg-base:       #f3f4f9;
     --bg-card:       #ffffff;
-    --bg-hover:      #f8f9fd;
-    --bg-subtle:     #f0f2f8;
+    --bg-hover:      #f7f8fd;
+    --bg-subtle:     #eef0f7;
     --border:        #e4e7f0;
-    --border-md:     #d0d5e8;
+    --border-md:     #cdd3e8;
     --blue:          #5b8dee;
     --blue-dark:     #3d6fd6;
     --blue-light:    #eef3fd;
-    --blue-mid:      #dce8fb;
+    --blue-mid:      #d8e6fb;
     --teal:          #0cb8b6;
-    --teal-light:    #e6faf9;
+    --teal-light:    #e4f9f8;
     --violet:        #7c6fcd;
     --violet-light:  #f0eeff;
     --amber:         #e8a020;
-    --amber-light:   #fff8ec;
+    --amber-light:   #fff7e8;
     --rose:          #e8506a;
     --rose-light:    #fef0f2;
     --green:         #28c76f;
     --green-light:   #e8fbf0;
-    --text-primary:   #1a1f36;
-    --text-secondary: #525f7f;
-    --text-muted:     #9ba8c5;
-    --text-hint:      #bcc5dc;
+    --text-primary:   #181d33;
+    --text-secondary: #4f5c7a;
+    --text-muted:     #8f9dbf;
+    --text-hint:      #b8c2d8;
     --r-xs: 6px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px;
-    --shadow-xs: 0 1px 3px rgba(31,45,80,.06), 0 1px 2px rgba(31,45,80,.04);
-    --shadow-sm: 0 2px 8px rgba(31,45,80,.08), 0 1px 3px rgba(31,45,80,.05);
-    --shadow-md: 0 8px 24px rgba(31,45,80,.10), 0 2px 8px rgba(31,45,80,.06);
-    --shadow-blue: 0 4px 14px rgba(91,141,238,.35);
+    --shadow-xs: 0 1px 3px rgba(26,38,74,.05), 0 1px 2px rgba(26,38,74,.03);
+    --shadow-sm: 0 2px 10px rgba(26,38,74,.07), 0 1px 3px rgba(26,38,74,.04);
+    --shadow-md: 0 8px 28px rgba(26,38,74,.09), 0 2px 8px rgba(26,38,74,.05);
+    --shadow-blue: 0 4px 16px rgba(91,141,238,.32);
     --font: 'DM Sans', sans-serif;
     --font-mono: 'DM Mono', monospace;
     --ease: cubic-bezier(.4,0,.2,1);
@@ -44,23 +44,47 @@
 body { font-family: var(--font); background: var(--bg-base); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
 
 /* ── Page ──────────────────────────────────────────── */
-.vl-page { padding: 2rem 2.5rem 3rem; animation: pageIn .4s var(--ease) both; }
+.vl-page { padding: 2rem 2.5rem 3rem; animation: pageIn .4s var(--ease) both; max-width: 1200px; }
 @keyframes pageIn {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Breadcrumb ────────────────────────────────────── */
-.vl-bc { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1.4rem; }
-.vl-bc a { color: var(--text-muted); text-decoration: none; transition: color var(--t); }
+.vl-bc {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .74rem; color: var(--text-muted);
+    font-weight: 500; margin-bottom: 1.6rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: .45rem .85rem;
+    display: inline-flex;
+    box-shadow: var(--shadow-xs);
+}
+.vl-bc a { color: var(--text-muted); text-decoration: none; transition: color var(--t); display: flex; align-items: center; gap: .3rem; }
 .vl-bc a:hover { color: var(--blue); }
-.vl-bc-sep { color: var(--text-hint); }
-.vl-bc-cur { color: var(--text-secondary); }
+.vl-bc-sep { color: var(--text-hint); font-size: .78rem; }
+.vl-bc-cur { color: var(--text-secondary); font-weight: 600; }
 
 /* ── Header ────────────────────────────────────────── */
-.vl-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
-.vl-header-left h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -.03em; color: var(--text-primary); line-height: 1.15; }
-.vl-header-left p { font-size: .83rem; color: var(--text-muted); margin-top: .3rem; }
+.vl-header {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 1.5rem;
+    margin-bottom: 1.75rem; flex-wrap: wrap;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--border);
+}
+.vl-header-left { display: flex; align-items: center; gap: .95rem; }
+.vl-header-icon {
+    width: 44px; height: 44px; border-radius: var(--r-md);
+    background: var(--blue-light); border: 1px solid var(--blue-mid);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--blue); flex-shrink: 0;
+}
+.vl-header-left h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.035em; color: var(--text-primary); line-height: 1.2; }
+.vl-header-left p { font-size: .8rem; color: var(--text-muted); margin-top: .22rem; font-weight: 400; }
+.vl-header-actions { display: flex; align-items: center; gap: .5rem; }
 
 /* ── Buttons ───────────────────────────────────────── */
 .btn-vl {
@@ -73,24 +97,23 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 }
 .btn-vl svg { flex-shrink: 0; }
 .btn-vl-primary { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: var(--shadow-blue); }
-.btn-vl-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); color: #fff; text-decoration: none; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(91,141,238,.4); }
+.btn-vl-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); color: #fff; text-decoration: none; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(91,141,238,.38); }
 .btn-vl-ghost { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border); box-shadow: var(--shadow-xs); }
 .btn-vl-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-md); text-decoration: none; }
 .btn-vl-danger-ghost { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.2); }
 .btn-vl-danger-ghost:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
 .btn-vl-sm { padding: .38rem .72rem; font-size: .75rem; }
-.btn-vl-warning { background: var(--amber-light); color: var(--amber); border-color: rgba(232,160,32,.2); }
+.btn-vl-warning { background: var(--amber-light); color: var(--amber); border-color: rgba(232,160,32,.22); }
 .btn-vl-warning:hover { background: #ffefd4; color: var(--amber); text-decoration: none; }
 .btn-vl-danger { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.18); }
 .btn-vl-danger:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
 
-
 /* ── Search ────────────────────────────────────────── */
-.vl-search-bar { display: flex; align-items: center; gap: .6rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-.vl-search-wrap { position: relative; flex: 1; min-width: 220px; max-width: 380px; }
+.vl-search-bar { display: flex; align-items: center; gap: .6rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
+.vl-search-wrap { position: relative; flex: 1; min-width: 220px; max-width: 360px; }
 .vl-search-wrap svg { position: absolute; left: .85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
 .vl-search-input {
-    width: 100%; padding: .56rem .9rem .56rem 2.35rem;
+    width: 100%; padding: .58rem .9rem .58rem 2.35rem;
     border: 1px solid var(--border); border-radius: var(--r-sm);
     background: var(--bg-card); font-family: var(--font);
     font-size: .83rem; color: var(--text-primary);
@@ -107,83 +130,81 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 
 /* ── Card ──────────────────────────────────────────── */
 .vl-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--shadow-sm); overflow: hidden; }
-.vl-card-header { padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.vl-card-title { font-size: .88rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: .55rem; letter-spacing: -.01em; }
-.title-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 3px var(--blue-mid); }
-.vl-count { font-size: .76rem; color: var(--text-muted); font-weight: 500; }
+.vl-card-header {
+    padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    background: linear-gradient(to bottom, #fafbff, #fff);
+}
+.vl-card-title { font-size: .86rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: .55rem; letter-spacing: -.01em; }
+.title-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 3px var(--blue-mid); flex-shrink: 0; }
+.vl-count {
+    font-size: .73rem; color: var(--text-secondary); font-weight: 600;
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    padding: .2rem .65rem; border-radius: 20px;
+}
 
 /* ── Table ─────────────────────────────────────────── */
 .vl-table { width: 100%; border-collapse: collapse; }
 .vl-table thead tr { border-bottom: 1px solid var(--border); }
 .vl-table th {
-    padding: .85rem 1.2rem; font-size: .69rem; font-weight: 700;
+    padding: .8rem 1.25rem; font-size: .68rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: .08em;
     color: var(--text-hint); text-align: left;
     background: var(--bg-base); white-space: nowrap;
 }
-.vl-table td { padding: .95rem 1.2rem; font-size: .83rem; color: var(--text-secondary); border-bottom: 1px solid var(--border); vertical-align: middle; }
+.vl-table td { padding: .9rem 1.25rem; font-size: .83rem; color: var(--text-secondary); border-bottom: 1px solid var(--border); vertical-align: middle; }
 .vl-table tbody tr { transition: background var(--t); }
-.vl-table tbody tr:hover { background: #f8f9fd; }
+.vl-table tbody tr:hover { background: var(--bg-hover); }
 .vl-table tbody tr:last-child td { border-bottom: none; }
 
 /* ID pill */
-.id-pill { font-family: var(--font-mono); font-size: .75rem; color: var(--text-muted); font-weight: 500; background: var(--bg-subtle); border-radius: var(--r-xs); padding: .18rem .5rem; display: inline-block; }
+.id-pill { font-family: var(--font-mono); font-size: .74rem; color: var(--text-muted); font-weight: 500; background: var(--bg-subtle); border-radius: var(--r-xs); padding: .18rem .5rem; display: inline-block; }
 
 /* Ville name cell */
-.vl-name-cell { display: flex; align-items: center; gap: .75rem; }
+.vl-name-cell { display: flex; align-items: center; gap: .8rem; }
 .vl-tile {
     width: 36px; height: 36px; border-radius: var(--r-sm);
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: .75rem; color: #fff; flex-shrink: 0;
+    font-weight: 700; font-size: .74rem; color: #fff; flex-shrink: 0;
+    letter-spacing: .01em;
 }
 .vt-a { background: linear-gradient(135deg, #5b8dee, #6c63ff); }
 .vt-b { background: linear-gradient(135deg, #0cb8b6, #00d4aa); }
 .vt-c { background: linear-gradient(135deg, #7c6fcd, #b06ab3); }
 .vt-d { background: linear-gradient(135deg, #e8a020, #f97316); }
 .vt-e { background: linear-gradient(135deg, #e8506a, #ff6b9d); }
-.vl-name-text { font-weight: 600; color: var(--text-primary); font-size: .84rem; letter-spacing: -.01em; }
+.vl-name-text { font-weight: 600; color: var(--text-primary); font-size: .84rem; letter-spacing: -.015em; }
 
 /* Zones count cell */
 .zones-count-cell { display: flex; align-items: center; gap: .55rem; }
 .zones-count-badge {
     display: inline-flex; align-items: center; gap: .35rem;
-    padding: .22rem .72rem; border-radius: 20px;
-    font-size: .78rem; font-weight: 700;
+    padding: .24rem .72rem; border-radius: 20px;
+    font-size: .77rem; font-weight: 700;
     background: var(--teal-light); color: #0a9997;
     border: 1px solid rgba(12,184,182,.22);
     font-family: var(--font-mono);
+    transition: all var(--t);
 }
 .zones-count-badge svg { flex-shrink: 0; }
 .zones-count-zero {
     display: inline-flex; align-items: center; gap: .3rem;
-    padding: .22rem .72rem; border-radius: 20px;
-    font-size: .78rem; font-weight: 600;
+    padding: .24rem .72rem; border-radius: 20px;
+    font-size: .77rem; font-weight: 600;
     background: var(--bg-subtle); color: var(--text-hint);
     border: 1px solid var(--border);
 }
 
 /* Clickable zone badge trigger */
-.zones-trigger {
-    cursor: pointer;
-    transition: all var(--t);
-    border-radius: 20px;
-    outline: none;
-}
-.zones-trigger:hover .zones-count-badge {
-    background: #b2f0ee;
-    border-color: rgba(12,184,182,.45);
-    box-shadow: 0 0 0 3px rgba(12,184,182,.12);
-}
-.zones-trigger:hover .zones-count-badge,
-.zones-trigger:focus .zones-count-badge {
-    transform: translateY(-1px);
-}
+.zones-trigger { cursor: pointer; transition: all var(--t); border-radius: 20px; outline: none; display: inline-block; }
+.zones-trigger:hover .zones-count-badge { background: #b2efed; border-color: rgba(12,184,182,.4); box-shadow: 0 0 0 3px rgba(12,184,182,.10); transform: translateY(-1px); }
+.zones-trigger:focus .zones-count-badge { box-shadow: 0 0 0 3px rgba(12,184,182,.15); }
 
 /* ── Zones Modal ─────────────────────────────────────── */
 .zn-modal-overlay {
     position: fixed; inset: 0;
-    background: rgba(26,31,54,.42);
-    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    background: rgba(20,26,50,.45);
+    backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
     z-index: 1000;
     display: none; align-items: center; justify-content: center; padding: 1rem;
 }
@@ -194,21 +215,21 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     background: var(--bg-card);
     border: 1px solid var(--border-md);
     border-radius: var(--r-xl);
-    width: 100%; max-width: 500px;
-    box-shadow: 0 20px 48px rgba(31,45,80,.13), 0 6px 16px rgba(31,45,80,.07);
+    width: 100%; max-width: 480px;
+    box-shadow: 0 24px 56px rgba(26,38,74,.12), 0 8px 20px rgba(26,38,74,.07);
     overflow: hidden;
-    animation: mIn .28s cubic-bezier(.34,1.4,.64,1) both;
+    animation: mIn .28s cubic-bezier(.34,1.38,.64,1) both;
 }
 @keyframes mIn {
-    from { opacity:0; transform:scale(.94) translateY(8px); }
+    from { opacity:0; transform:scale(.93) translateY(10px); }
     to   { opacity:1; transform:scale(1)   translateY(0); }
 }
 
 .zn-modal-hd {
-    padding: 1.25rem 1.5rem 1.1rem;
+    padding: 1.2rem 1.4rem 1rem;
     border-bottom: 1px solid var(--border);
     display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
-    background: linear-gradient(to bottom, #fafbff, #fff);
+    background: linear-gradient(to bottom, #f8faff, var(--bg-card));
 }
 .zn-modal-icon {
     width: 38px; height: 38px; border-radius: var(--r-md);
@@ -217,8 +238,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     color: var(--teal); flex-shrink: 0;
 }
 .zn-modal-titles { flex: 1; }
-.zn-modal-titles h2 { font-size: .95rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
-.zn-modal-titles p  { font-size: .76rem; color: var(--text-muted); margin-top: .18rem; }
+.zn-modal-titles h2 { font-size: .93rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
+.zn-modal-titles p  { font-size: .75rem; color: var(--text-muted); margin-top: .15rem; }
 .zn-modal-close {
     width: 28px; height: 28px; border-radius: var(--r-xs);
     background: var(--bg-subtle); border: 1px solid var(--border);
@@ -228,57 +249,55 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 .zn-modal-close:hover { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.2); }
 
 .zn-modal-body {
-    padding: 1rem 1.5rem 1.5rem;
-    max-height: 60vh; overflow-y: auto;
+    padding: 1rem 1.4rem 1.4rem;
+    max-height: 58vh; overflow-y: auto;
 }
 .zn-modal-body::-webkit-scrollbar { width: 4px; }
-.zn-modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.zn-modal-body::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 4px; }
 
 .zn-modal-empty {
-    padding: 2rem; text-align: center;
-    font-size: .84rem; color: var(--text-muted); font-style: italic;
+    padding: 2.5rem 1.5rem; text-align: center;
+    font-size: .83rem; color: var(--text-muted); font-style: italic;
 }
 
-.zn-modal-list { display: flex; flex-direction: column; gap: .45rem; }
+.zn-modal-list { display: flex; flex-direction: column; gap: .4rem; }
 
 .zn-modal-item {
     display: flex; align-items: center; gap: .85rem;
-    padding: .8rem 1rem;
+    padding: .75rem .9rem;
     border: 1px solid var(--border); border-radius: var(--r-md);
     background: var(--bg-card); transition: all var(--t);
 }
-.zn-modal-item:hover { border-color: rgba(12,184,182,.3); background: var(--teal-light); }
+.zn-modal-item:hover { border-color: rgba(12,184,182,.28); background: var(--teal-light); }
 
 .zn-modal-tile {
-    width: 36px; height: 36px; border-radius: var(--r-sm);
+    width: 34px; height: 34px; border-radius: var(--r-sm);
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: .72rem; color: #fff; flex-shrink: 0;
 }
 
 .zn-modal-info { flex: 1; min-width: 0; }
-.zn-modal-name { font-size: .85rem; font-weight: 600; color: var(--text-primary); letter-spacing: -.01em; }
-.zn-modal-meta { font-size: .73rem; color: var(--text-muted); margin-top: .1rem; display: flex; align-items: center; gap: .4rem; }
-.zn-modal-meta-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-hint); }
+.zn-modal-name { font-size: .84rem; font-weight: 600; color: var(--text-primary); letter-spacing: -.01em; }
+.zn-modal-meta { font-size: .72rem; color: var(--text-muted); margin-top: .1rem; display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.zn-modal-meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-hint); flex-shrink: 0; }
 
 /* Actions */
 .actions-cell { display: flex; align-items: center; gap: .35rem; }
 
 /* Empty */
 .vl-empty { padding: 4rem 2rem; text-align: center; }
-.vl-empty-icon { width: 52px; height: 52px; border-radius: var(--r-md); background: var(--bg-subtle); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--text-hint); }
-.vl-empty h3 { font-size: .95rem; font-weight: 700; color: var(--text-secondary); }
-.vl-empty p  { font-size: .82rem; color: var(--text-muted); margin-top: .3rem; }
-
-/* Pagination */
+.vl-empty-icon { width: 50px; height: 50px; border-radius: var(--r-md); background: var(--bg-subtle); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--text-hint); }
+.vl-empty h3 { font-size: .93rem; font-weight: 700; color: var(--text-secondary); }
+.vl-empty p  { font-size: .8rem; color: var(--text-muted); margin-top: .3rem; max-width: 280px; margin-left: auto; margin-right: auto; line-height: 1.55; }
 
 /* Responsive */
 @media (max-width: 768px) {
     .vl-page { padding: 1.25rem 1rem 2rem; }
     .vl-header { flex-direction: column; gap: 1rem; }
-    .vl-stats { grid-template-columns: 1fr 1fr; }
     .vl-table th, .vl-table td { padding: .75rem .9rem; }
+    .vl-header-actions { width: 100%; }
+    .vl-header-actions .btn-vl { width: 100%; justify-content: center; }
 }
-@media (max-width: 480px) { .vl-stats { grid-template-columns: 1fr; } }
 </style>
 @endpush
 
@@ -288,7 +307,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     {{-- Breadcrumb --}}
     <div class="vl-bc">
         <a href="{{ route('villes.index') }}">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Accueil
         </a>
         <span class="vl-bc-sep">›</span>
         <a href="#">Géographie</a>
@@ -299,22 +319,27 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     {{-- Header --}}
     <div class="vl-header">
         <div class="vl-header-left">
-            <h1>Villes</h1>
-            <p>Gérez les villes et consultez leurs zones associées</p>
+            <div class="vl-header-icon">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+                <h1>Villes</h1>
+                <p>Gérez les villes et consultez leurs zones associées</p>
+            </div>
         </div>
-        <a href="{{ route('villes.create') }}" class="btn-vl btn-vl-primary">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nouvelle ville
-        </a>
+        <div class="vl-header-actions">
+            <a href="{{ route('villes.create') }}" class="btn-vl btn-vl-primary">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Nouvelle ville
+            </a>
+        </div>
     </div>
-
-   
 
     {{-- Search --}}
     <div class="vl-search-bar">
         <form method="GET" action="{{ route('villes.index') }}" style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;">
             <div class="vl-search-wrap">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input
                     type="text"
                     name="search"
@@ -325,7 +350,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 >
             </div>
             <button type="submit" class="btn-vl btn-vl-ghost">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 Filtrer
             </button>
             @if(request('search'))
@@ -333,8 +358,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                     <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     «&nbsp;{{ request('search') }}&nbsp;»
                 </span>
-                <a href="{{ route('villes.index') }}" class="btn-vl btn-vl-danger-ghost">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <a href="{{ route('villes.index') }}" class="btn-vl btn-vl-danger-ghost btn-vl-sm">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     Réinitialiser
                 </a>
             @endif
@@ -355,7 +380,6 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             <table class="vl-table">
                 <thead>
                     <tr>
-                        {{-- <th>#</th> --}}
                         <th>Ville</th>
                         <th>Zones</th>
                         <th>Actions</th>
@@ -365,9 +389,6 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                     @php $tiles = ['vt-a','vt-b','vt-c','vt-d','vt-e']; @endphp
                     @forelse($villes as $i => $ville)
                     <tr>
-                        {{-- ID --}}
-                        {{-- <td><span class="id-pill">{{ $ville->id }}</span></td> --}}
-
                         {{-- Ville name --}}
                         <td>
                             <div class="vl-name-cell">
@@ -418,7 +439,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                 </a>
                                 <form action="{{ route('villes.destroy', $ville) }}" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cette ville ?');">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn-vl btn-vl-sm btn-vl-danger">
+                                    <button type="submit" class="btn-vl btn-vl-sm btn-vl-danger" title="Supprimer">
                                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
                                     </button>
                                 </form>
@@ -427,10 +448,10 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4">
+                        <td colspan="3">
                             <div class="vl-empty">
                                 <div class="vl-empty-icon">
-                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                                 </div>
                                 <h3>Aucune ville trouvée</h3>
                                 <p>{{ request('search') ? 'Aucun résultat pour «\u00a0'.request('search').'\u00a0». Essayez un autre terme.' : 'Commencez par créer votre première ville.' }}</p>
@@ -540,7 +561,6 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         document.body.style.overflow = '';
     }
 
-    /* Trigger clicks */
     document.querySelectorAll('.zones-trigger').forEach(el => {
         const open = () => {
             const ville = el.dataset.ville;

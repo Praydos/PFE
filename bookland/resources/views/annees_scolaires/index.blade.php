@@ -230,7 +230,7 @@
                                 @endif
 
                                 {{-- Modifier (only if not closed and not active) --}}
-                                @if(!$annee->is_closed && !$annee->is_active)
+                                @if(!$annee->is_closed )
                                     <a href="{{ route('annees-scolaires.edit', $annee) }}" class="btn-zn btn-zn-sm btn-zn-warning" title="Modifier">
                                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
