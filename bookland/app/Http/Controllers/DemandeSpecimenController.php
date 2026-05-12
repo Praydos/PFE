@@ -54,7 +54,7 @@ class DemandeSpecimenController extends Controller
     public function create()
 {
     $user = Auth::user();
-    if ($user->role !== 'delegue') abort(403);
+    if ($user->role !== 'delegue' && $user->role !== 'admin') abort(403);
 
     $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
     $products = Product::orderBy('titre')->get();
@@ -80,7 +80,7 @@ class DemandeSpecimenController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+        if ($user->role !== 'delegue' && $user->role !== 'admin') abort(403);
 
         $validated = $request->validate([
             'type' => 'required|in:etablissement,personnelle',

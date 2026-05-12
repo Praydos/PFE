@@ -18,7 +18,7 @@ class Ville extends Model
 
     public function rbos()
     {
-        return $this->belongsToMany(User::class, 'rbo_ville');
+        return $this->belongsToMany(User::class, 'rbo_ville', 'ville_id', 'user_id');
     }
 
     public function comptes()

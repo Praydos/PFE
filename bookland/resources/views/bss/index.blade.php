@@ -292,7 +292,7 @@
             <h1>Bons de sortie spécimens (BSS)</h1>
             <p>Gérez vos demandes de spécimens</p>
         </div>
-        @if(auth()->user()->role === 'delegue')
+        @if(auth()->user()->role === 'delegue' || auth()->user()->role === 'admin')
         <div class="zn-header-actions">
             <a href="{{ route('bss.create') }}" class="btn-zn btn-zn-primary">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">

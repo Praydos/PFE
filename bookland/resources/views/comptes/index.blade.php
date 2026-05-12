@@ -507,7 +507,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             <table class="cp-table">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        {{-- <th>#</th> --}}
                         <th>Établissement</th>
                         <th>Géographie</th>
                         {{-- Hide delegue column for delegues (they only see their own comptes) --}}
@@ -525,7 +525,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                     @forelse($comptes as $i => $compte)
                     <tr>
                         {{-- ID --}}
-                        <td><span class="id-cell">{{ $compte->id }}</span></td>
+                        {{-- <td><span class="id-cell">{{ $compte->id }}</span></td> --}}
 
                         {{-- Établissement + type --}}
                         <td>

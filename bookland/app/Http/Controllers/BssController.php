@@ -72,7 +72,7 @@ class BssController extends Controller
     public function create(Request $request)
 {
     $user = Auth::user();
-    if ($user->role !== 'delegue') abort(403);
+    if ($user->role !== 'delegue' && $user->role !== 'admin') abort(403);
 
     $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
     $contacts = Contact::whereHas('comptes', fn($q) => $q->where('delegue_id', $user->id))->get();
@@ -105,7 +105,7 @@ class BssController extends Controller
     public function store(Request $request)
 {
     $user = Auth::user();
-    if ($user->role !== 'delegue') abort(403);
+    if ($user->role !== 'delegue' && $user->role !== 'admin') abort(403);
 
     $rules = [
         'numero' => 'required|unique:bsses,numero',

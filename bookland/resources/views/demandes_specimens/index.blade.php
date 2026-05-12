@@ -258,7 +258,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             <h1>Demandes spéciales – Spécimens</h1>
             <p>Demandes hors consignation (magasin)</p>
         </div>
-        @if(auth()->user()->role === 'delegue')
+        @if(auth()->user()->role === 'delegue' || auth()->user()->role === 'admin')
         <div class="zn-header-actions">
             <a href="{{ route('demandes-specimens.create') }}" class="btn-zn btn-zn-primary">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -337,7 +337,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             <table class="zn-table">
                 <thead>
                     <tr>
-                        {{-- <th>ID</th> --}}
+                       
                         <th>Type</th>
                         <th>Compte / Contact</th>
                         <th>Délégué</th>
@@ -350,7 +350,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <tbody>
                     @forelse($demandes as $d)
                     <tr>
-                        {{-- <td><span class="id-pill">{{ $d->id }}</span></td> --}}
+                   
                         <td>{{ ucfirst($d->type) }}</td>
                         <td>
                             @if($d->type == 'etablissement')

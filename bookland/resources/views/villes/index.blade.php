@@ -336,42 +336,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         </a>
     </div>
 
-    {{-- Stat Cards --}}
-    @php
-        $col         = $villes->getCollection();
-        $totalVilles = $villes->total();
-        $totalZones  = $col->sum('zones_count');
-        $avgsZones   = $totalVilles ? round($totalZones / $totalVilles, 1) : 0;
-    @endphp
-    <div class="vl-stats">
-        <div class="vl-stat">
-            <div class="stat-ico si-blue">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Villes</div>
-                <div class="stat-value">{{ $totalVilles }}</div>
-            </div>
-        </div>
-        <div class="vl-stat">
-            <div class="stat-ico si-teal">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Zones totales</div>
-                <div class="stat-value">{{ $totalZones }}</div>
-            </div>
-        </div>
-        <div class="vl-stat">
-            <div class="stat-ico si-violet">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Moy. zones/ville</div>
-                <div class="stat-value">{{ $avgsZones }}</div>
-            </div>
-        </div>
-    </div>
+   
 
     {{-- Search --}}
     <div class="vl-search-bar">
@@ -418,7 +383,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             <table class="vl-table">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        {{-- <th>#</th> --}}
                         <th>Ville</th>
                         <th>Zones</th>
                         <th>Actions</th>
@@ -429,7 +394,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                     @forelse($villes as $i => $ville)
                     <tr>
                         {{-- ID --}}
-                        <td><span class="id-pill">{{ $ville->id }}</span></td>
+                        {{-- <td><span class="id-pill">{{ $ville->id }}</span></td> --}}
 
                         {{-- Ville name --}}
                         <td>

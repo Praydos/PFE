@@ -330,6 +330,10 @@ Route::get('/api/villes/{ville}/zones', function (App\Models\Ville $ville) {
     return $ville->zones;
 })->name('api.ville.zones');
 
+Route::get('/api/villes/{ville}/rbos', function (App\Models\Ville $ville) {
+    return $ville->rbos()->get(['users.id', 'prenom', 'nom', 'email']);
+})->name('api.ville.rbos');
+
 
 //=========================================================================================================
 

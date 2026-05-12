@@ -670,6 +670,8 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
 
     
 
+    
+
     {{-- Toolbar: tabs + view toggle --}}
     <div class="ag-toolbar">
 

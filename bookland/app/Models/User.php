@@ -92,6 +92,8 @@ class User extends Authenticatable
         })->where('role', 'delegue');
     }
 
+    
+
 
 
 

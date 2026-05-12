@@ -276,27 +276,37 @@ class UserController extends Controller
     }
 
     public function updateZones(Request $request, User $user)
-    {
-        if (! in_array($user->role, ['delegue', 'rbo'])) {
-            return response()->json(['error' => 'Invalid user type'], 400);
-        }
-
-        $request->validate([
-            'zone_ids'   => 'array',
-            'zone_ids.*' => 'exists:zones,id',
-        ]);
-
-        if ($user->role === 'delegue') {
-            $user->zones()->sync($request->zone_ids ?? []);
-        } else {
-            Zone::where('rbo_id', $user->id)->update(['rbo_id' => null]);
-            if (! empty($request->zone_ids)) {
-                Zone::whereIn('id', $request->zone_ids)->update(['rbo_id' => $user->id]);
-            }
-        }
-
-        return response()->json(['success' => true]);
+{
+    if (! in_array($user->role, ['delegue', 'rbo'])) {
+        return response()->json(['error' => 'Invalid user type'], 400);
     }
+
+    $request->validate([
+        'zone_ids'   => 'array',
+        'zone_ids.*' => 'exists:zones,id',
+    ]);
+
+    if ($user->role === 'delegue') {
+        $user->zones()->sync($request->zone_ids ?? []);
+    } else {
+        // 1. Reassign zones
+        Zone::where('rbo_id', $user->id)->update(['rbo_id' => null]);
+        if (! empty($request->zone_ids)) {
+            Zone::whereIn('id', $request->zone_ids)->update(['rbo_id' => $user->id]);
+        }
+
+        // 2. Auto-sync rboVilles from the villes of the assigned zones
+        $villeIds = Zone::whereIn('id', $request->zone_ids ?? [])
+            ->pluck('ville_id')
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $user->rboVilles()->sync($villeIds);
+    }
+
+    return response()->json(['success' => true]);
+}
 
     public function getAssignedZones(User $user)
     {

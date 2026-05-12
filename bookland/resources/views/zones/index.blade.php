@@ -407,7 +407,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             <table class="zn-table">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        {{-- <th>#</th> --}}
                         <th>Zone</th>
                         <th>Ville</th>
                         <th>RBO</th>
@@ -420,7 +420,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                     @forelse($zones as $i => $zone)
                     <tr>
                         {{-- ID --}}
-                        <td><span class="id-pill">{{ $zone->id }}</span></td>
+                        {{-- <td><span class="id-pill">{{ $zone->id }}</span></td> --}}
 
                         {{-- Zone name --}}
                         <td>
