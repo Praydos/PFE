@@ -658,7 +658,7 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
         </div>
     </div>
 
-   <div class="create-actions-toolbar" style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+   {{-- <div class="create-actions-toolbar" style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
         <a href="{{ route('bss.create') }}" class="btn-ag btn-ag-primary">Nouveau BSS</a>
         <a href="{{ route('examens.create') }}" class="btn-ag btn-ag-primary">Nouvel examen</a>
         <a href="{{ route('actions.create') }}" class="btn-ag btn-ag-primary">Nouvelle action</a>
@@ -666,7 +666,7 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
         <a href="{{ route('events.create') }}" class="btn-ag btn-ag-primary">Nouvel événement</a>
         <a href="{{ route('demandes-specimens.create') }}" class="btn-ag btn-ag-primary">Demande spéciale</a>
         <a href="{{ route('taches.create') }}" class="btn-ag btn-ag-primary">Nouvelle tâche</a>
-    </div>
+    </div> --}}
 
     
 
