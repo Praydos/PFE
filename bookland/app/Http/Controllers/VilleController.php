@@ -39,6 +39,12 @@ class VilleController extends Controller
             ->with('success', 'Ville créée avec succès.');
     }
 
+    // public function show(Ville $ville)
+    // {
+    //     $zones = $ville->zones()->with('rbo')->get();
+    //     return view('villes.show', compact('ville', 'zones'));
+    // }
+
     public function edit(Ville $ville)
     {
         $assignedZones = $ville->zones;

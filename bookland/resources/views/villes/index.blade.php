@@ -84,34 +84,6 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 .btn-vl-danger { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.18); }
 .btn-vl-danger:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
 
-/* ── Stat Cards ────────────────────────────────────── */
-.vl-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-.vl-stat {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: var(--r-lg); padding: 1.35rem 1.5rem;
-    display: flex; align-items: center; gap: 1.1rem;
-    box-shadow: var(--shadow-xs); transition: all var(--t);
-    animation: pageIn .5s var(--ease) both;
-    position: relative; overflow: hidden;
-}
-.vl-stat::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0;
-    height: 3px; opacity: 0; transition: opacity var(--t);
-    border-radius: var(--r-lg) var(--r-lg) 0 0;
-}
-.vl-stat:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--border-md); }
-.vl-stat:hover::before { opacity: 1; }
-.vl-stat:nth-child(1) { animation-delay:.06s; } .vl-stat:nth-child(1)::before { background: var(--blue); }
-.vl-stat:nth-child(2) { animation-delay:.11s; } .vl-stat:nth-child(2)::before { background: var(--teal); }
-.vl-stat:nth-child(3) { animation-delay:.16s; } .vl-stat:nth-child(3)::before { background: var(--violet); }
-
-.stat-ico { width: 44px; height: 44px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.si-blue   { background: var(--blue-light);   color: var(--blue); }
-.si-teal   { background: var(--teal-light);   color: var(--teal); }
-.si-violet { background: var(--violet-light); color: var(--violet); }
-
-.stat-label { font-size: .72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
-.stat-value { font-size: 1.7rem; font-weight: 700; color: var(--text-primary); line-height: 1.1; letter-spacing: -.04em; margin-top: .06rem; }
 
 /* ── Search ────────────────────────────────────────── */
 .vl-search-bar { display: flex; align-items: center; gap: .6rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
