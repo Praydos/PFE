@@ -367,53 +367,6 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         </div>
     </div>
 
-    {{-- Stat Cards --}}
-    @php
-        $allUsers    = $users->getCollection();
-        $totalUsers  = $users->total();
-        $activeCount = $allUsers->where('is_active', true)->count();
-        $inactiveCount = $allUsers->where('is_active', false)->count();
-        $roleGroups  = $allUsers->groupBy('role');
-    @endphp
-    <div class="us-stats">
-        <div class="us-stat">
-            <div class="stat-ico si-blue">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Total</div>
-                <div class="stat-value">{{ $totalUsers }}</div>
-            </div>
-        </div>
-        <div class="us-stat">
-            <div class="stat-ico si-green">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Actifs</div>
-                <div class="stat-value">{{ $activeCount }}</div>
-            </div>
-        </div>
-        <div class="us-stat">
-            <div class="stat-ico si-rose">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Inactifs</div>
-                <div class="stat-value">{{ $inactiveCount }}</div>
-            </div>
-        </div>
-        <div class="us-stat">
-            <div class="stat-ico si-teal">
-                <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-            </div>
-            <div>
-                <div class="stat-label">Rôles</div>
-                <div class="stat-value">{{ $roleGroups->count() }}</div>
-            </div>
-        </div>
-    </div>
-
     {{-- Search + Role filters --}}
     <div class="us-search-bar">
         <form method="GET" action="{{ route('users.index') }}" style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;">
@@ -475,7 +428,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
             <table class="us-table">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        {{-- <th>#</th> --}}
                         <th>Utilisateur</th>
                         <th>Rôle</th>
                         <th>Ville</th>
@@ -488,7 +441,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                     @forelse($users as $i => $user)
                     <tr>
                         {{-- ID --}}
-                        <td><span class="id-pill">{{ $user->id }}</span></td>
+                        {{-- <td><span class="id-pill">{{ $user->id }}</span></td> --}}
 
                         {{-- User: avatar + name + email --}}
                         <td>
