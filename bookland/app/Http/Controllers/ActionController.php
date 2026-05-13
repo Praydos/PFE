@@ -265,11 +265,25 @@ public function create(Request $request)
     }
 
     public function show(Action $action)
-{
-    $this->authorizeView($action);
-    $action->load('lignes.contacts', 'lignes.products', 'lignes.examens', 'lignes.bss', 'lignes.retour', 'compte', 'delegate');
-    return view('actions.show', compact('action'));
-}
+    {
+        $this->authorizeView($action);
+        $action->load('lignes.contacts', 'lignes.products', 'lignes.examens', 'lignes.bss', 'lignes.retour', 'compte', 'delegate');
+
+        $user = Auth::user();
+        $delegateIds = $user->role === 'rbo'
+            ? $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique()
+            : collect();
+
+        $canValiderLegacy = $action->statut === 'realise'
+            && in_array($user->role, ['admin', 'rbo'], true)
+            && ($user->role === 'admin' || $delegateIds->contains($action->delegue_id));
+
+        $canDevalider = $action->statut === 'valide'
+            && in_array($user->role, ['admin', 'rbo'], true)
+            && ($user->role === 'admin' || $delegateIds->contains($action->delegue_id));
+
+        return view('actions.show', compact('action', 'canValiderLegacy', 'canDevalider'));
+    }
 
     public function edit(Action $action)
     {
@@ -343,33 +357,88 @@ public function create(Request $request)
         return redirect()->route('actions.index')->with('success', 'Action supprimée.');
     }
 
-    // Status workflow
-    public function realiser(Action $action)
+    // Status workflow — only the owning délégué can complete (with mandatory report → validated).
+    public function realiser(Request $request, Action $action)
     {
+        $user = Auth::user();
+        if ($user->role !== 'delegue' || (int) $action->delegue_id !== (int) $user->id) {
+            abort(403);
+        }
+        YearLock::check($action);
         $this->authorizeEdit($action);
         if ($action->statut !== 'planifie') {
-            return redirect()->back()->with('error', 'Seules les actions planifiées peuvent être réalisées.');
+            return redirect()->back()->with('error', 'Seules les actions planifiées peuvent être clôturées avec un rapport.');
         }
-        $action->update([
-            'statut' => 'realise',
-            'date_realisation' => now(),
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'rapport_titre' => 'required|string|max:255',
+            'rapport_description' => 'required|string|max:10000',
+            'rapport_date' => 'required|date',
         ]);
-        return redirect()->route('actions.show', $action)->with('success', 'Action marquée comme réalisée.');
+        if ($validator->fails()) {
+            return redirect()->to(route('actions.show', $action).'?realiser=1')
+                ->withErrors($validator)
+                ->withInput();
+        }
+        $validated = $validator->validated();
+
+        $action->update([
+            'statut' => 'valide',
+            'rapport_titre' => $validated['rapport_titre'],
+            'rapport_description' => $validated['rapport_description'],
+            'rapport_date' => $validated['rapport_date'],
+            'date_realisation' => now(),
+            'date_validation' => now(),
+            'valide_par' => $user->id,
+        ]);
+
+        return redirect()->route('actions.show', $action)->with('success', 'Rapport enregistré : action réalisée et validée.');
     }
 
     public function valider(Action $action)
     {
         $user = Auth::user();
-        if (!in_array($user->role, ['admin', 'rbo'])) abort(403);
+        if (! in_array($user->role, ['admin', 'rbo'])) {
+            abort(403);
+        }
+        $this->authorizeRboOrAdminForDelegateAction($action);
         if ($action->statut !== 'realise') {
-            return redirect()->back()->with('error', 'Seules les actions réalisées peuvent être validées.');
+            return redirect()->back()->with('error', 'Seules les actions réalisées (ancien flux) peuvent être validées.');
         }
         $action->update([
             'statut' => 'valide',
             'date_validation' => now(),
             'valide_par' => $user->id,
         ]);
+
         return redirect()->route('actions.show', $action)->with('success', 'Action validée.');
+    }
+
+    /**
+     * Remet une action validée en planification pour permettre au délégué de la modifier,
+     * après saisie d’un nouveau rapport via « Réaliser ».
+     */
+    public function devalider(Action $action)
+    {
+        $user = Auth::user();
+        if (! in_array($user->role, ['admin', 'rbo'])) {
+            abort(403);
+        }
+        $this->authorizeRboOrAdminForDelegateAction($action);
+        if ($action->statut !== 'valide') {
+            return redirect()->back()->with('error', 'Seules les actions validées peuvent être dévalidées.');
+        }
+        $action->update([
+            'statut' => 'planifie',
+            'rapport_titre' => null,
+            'rapport_description' => null,
+            'rapport_date' => null,
+            'date_realisation' => null,
+            'date_validation' => null,
+            'valide_par' => null,
+        ]);
+
+        return redirect()->route('actions.show', $action)->with('success', 'Action dévalidée : le délégué peut à nouveau la modifier et soumettre un rapport.');
     }
 
     public function annuler(Action $action)
@@ -398,6 +467,9 @@ public function create(Request $request)
         $newAction->date_realisation = null;
         $newAction->date_validation = null;
         $newAction->valide_par = null;
+        $newAction->rapport_titre = null;
+        $newAction->rapport_description = null;
+        $newAction->rapport_date = null;
         $newAction->save();
         // Copy lines
         foreach ($action->lignes as $line) {
@@ -516,8 +588,30 @@ public function create(Request $request)
     private function authorizeEdit(Action $action)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'delegue' && $action->delegue_id === $user->id && in_array($action->statut, ['planifie', 'reporte'])) return;
+        if ($action->statut === 'valide') {
+            abort(403, 'Cette action est validée. Un administrateur ou un RBO doit d’abord la dévalider.');
+        }
+        if ($user->role === 'admin') {
+            return;
+        }
+        if ($user->role === 'delegue' && $action->delegue_id === $user->id && in_array($action->statut, ['planifie', 'reporte'])) {
+            return;
+        }
+        abort(403);
+    }
+
+    private function authorizeRboOrAdminForDelegateAction(Action $action): void
+    {
+        $user = Auth::user();
+        if ($user->role === 'admin') {
+            return;
+        }
+        if ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            if ($delegateIds->contains($action->delegue_id)) {
+                return;
+            }
+        }
         abort(403);
     }
 

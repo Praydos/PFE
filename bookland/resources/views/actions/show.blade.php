@@ -140,6 +140,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 .bd-green { background: var(--green-light); color: var(--green); }
 .bd-amber { background: var(--amber-light); color: var(--amber); }
 .bd-none { background: var(--bg-subtle); color: var(--text-muted); }
+.bd-planifie { background: var(--blue-light); color: var(--blue); }
+.bd-valide { background: var(--green-light); color: var(--green); }
+.bd-annule { background: var(--bg-subtle); color: var(--text-muted); }
+.bd-realise { background: var(--amber-light); color: var(--amber); }
 
 /* Status update box */
 .status-update-box {
@@ -244,6 +248,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
     transition: all var(--t);
 }
 
+.dlg-modal.realiser-modal {
+    max-width: 480px;
+}
+
 .dlg-modal-overlay.visible .dlg-modal {
     transform: translateY(0) scale(1);
 }
@@ -324,6 +332,24 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
     outline: none;
 }
 
+.frm-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: .6rem .75rem;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--border);
+    font-size: .82rem;
+    font-family: var(--font);
+    background: var(--bg-card);
+    transition: all var(--t);
+    resize: vertical;
+}
+.frm-textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-mid);
+    outline: none;
+}
+
 .req {
     color: var(--rose);
 }
@@ -368,13 +394,38 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
                 <div class="info-item"><span class="info-label">Lieu</span> {{ $action->lieu ?? '-' }}</div>
                 <div class="info-item"><span class="info-label">Statut</span> <span class="dr-badge bd-{{ $action->statut }}">{{ ucfirst($action->statut) }}</span></div>
                 <div class="info-item"><span class="info-label">Type</span> {{ ucfirst($action->type) }}</div>
-                @if($action->statut == 'realise')
+                @if($action->statut === 'realise' && $action->date_realisation)
                     <div class="info-item"><span class="info-label">Réalisée le</span> {{ $action->date_realisation->format('d/m/Y H:i') }}</div>
                 @endif
-                @if($action->statut == 'valide')
+                @if($action->statut === 'valide' && $action->date_validation)
                     <div class="info-item"><span class="info-label">Validée le</span> {{ $action->date_validation->format('d/m/Y H:i') }}</div>
                 @endif
             </div>
+
+            @if($action->rapport_titre)
+            <hr>
+            <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem;">Rapport de réalisation</h3>
+            <div class="info-grid" style="margin-bottom: 0;">
+                <div class="info-item"><span class="info-label">Titre</span> {{ $action->rapport_titre }}</div>
+                @if($action->rapport_date)
+                    <div class="info-item"><span class="info-label">Date du rapport</span> {{ $action->rapport_date->format('d/m/Y') }}</div>
+                @endif
+                <div class="info-item" style="grid-column: 1 / -1;"><span class="info-label">Description</span>
+                    <div style="margin-top: 0.35rem; white-space: pre-wrap; color: var(--text-secondary);">{{ $action->rapport_description }}</div>
+                </div>
+            </div>
+            @endif
+
+            @if($errors->hasAny(['rapport_titre', 'rapport_description', 'rapport_date']))
+            <div style="margin-top: 1rem; padding: 0.85rem 1rem; background: var(--rose-light); border: 1px solid rgba(232,80,106,.2); border-radius: var(--r-md); font-size: 0.82rem; color: var(--rose);">
+                <strong>Veuillez corriger le formulaire du rapport.</strong>
+                <ul style="margin: 0.5rem 0 0 1rem;">
+                    @foreach($errors->get('rapport_titre') as $e)<li>{{ $e }}</li>@endforeach
+                    @foreach($errors->get('rapport_description') as $e)<li>{{ $e }}</li>@endforeach
+                    @foreach($errors->get('rapport_date') as $e)<li>{{ $e }}</li>@endforeach
+                </ul>
+            </div>
+            @endif
 
             <hr>
 
@@ -426,23 +477,34 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
         <div class="card-footer">
             <a href="{{ route('actions.index') }}" class="btn-zn btn-zn-ghost">Retour</a>
-            @if(in_array(auth()->user()->role, ['admin','rbo']) || (auth()->user()->role === 'delegue' && $action->delegue_id === auth()->id()))
-                @if($action->statut === 'planifie')
-                    <form method="POST" action="{{ route('actions.realiser', $action) }}" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="btn-zn btn-zn-primary" onclick="return confirm('Marquer comme réalisée ?')">Réaliser</button>
-                    </form>
-                    <form method="POST" action="{{ route('actions.annuler', $action) }}" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="btn-zn btn-zn-danger" onclick="return confirm('Annuler ?')">Annuler</button>
-                    </form>
-                    <button type="button" class="btn-zn btn-zn-warning" id="openReportModalBtn">Reporter</button>
-                @elseif($action->statut === 'realise' && in_array(auth()->user()->role, ['admin','rbo']))
-                    <form method="POST" action="{{ route('actions.valider', $action) }}" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="btn-zn btn-zn-primary" onclick="return confirm('Valider ?')">Valider</button>
-                    </form>
-                @endif
+            @php
+                $u = auth()->user();
+                $isOwnerDelegue = $u->role === 'delegue' && (int) $action->delegue_id === (int) $u->id;
+            @endphp
+
+            @if($action->statut === 'planifie' && $isOwnerDelegue)
+                <button type="button" class="btn-zn btn-zn-primary" id="openRealiserModalBtn">Réaliser</button>
+                <form method="POST" action="{{ route('actions.annuler', $action) }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="btn-zn btn-zn-danger" onclick="return confirm('Annuler ?')">Annuler</button>
+                </form>
+                <button type="button" class="btn-zn btn-zn-warning" id="openReportModalBtn">Reporter</button>
+            @elseif($action->statut === 'planifie' && $u->role === 'admin')
+                <form method="POST" action="{{ route('actions.annuler', $action) }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="btn-zn btn-zn-danger" onclick="return confirm('Annuler ?')">Annuler</button>
+                </form>
+                <button type="button" class="btn-zn btn-zn-warning" id="openReportModalBtn">Reporter</button>
+            @elseif($action->statut === 'realise' && !empty($canValiderLegacy))
+                <form method="POST" action="{{ route('actions.valider', $action) }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="btn-zn btn-zn-primary" onclick="return confirm('Valider ?')">Valider</button>
+                </form>
+            @elseif($action->statut === 'valide' && !empty($canDevalider))
+                <form method="POST" action="{{ route('actions.devalider', $action) }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="btn-zn btn-zn-warning" onclick="return confirm('Dévalider cette action ? Le délégué pourra la modifier et soumettre un nouveau rapport.')">Dévalider</button>
+                </form>
             @endif
         </div>
     </div>
@@ -487,6 +549,51 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
         </div>
     </div>
 
+    @if($action->statut === 'planifie' && auth()->user()->role === 'delegue' && (int) $action->delegue_id === (int) auth()->id())
+    <div class="dlg-modal-overlay" id="realiserModalOverlay">
+        <div class="dlg-modal realiser-modal">
+            <div class="dlg-modal-hd">
+                <div class="dlg-modal-icon">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                </div>
+                <div class="dlg-modal-titles">
+                    <h2>Rapport de réalisation</h2>
+                    <p>Renseignez le rapport pour clôturer et valider l'action</p>
+                </div>
+                <button type="button" class="dlg-modal-close" id="closeRealiserModal" aria-label="Fermer">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="dlg-modal-body">
+                <form method="POST" action="{{ route('actions.realiser', $action) }}" id="realiserForm">
+                    @csrf
+                    <div class="frm-group">
+                        <label class="frm-label">Titre du rapport <span class="req">*</span></label>
+                        <input type="text" name="rapport_titre" class="frm-input" value="{{ old('rapport_titre') }}" required maxlength="255">
+                    </div>
+                    <div class="frm-group">
+                        <label class="frm-label">Description <span class="req">*</span></label>
+                        <textarea name="rapport_description" class="frm-textarea" required>{{ old('rapport_description') }}</textarea>
+                    </div>
+                    <div class="frm-group">
+                        <label class="frm-label">Date <span class="req">*</span></label>
+                        <input type="date" name="rapport_date" class="frm-input" value="{{ old('rapport_date', now()->toDateString()) }}" required>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1rem;">
+                        <button type="button" class="btn-zn btn-zn-ghost" id="cancelRealiserBtn">Annuler</button>
+                        <button type="submit" class="btn-zn btn-zn-primary">Valider le rapport et clôturer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>
 @endsection
 
@@ -494,34 +601,68 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 <script>
     (function() {
         const reportOverlay = document.getElementById('reportModalOverlay');
-        const openBtn = document.getElementById('openReportModalBtn');
-        const closeBtn = document.getElementById('closeReportModal');
-        const cancelBtn = document.getElementById('cancelReportBtn');
+        const openReportBtn = document.getElementById('openReportModalBtn');
+        const closeReportBtn = document.getElementById('closeReportModal');
+        const cancelReportBtn = document.getElementById('cancelReportBtn');
 
-        function openModal() {
+        function openReportModal() {
             if (reportOverlay) {
                 reportOverlay.classList.add('visible');
                 document.body.style.overflow = 'hidden';
             }
         }
-        function closeModal() {
+        function closeReportModal() {
             if (reportOverlay) {
                 reportOverlay.classList.remove('visible');
                 document.body.style.overflow = '';
             }
         }
-        if (openBtn) openBtn.addEventListener('click', openModal);
-        if (closeBtn) closeBtn.addEventListener('click', closeModal);
-        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        if (openReportBtn) openReportBtn.addEventListener('click', openReportModal);
+        if (closeReportBtn) closeReportBtn.addEventListener('click', closeReportModal);
+        if (cancelReportBtn) cancelReportBtn.addEventListener('click', closeReportModal);
         if (reportOverlay) {
             reportOverlay.addEventListener('click', (e) => {
-                if (e.target === reportOverlay) closeModal();
+                if (e.target === reportOverlay) closeReportModal();
             });
         }
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && reportOverlay && reportOverlay.classList.contains('visible')) {
-                closeModal();
+
+        const realiserOverlay = document.getElementById('realiserModalOverlay');
+        const openRealiserBtn = document.getElementById('openRealiserModalBtn');
+        const closeRealiserBtn = document.getElementById('closeRealiserModal');
+        const cancelRealiserBtn = document.getElementById('cancelRealiserBtn');
+
+        function openRealiserModal() {
+            if (realiserOverlay) {
+                realiserOverlay.classList.add('visible');
+                document.body.style.overflow = 'hidden';
             }
+        }
+        function closeRealiserModal() {
+            if (realiserOverlay) {
+                realiserOverlay.classList.remove('visible');
+                document.body.style.overflow = '';
+            }
+        }
+        if (openRealiserBtn) openRealiserBtn.addEventListener('click', openRealiserModal);
+        if (closeRealiserBtn) closeRealiserBtn.addEventListener('click', closeRealiserModal);
+        if (cancelRealiserBtn) cancelRealiserBtn.addEventListener('click', closeRealiserModal);
+        if (realiserOverlay) {
+            realiserOverlay.addEventListener('click', (e) => {
+                if (e.target === realiserOverlay) closeRealiserModal();
+            });
+        }
+
+        @if($errors->hasAny(['rapport_titre', 'rapport_description', 'rapport_date']))
+        openRealiserModal();
+        @else
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('realiser') === '1') openRealiserModal();
+        @endif
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (reportOverlay && reportOverlay.classList.contains('visible')) closeReportModal();
+            if (realiserOverlay && realiserOverlay.classList.contains('visible')) closeRealiserModal();
         });
     })();
 </script>

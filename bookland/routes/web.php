@@ -306,6 +306,7 @@ Route::get('/api/events/all-contacts', [EventController::class, 'getAllContacts'
 Route::resource('actions', ActionController::class);
 Route::post('/actions/{action}/realiser', [ActionController::class, 'realiser'])->name('actions.realiser');
 Route::post('/actions/{action}/valider', [ActionController::class, 'valider'])->name('actions.valider');
+Route::post('/actions/{action}/devalider', [ActionController::class, 'devalider'])->name('actions.devalider');
 Route::post('/actions/{action}/annuler', [ActionController::class, 'annuler'])->name('actions.annuler');
 Route::post('/actions/{action}/reporter', [ActionController::class, 'reporter'])->name('actions.reporter');
 Route::get('/api/action-types-by-categorie', [ActionController::class, 'getActionTypesByCategorie'])->name('api.action-types');

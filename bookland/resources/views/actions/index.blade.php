@@ -430,22 +430,22 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
 
                                 @if(in_array(auth()->user()->role, ['admin','rbo']) || (auth()->user()->role === 'delegue' && $a->delegue_id === auth()->id()))
 
-                                    @if($a->statut === 'planifie')
+                                    @if($a->statut === 'planifie' && (auth()->user()->role === 'admin' || (auth()->user()->role === 'delegue' && $a->delegue_id === auth()->id())))
 
                                         {{-- Edit --}}
                                         <a href="{{ route('actions.edit', $a) }}" class="btn-ai btn-ai-sm btn-ai-warning">
                                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
                                         </a>
+                                    @endif
 
-                                        {{-- Réaliser --}}
-                                        <form method="POST" action="{{ route('actions.realiser', $a) }}" style="display:inline;" onsubmit="return confirm('Marquer comme réalisée ?')">
-                                            @csrf
-                                            <button type="submit" class="btn-ai btn-ai-sm btn-ai-success">
-                                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                                                Réaliser
-                                            </button>
-                                        </form>
+                                    @if($a->statut === 'planifie' && auth()->user()->role === 'delegue' && $a->delegue_id === auth()->id())
+                                        <a href="{{ route('actions.show', $a) }}?realiser=1" class="btn-ai btn-ai-sm btn-ai-success">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                            Réaliser
+                                        </a>
+                                    @endif
 
+                                    @if($a->statut === 'planifie' && (auth()->user()->role === 'admin' || (auth()->user()->role === 'delegue' && $a->delegue_id === auth()->id())))
                                         {{-- Annuler --}}
                                         <form method="POST" action="{{ route('actions.annuler', $a) }}" style="display:inline;" onsubmit="return confirm('Annuler cette action ?')">
                                             @csrf
@@ -453,10 +453,14 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                                                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                                             </button>
                                         </form>
+                                    @endif
 
-                                    @elseif($a->statut === 'realise' && in_array(auth()->user()->role, ['admin','rbo']))
-
-                                        {{-- Valider --}}
+                                    @if($a->statut === 'realise' && in_array(auth()->user()->role, ['admin','rbo']))
+                                        @php
+                                            $u = auth()->user();
+                                            $canVal = $u->role === 'admin' || $u->zonesAsRbo->flatMap->delegates->pluck('id')->unique()->contains($a->delegue_id);
+                                        @endphp
+                                        @if($canVal)
                                         <form method="POST" action="{{ route('actions.valider', $a) }}" style="display:inline;" onsubmit="return confirm('Valider cette action ?')">
                                             @csrf
                                             <button type="submit" class="btn-ai btn-ai-sm btn-ai-success">
@@ -464,7 +468,22 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                                                 Valider
                                             </button>
                                         </form>
+                                        @endif
+                                    @endif
 
+                                    @if($a->statut === 'valide' && in_array(auth()->user()->role, ['admin','rbo']))
+                                        @php
+                                            $u = auth()->user();
+                                            $canDev = $u->role === 'admin' || $u->zonesAsRbo->flatMap->delegates->pluck('id')->unique()->contains($a->delegue_id);
+                                        @endphp
+                                        @if($canDev)
+                                        <form method="POST" action="{{ route('actions.devalider', $a) }}" style="display:inline;" onsubmit="return confirm('Dévalider cette action ?')">
+                                            @csrf
+                                            <button type="submit" class="btn-ai btn-ai-sm btn-ai-warning">
+                                                Dévalider
+                                            </button>
+                                        </form>
+                                        @endif
                                     @endif
 
                                 @endif

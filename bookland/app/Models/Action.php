@@ -15,13 +15,15 @@ class Action extends Model
         'duree', 'lieu', 'rappel', 'rappel_avant', 'recurrence_frequence',
         'recurrence_intervalle', 'recurrence_fin', 'parent_action_id',
         'statut', 'date_realisation', 'date_validation', 'valide_par',
-        'type', 'module_lie', 'module_id','bss_id',
+        'rapport_titre', 'rapport_description', 'rapport_date',
+        'type', 'module_lie', 'module_id', 'bss_id',
     ];
 
     protected $casts = [
         'date_planification' => 'date',
         'date_realisation' => 'datetime',
         'date_validation' => 'datetime',
+        'rapport_date' => 'date',
         'rappel' => 'boolean',
     ];
     public function bss()
