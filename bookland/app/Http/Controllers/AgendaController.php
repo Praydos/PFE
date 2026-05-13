@@ -7,6 +7,7 @@ use App\Models\Examen;
 use App\Models\Formation;
 use App\Models\Event;
 use App\Models\Vacation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Tache;
@@ -24,11 +25,26 @@ class AgendaController extends Controller
     }
 
     /**
-     * Apply the correct scope to any query based on user role.
-     * Admin and ABO see everything. RBO sees their delegates. Delegué sees themselves.
+     * Get all delegates supervised by a given RBO id.
      */
-    private function scopeByRole($query, $user, string $foreignKey = 'delegue_id')
+    private function getDelegatesForRbo(int $rboId)
     {
+        return User::whereHas('zones', function ($q) use ($rboId) {
+            $q->where('rbo_id', $rboId);
+        })->where('role', 'delegue')->orderBy('nom')->get();
+    }
+
+    /**
+     * Apply the correct scope to any query based on user role.
+     * When $overrideDelegateId is provided, it takes precedence over role scoping
+     * (used when RBO or Admin explicitly selects a delegate).
+     */
+    private function scopeByRole($query, $user, string $foreignKey = 'delegue_id', ?int $overrideDelegateId = null)
+    {
+        if ($overrideDelegateId) {
+            return $query->where($foreignKey, $overrideDelegateId);
+        }
+
         if (in_array($user->role, ['admin', 'abo'])) {
             // No filter — see all
         } elseif ($user->role === 'rbo') {
@@ -38,26 +54,81 @@ class AgendaController extends Controller
             // delegue
             $query->where($foreignKey, $user->id);
         }
+
         return $query;
+    }
+
+    // ── Security: validate that a delegate can be viewed by this user ─────
+
+    private function resolveFilterDelegateId(Request $request, $user): ?int
+    {
+        $requestedId = $request->get('delegate_id') ? (int) $request->get('delegate_id') : null;
+
+        if (!$requestedId) {
+            return null;
+        }
+
+        if (in_array($user->role, ['admin', 'abo'])) {
+            // Admin/ABO can view any delegate
+            return $requestedId;
+        }
+
+        if ($user->role === 'rbo') {
+            // RBO can only view their own supervised delegates
+            $allowed = $this->getDelegateIdsForRbo($user);
+            return $allowed->contains($requestedId) ? $requestedId : null;
+        }
+
+        // Delegue cannot filter by another delegate
+        return null;
     }
 
     // ── Public actions ────────────────────────────────────────────────────
 
     public function index(Request $request)
     {
-        $user    = Auth::user();
+        $user     = Auth::user();
         $viewMode = $request->get('view', 'calendar');
-        $tab     = $request->get('tab', 'all');
+        $tab      = $request->get('tab', 'all');
 
-        // Stat counts for the header cards
-        $stats = $this->getStats($user);
+        // ── Delegate/RBO filter resolution ──────────────────────────────
+        $selectedDelegateId = $this->resolveFilterDelegateId($request, $user);
+        $selectedRboId      = $request->get('rbo_id') ? (int) $request->get('rbo_id') : null;
 
-        $events = collect();
-        if ($viewMode === 'list') {
-            $events = $this->getListEvents($user, $tab, $request);
+        $delegateList = collect();
+        $rboList      = collect();
+
+        if ($user->role === 'rbo') {
+            // RBO sees their own delegates only
+            $delegateList = $this->getDelegatesForRbo($user->id);
+
+        } elseif (in_array($user->role, ['admin', 'abo'])) {
+            // Admin/ABO: first pick an RBO, then pick one of that RBO's delegates
+            $rboList = User::where('role', 'rbo')->orderBy('nom')->get();
+
+            if ($selectedRboId) {
+                $delegateList = $this->getDelegatesForRbo($selectedRboId);
+
+                // Validate that the selected delegate belongs to the selected RBO
+                if ($selectedDelegateId && !$delegateList->contains('id', $selectedDelegateId)) {
+                    $selectedDelegateId = null;
+                }
+            }
         }
 
-        return view('agenda.index', compact('viewMode', 'tab', 'events', 'stats'));
+        // Stat counts for the header cards
+        $stats  = $this->getStats($user);
+        $events = collect();
+
+        if ($viewMode === 'list') {
+            $events = $this->getListEvents($user, $tab, $request, $selectedDelegateId);
+        }
+
+        return view('agenda.index', compact(
+            'viewMode', 'tab', 'events', 'stats',
+            'delegateList', 'rboList',
+            'selectedDelegateId', 'selectedRboId'
+        ));
     }
 
     public function events(Request $request)
@@ -68,41 +139,44 @@ class AgendaController extends Controller
             $end   = $request->input('end');
             $tab   = $request->get('tab', 'all');
 
+            // Resolve and validate delegate filter
+            $filterDelegateId = $this->resolveFilterDelegateId($request, $user);
+
             $calendarEvents = [];
 
             if (in_array($tab, ['all', 'actions', 'tasks'])) {
                 $filterType = ($tab === 'tasks') ? 'tache' : (($tab === 'actions') ? 'commercial' : null);
-                foreach ($this->getActions($user, $start, $end, $filterType) as $action) {
+                foreach ($this->getActions($user, $start, $end, $filterType, $filterDelegateId) as $action) {
                     if ($e = $this->formatActionEvent($action)) $calendarEvents[] = $e;
                 }
             }
 
             if (in_array($tab, ['all', 'examens'])) {
-                foreach ($this->getExamens($user, $start, $end) as $examen) {
+                foreach ($this->getExamens($user, $start, $end, $filterDelegateId) as $examen) {
                     if ($e = $this->formatExamenEvent($examen)) $calendarEvents[] = $e;
                 }
             }
 
             if (in_array($tab, ['all', 'formations'])) {
-                foreach ($this->getFormations($user, $start, $end) as $formation) {
+                foreach ($this->getFormations($user, $start, $end, $filterDelegateId) as $formation) {
                     if ($e = $this->formatFormationEvent($formation)) $calendarEvents[] = $e;
                 }
             }
 
             if (in_array($tab, ['all', 'events'])) {
-                foreach ($this->getEvents($user, $start, $end) as $event) {
+                foreach ($this->getEvents($user, $start, $end, $filterDelegateId) as $event) {
                     if ($e = $this->formatEventEvent($event)) $calendarEvents[] = $e;
                 }
             }
 
             if (in_array($tab, ['all', 'specimens'])) {
-                foreach ($this->getSpecimens($user, $start, $end) as $bss) {
+                foreach ($this->getSpecimens($user, $start, $end, $filterDelegateId) as $bss) {
                     if ($e = $this->formatSpecimenEvent($bss)) $calendarEvents[] = $e;
                 }
             }
 
             if (in_array($tab, ['all', 'tasks'])) {
-                foreach ($this->getTasks($user, $start, $end) as $task) {
+                foreach ($this->getTasks($user, $start, $end, $filterDelegateId) as $task) {
                     if ($e = $this->formatTaskEvent($task)) $calendarEvents[] = $e;
                 }
             }
@@ -111,11 +185,11 @@ class AgendaController extends Controller
             if ($tab === 'all') {
                 foreach (Vacation::all() as $vacation) {
                     $calendarEvents[] = [
-                        'title'   => $vacation->name,
-                        'start'   => $vacation->start_date->toDateString(),
-                        'end'     => $vacation->end_date->toDateString(),
-                        'display' => 'background',
-                        'color'   => '#f8d7da',
+                        'title'     => $vacation->name,
+                        'start'     => $vacation->start_date->toDateString(),
+                        'end'       => $vacation->end_date->toDateString(),
+                        'display'   => 'background',
+                        'color'     => '#f8d7da',
                         'textColor' => '#721c24',
                     ];
                 }
@@ -162,21 +236,21 @@ class AgendaController extends Controller
 
     private function getStats($user): array
     {
-        $today = Carbon::today();
+        $today   = Carbon::today();
         $weekEnd = Carbon::today()->endOfWeek();
 
         return [
-            'actions_week'   => $this->scopeByRole(Action::query(), $user)->whereBetween('date_planification', [$today, $weekEnd])->count(),
-            'examens_month'  => $this->scopeByRole(Examen::query(), $user)->whereMonth('date_examen', $today->month)->count(),
+            'actions_week'     => $this->scopeByRole(Action::query(), $user)->whereBetween('date_planification', [$today, $weekEnd])->count(),
+            'examens_month'    => $this->scopeByRole(Examen::query(), $user)->whereMonth('date_examen', $today->month)->count(),
             'formations_total' => $this->scopeByRole(Formation::query(), $user)->count(),
-            'events_month'   => $this->scopeByRole(Event::query(), $user)->whereMonth('date_event', $today->month)->count(),
-            'tasks_pending'  => $this->scopeByRole(Tache::query(), $user)->where('is_validated', false)->count(),
+            'events_month'     => $this->scopeByRole(Event::query(), $user)->whereMonth('date_event', $today->month)->count(),
+            'tasks_pending'    => $this->scopeByRole(Tache::query(), $user)->where('is_validated', false)->count(),
         ];
     }
 
-    // ── List view (previously stubbed — now implemented) ──────────────────
+    // ── List view ─────────────────────────────────────────────────────────
 
-    private function getListEvents($user, $tab, $request)
+    private function getListEvents($user, $tab, $request, ?int $filterDelegateId = null)
     {
         $perPage  = 15;
         $dateFrom = $request->get('date_from');
@@ -186,7 +260,8 @@ class AgendaController extends Controller
         // Actions
         if (in_array($tab, ['all', 'actions', 'tasks'])) {
             $query = $this->scopeByRole(
-                Action::with(['compte.ville', 'compte.zone', 'delegate']), $user
+                Action::with(['compte.ville', 'compte.zone', 'delegate']),
+                $user, 'delegue_id', $filterDelegateId
             );
             if ($dateFrom) $query->where('date_planification', '>=', $dateFrom);
             if ($dateTo)   $query->where('date_planification', '<=', $dateTo);
@@ -201,8 +276,6 @@ class AgendaController extends Controller
                     'title'    => ($a->objet ?? 'Action') . ' – ' . ($a->compte->etablissement ?? ''),
                     'type'     => 'actions',
                     'compte'   => $a->compte->etablissement ?? '',
-                    'ville'    => $a->compte->ville->nom ?? '',
-                    'zone'     => $a->compte->zone->name ?? '',
                     'delegate' => $a->delegate ? trim($a->delegate->prenom . ' ' . $a->delegate->nom) : '—',
                     'url'      => route('actions.show', $a),
                 ]);
@@ -212,7 +285,8 @@ class AgendaController extends Controller
         // Examens
         if (in_array($tab, ['all', 'examens'])) {
             $query = $this->scopeByRole(
-                Examen::with(['compte.ville', 'compte.zone', 'delegate'])->whereNotNull('date_examen'), $user
+                Examen::with(['compte.ville', 'compte.zone', 'delegate'])->whereNotNull('date_examen'),
+                $user, 'delegue_id', $filterDelegateId
             );
             if ($dateFrom) $query->where('date_examen', '>=', $dateFrom);
             if ($dateTo)   $query->where('date_examen', '<=', $dateTo);
@@ -225,8 +299,6 @@ class AgendaController extends Controller
                     'title'    => 'Examen: ' . ($ex->titre ?? '') . ' – ' . ($ex->compte->etablissement ?? ''),
                     'type'     => 'examens',
                     'compte'   => $ex->compte->etablissement ?? '',
-                    'ville'    => $ex->compte->ville->nom ?? '',
-                    'zone'     => $ex->compte->zone->name ?? '',
                     'delegate' => $ex->delegate ? trim($ex->delegate->prenom . ' ' . $ex->delegate->nom) : '—',
                     'url'      => route('examens.show', $ex),
                 ]);
@@ -236,7 +308,8 @@ class AgendaController extends Controller
         // Formations
         if (in_array($tab, ['all', 'formations'])) {
             $query = $this->scopeByRole(
-                Formation::with(['compte.ville', 'compte.zone', 'delegate']), $user
+                Formation::with(['compte.ville', 'compte.zone', 'delegate']),
+                $user, 'delegue_id', $filterDelegateId
             );
             $query->get()->each(function ($f) use (&$allItems, $dateFrom, $dateTo) {
                 $dates = $f->dates_proposees ?? [];
@@ -251,8 +324,6 @@ class AgendaController extends Controller
                     'title'    => 'Formation: ' . ($f->type ?? '') . ' – ' . ($f->compte->etablissement ?? ''),
                     'type'     => 'formations',
                     'compte'   => $f->compte->etablissement ?? '',
-                    'ville'    => $f->compte->ville->nom ?? '',
-                    'zone'     => $f->compte->zone->name ?? '',
                     'delegate' => $f->delegate ? trim($f->delegate->prenom . ' ' . $f->delegate->nom) : '—',
                     'url'      => route('formations.show', $f),
                 ]);
@@ -262,7 +333,8 @@ class AgendaController extends Controller
         // Events
         if (in_array($tab, ['all', 'events'])) {
             $query = $this->scopeByRole(
-                Event::with(['ville', 'zone', 'delegate'])->whereNotNull('date_event'), $user
+                Event::with(['ville', 'zone', 'delegate'])->whereNotNull('date_event'),
+                $user, 'delegue_id', $filterDelegateId
             );
             if ($dateFrom) $query->where('date_event', '>=', $dateFrom);
             if ($dateTo)   $query->where('date_event', '<=', $dateTo);
@@ -274,8 +346,6 @@ class AgendaController extends Controller
                     'title'    => 'Événement: ' . ($ev->type ?? '') . ' – ' . ($ev->ville->nom ?? ''),
                     'type'     => 'events',
                     'compte'   => $ev->ville->nom ?? '',
-                    'ville'    => $ev->ville->nom ?? '',
-                    'zone'     => $ev->zone->name ?? '',
                     'delegate' => $ev->delegate ? trim($ev->delegate->prenom . ' ' . $ev->delegate->nom) : '—',
                     'url'      => route('events.show', $ev),
                 ]);
@@ -284,7 +354,10 @@ class AgendaController extends Controller
 
         // Tâches
         if (in_array($tab, ['all', 'tasks'])) {
-            $query = $this->scopeByRole(Tache::with('delegate'), $user);
+            $query = $this->scopeByRole(
+                Tache::with('delegate'),
+                $user, 'delegue_id', $filterDelegateId
+            );
             if ($dateFrom) $query->where('date_planification', '>=', $dateFrom);
             if ($dateTo)   $query->where('date_planification', '<=', $dateTo);
 
@@ -296,8 +369,6 @@ class AgendaController extends Controller
                     'title'    => $t->objet ?? 'Tâche',
                     'type'     => 'tasks',
                     'compte'   => '',
-                    'ville'    => '',
-                    'zone'     => '',
                     'delegate' => trim(($t->delegate->prenom ?? '') . ' ' . ($t->delegate->nom ?? '')),
                     'url'      => route('taches.show', $t),
                 ]);
@@ -310,33 +381,41 @@ class AgendaController extends Controller
         $slice  = $sorted->slice(($page - 1) * $perPage, $perPage)->values();
 
         return new \Illuminate\Pagination\LengthAwarePaginator($slice, $sorted->count(), $perPage, $page, [
-            'path' => $request->url(),
+            'path'  => $request->url(),
             'query' => $request->query(),
         ]);
     }
 
     // ── Data fetchers ─────────────────────────────────────────────────────
 
-    private function getActions($user, $start, $end, $type = null)
+    private function getActions($user, $start, $end, $type = null, ?int $filterDelegateId = null)
     {
-        $query = $this->scopeByRole(Action::with(['compte.ville', 'compte.zone', 'delegate']), $user);
+        $query = $this->scopeByRole(
+            Action::with(['compte.ville', 'compte.zone', 'delegate']),
+            $user, 'delegue_id', $filterDelegateId
+        );
         if ($start && $end) $query->whereBetween('date_planification', [$start, $end]);
         if ($type)          $query->where('type', $type);
         return $query->orderBy('date_planification')->get();
     }
 
-    private function getExamens($user, $start, $end)
+    private function getExamens($user, $start, $end, ?int $filterDelegateId = null)
     {
         $query = $this->scopeByRole(
-            Examen::with(['compte.ville', 'compte.zone', 'delegate'])->whereNotNull('date_examen'), $user
+            Examen::with(['compte.ville', 'compte.zone', 'delegate'])->whereNotNull('date_examen'),
+            $user, 'delegue_id', $filterDelegateId
         );
         if ($start && $end) $query->whereBetween('date_examen', [$start, $end]);
         return $query->orderBy('date_examen')->get();
     }
 
-    private function getFormations($user, $start, $end)
+    private function getFormations($user, $start, $end, ?int $filterDelegateId = null)
     {
-        $formations = $this->scopeByRole(Formation::with(['compte.ville', 'compte.zone', 'delegate']), $user)->get();
+        $formations = $this->scopeByRole(
+            Formation::with(['compte.ville', 'compte.zone', 'delegate']),
+            $user, 'delegue_id', $filterDelegateId
+        )->get();
+
         return $formations->filter(function ($f) use ($start, $end) {
             $dates = $f->dates_proposees ?? [];
             if (empty($dates)) return false;
@@ -345,33 +424,39 @@ class AgendaController extends Controller
         })->values();
     }
 
-    private function getEvents($user, $start, $end)
+    private function getEvents($user, $start, $end, ?int $filterDelegateId = null)
     {
-        $query = $this->scopeByRole(Event::with(['ville', 'zone', 'delegate']), $user);
+        $query = $this->scopeByRole(
+            Event::with(['ville', 'zone', 'delegate']),
+            $user, 'delegue_id', $filterDelegateId
+        );
         if ($start && $end) $query->whereBetween('date_event', [$start, $end]);
         return $query->orderBy('date_event')->get();
     }
 
-    private function getSpecimens($user, $start, $end)
+    private function getSpecimens($user, $start, $end, ?int $filterDelegateId = null)
     {
-        // NOTE: verify your bss migration — is it delegate_id or delegue_id?
         $query = $this->scopeByRole(
             Bss::with(['compte.ville', 'compte.zone', 'delegate'])->whereNotNull('date_livraison_prevue'),
             $user,
-            'delegate_id'   // ← change to 'delegue_id' if your bss table uses that
+            'delegate_id',   // ← change to 'delegue_id' if your bss table uses that
+            $filterDelegateId
         );
         if ($start && $end) $query->whereBetween('date_livraison_prevue', [$start, $end]);
         return $query->orderBy('date_livraison_prevue')->get();
     }
 
-    private function getTasks($user, $start, $end)
+    private function getTasks($user, $start, $end, ?int $filterDelegateId = null)
     {
-        $query = $this->scopeByRole(Tache::with('delegate'), $user);
+        $query = $this->scopeByRole(
+            Tache::with('delegate'),
+            $user, 'delegue_id', $filterDelegateId
+        );
         if ($start && $end) $query->whereBetween('date_planification', [$start, $end]);
         return $query->get();
     }
 
-    // ── Formatters (with null-safe delegate) ──────────────────────────────
+    // ── Formatters ────────────────────────────────────────────────────────
 
     private function delegateName($model): string
     {

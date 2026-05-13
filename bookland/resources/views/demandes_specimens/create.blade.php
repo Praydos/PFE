@@ -278,9 +278,9 @@
                     <div class="frm-group">
                         <label class="frm-label" for="ville_id">Ville <span class="req" id="ville-req">*</span></label>
                         <div class="frm-select-wrap">
-                            <select name="ville_id" id="ville_id" class="frm-select">
+                            <select name="ville_id" id="ville_id" class="frm-select" disabled>
                                 @foreach($villes as $v)
-                                    <option value="{{ $v->id }}" {{ old('ville_id', $defaultVilleId ?? '') == $v->id ? 'selected' : '' }}>{{ $v->nom }}</option>
+                                    <option value="{{ $v->id }}" {{ old('ville_id', $defaultVilleId ?? '') == $v->id ? 'selected' : '' }} disabled>{{ $v->nom }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -292,9 +292,9 @@
                     <div class="frm-group">
                         <label class="frm-label" for="zone_id">Zone <span class="req" id="zone-req">*</span></label>
                         <div class="frm-select-wrap">
-                            <select name="zone_id" id="zone_id" class="frm-select">
+                            <select name="zone_id" id="zone_id" class="frm-select" disabled>
                                 @foreach($zones as $z)
-                                    <option value="{{ $z->id }}" {{ old('zone_id', $defaultZoneId ?? '') == $z->id ? 'selected' : '' }}>{{ $z->name }}</option>
+                                    <option value="{{ $z->id }}" {{ old('zone_id', $defaultZoneId ?? '') == $z->id ? 'selected' : '' }} disabled>{{ $z->name }}</option>
                                 @endforeach
                             </select>
                         </div>

@@ -103,39 +103,32 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
 
 .fc { font-family:var(--font) !important; color:var(--t1) !important; }
 
-/* Toolbar */
 .fc .fc-toolbar.fc-header-toolbar { margin-bottom:1.25rem !important; flex-wrap:wrap; gap:.5rem; }
 .fc .fc-toolbar-title { font-size:1rem !important; font-weight:700 !important; color:var(--t1) !important; letter-spacing:-.02em; }
 
-/* Buttons */
 .fc .fc-button { font-family:var(--font) !important; font-size:.78rem !important; font-weight:600 !important; padding:.38rem .9rem !important; border-radius:var(--r2) !important; border:1px solid var(--border) !important; background:var(--card) !important; color:var(--t2) !important; box-shadow:var(--s1) !important; transition:all var(--t) !important; }
 .fc .fc-button:hover { background:var(--hover) !important; color:var(--t1) !important; border-color:var(--border-2) !important; }
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active { background:var(--blue) !important; border-color:var(--blue) !important; color:#fff !important; box-shadow:var(--sb) !important; }
 .fc .fc-button-primary:focus { box-shadow:0 0 0 3px var(--blue-m) !important; }
 
-/* Table headers */
 .fc .fc-col-header-cell { background:var(--subtle) !important; border-color:var(--border) !important; }
 .fc .fc-col-header-cell-cushion { font-size:.73rem !important; font-weight:700 !important; text-transform:uppercase !important; letter-spacing:.07em !important; color:var(--t3) !important; text-decoration:none !important; padding:.55rem .5rem !important; }
 
-/* Day cells */
 .fc .fc-daygrid-day { background:var(--card) !important; border-color:var(--border) !important; transition:background var(--t); }
 .fc .fc-daygrid-day:hover { background:var(--hover) !important; }
 .fc .fc-daygrid-day.fc-day-today { background:var(--blue-l) !important; }
 .fc .fc-daygrid-day-number { font-size:.78rem !important; font-weight:600 !important; color:var(--t2) !important; text-decoration:none !important; padding:.4rem .5rem !important; }
 .fc .fc-day-today .fc-daygrid-day-number { color:var(--blue) !important; font-weight:800 !important; }
 
-/* Events */
 .fc .fc-event { border:none !important; border-radius:var(--r1) !important; font-size:.72rem !important; font-weight:600 !important; padding:.15rem .45rem !important; cursor:pointer; transition:opacity var(--t), transform var(--t); }
 .fc .fc-event:hover { opacity:.85; transform:translateY(-1px); }
 .fc .fc-event-title { font-weight:600 !important; }
 .fc .fc-event-time { font-family:var(--mono) !important; font-size:.65rem !important; opacity:.8; }
 
-/* Scrollbar */
 .fc .fc-scroller::-webkit-scrollbar { width:4px; height:4px; }
 .fc .fc-scroller::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
 
-/* List view */
 .fc .fc-list-event:hover td { background:var(--hover) !important; }
 .fc .fc-list-event-title a { color:var(--t1) !important; font-weight:600 !important; font-size:.84rem !important; text-decoration:none !important; }
 .fc .fc-list-day-cushion { background:var(--subtle) !important; font-size:.73rem !important; font-weight:700 !important; text-transform:uppercase !important; letter-spacing:.07em !important; color:var(--t3) !important; }
@@ -151,15 +144,12 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
 .ag-table tbody tr:hover { background:var(--hover); }
 .ag-table tbody tr:last-child td { border-bottom:none; }
 
-/* Date cell */
 .ag-date-cell { font-family:var(--mono); font-size:.78rem; color:var(--t2); }
 .ag-time-cell { font-family:var(--mono); font-size:.76rem; color:var(--t3); }
 
-/* Title cell */
 .ag-title-cell a { color:var(--t1); font-weight:600; text-decoration:none; font-size:.84rem; letter-spacing:-.01em; }
 .ag-title-cell a:hover { color:var(--blue); }
 
-/* Type badges */
 .ag-type-badge { display:inline-flex; align-items:center; gap:.25rem; padding:.18rem .6rem; border-radius:20px; font-size:.69rem; font-weight:600; border:1px solid transparent; white-space:nowrap; }
 .type-action    { background:var(--blue-l);   color:var(--blue);   border-color:var(--blue-m); }
 .type-examen    { background:var(--violet-l); color:var(--violet); border-color:rgba(124,111,205,.2); }
@@ -169,472 +159,295 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
 .type-task      { background:var(--subtle);   color:var(--t2);     border-color:var(--border); }
 .type-default   { background:var(--subtle);   color:var(--t3);     border-color:var(--border); }
 
-/* Compte cell */
 .ag-compte { display:flex; align-items:center; gap:.35rem; font-size:.81rem; }
 .ag-compte-dot { width:5px; height:5px; border-radius:50%; background:var(--teal); flex-shrink:0; }
 
-/* Delegate cell */
 .ag-dlg { display:flex; align-items:center; gap:.4rem; }
 .ag-dlg-av { width:22px; height:22px; border-radius:50%; background:linear-gradient(135deg,#5b8dee,#6c63ff); display:flex; align-items:center; justify-content:center; font-size:.55rem; font-weight:700; color:#fff; flex-shrink:0; }
 
-/* Btn */
 .btn-ag { display:inline-flex; align-items:center; gap:.35rem; padding:.34rem .7rem; border-radius:var(--r2); font-family:var(--font); font-size:.75rem; font-weight:600; cursor:pointer; border:1px solid transparent; transition:all var(--t); text-decoration:none; white-space:nowrap; line-height:1; }
 .btn-ag-ghost { background:var(--card); color:var(--t2); border-color:var(--border); box-shadow:var(--s1); }
 .btn-ag-ghost:hover { background:var(--hover); color:var(--t1); border-color:var(--border-2); text-decoration:none; }
+.btn-ag-primary { background:var(--blue); color:#fff; border-color:var(--blue); box-shadow:var(--sb); }
+.btn-ag-primary:hover { background:var(--blue-d); border-color:var(--blue-d); color:#fff; transform:translateY(-1px); box-shadow:0 6px 20px rgba(91,141,238,.4); text-decoration:none; }
 
-/* Empty */
 .ag-empty { padding:4rem 2rem; text-align:center; }
 .ag-empty-icon { width:52px; height:52px; border-radius:var(--r3); background:var(--subtle); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; color:var(--t4); }
 .ag-empty h3 { font-size:.95rem; font-weight:700; color:var(--t2); }
 .ag-empty p  { font-size:.82rem; color:var(--t3); margin-top:.3rem; }
 
-/* Pagination */
 .ag-pagination { padding:1rem 1.6rem; border-top:1px solid var(--border); background:var(--bg); display:flex; align-items:center; justify-content:flex-end; }
 
-/* Responsive */
+/* ── Drag & Drop ───────────────────────────────────── */
+.fc-event.fc-event-dragging { opacity:0.9 !important; transform:scale(1.03); box-shadow:0 12px 30px rgba(0,0,0,0.18); }
+.fc .fc-event-mirror { transform:scale(1.03) translateY(2px); box-shadow:0 16px 40px rgba(0,0,0,0.25); }
+.fc-daygrid-day.fc-day-highlight { background:rgba(91,141,238,0.12) !important; transition:background 0.2s ease; }
+@keyframes dropBounce { 0%{transform:scale(1.05);} 50%{transform:scale(0.95);} 100%{transform:scale(1);} }
+.fc-event.drop-animate { animation:dropBounce 0.25s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);} }
+.fc-event.shake { animation:shake 0.25s ease; }
+
+/* ── Toast ─────────────────────────────────────────── */
+.ag-toast { position:fixed; bottom:20px; right:20px; background:#1a1f36; color:#fff; padding:.7rem 1rem; border-radius:8px; font-size:.8rem; box-shadow:0 10px 25px rgba(0,0,0,0.2); opacity:0; transform:translateY(20px); transition:all .25s ease; z-index:9999; }
+.ag-toast.show { opacity:1; transform:translateY(0); }
+
+/* ═══════════════════════════════════════════════════
+   DELEGATE FILTER PANEL
+═══════════════════════════════════════════════════ */
+.ag-filter-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r4);
+    box-shadow: var(--s1);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    animation: rise .35s var(--ease) both;
+}
+
+.ag-filter-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .85rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--subtle);
+}
+
+.ag-filter-hd-left {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+.ag-filter-ico {
+    width: 28px; height: 28px;
+    border-radius: var(--r2);
+    background: var(--blue-l);
+    color: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+.ag-filter-hd-left h3 {
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--t1);
+}
+
+.ag-filter-hd-left p {
+    font-size: .72rem;
+    color: var(--t3);
+    margin-top: .05rem;
+}
+
+/* RBO selector row (admin only) */
+.ag-filter-rbo-row {
+    padding: .9rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+
+.ag-filter-rbo-label {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.ag-filter-rbo-select {
+    font-family: var(--font);
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--t1);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    padding: .4rem .75rem;
+    cursor: pointer;
+    transition: all var(--t);
+    outline: none;
+    min-width: 220px;
+    box-shadow: var(--s1);
+}
+
+.ag-filter-rbo-select:hover { border-color: var(--border-2); }
+.ag-filter-rbo-select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-m); }
+
+/* Delegate pills row */
+.ag-filter-dlg-row {
+    padding: .9rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+}
+
+.ag-filter-dlg-label {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-right: .2rem;
+}
+
+/* "All delegates" pill */
+.ag-dlg-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .38rem .85rem;
+    border-radius: 30px;
+    font-size: .76rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+    transition: all var(--t);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.ag-dlg-pill-all {
+    background: var(--subtle);
+    color: var(--t2);
+    border-color: var(--border);
+}
+
+.ag-dlg-pill-all:hover,
+.ag-dlg-pill-all.active {
+    background: var(--blue-l);
+    color: var(--blue-d);
+    border-color: var(--blue-m);
+    text-decoration: none;
+}
+
+.ag-dlg-pill-all.active {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+    box-shadow: var(--sb);
+}
+
+/* Individual delegate pill */
+.ag-dlg-pill-user {
+    background: var(--card);
+    color: var(--t2);
+    border-color: var(--border);
+    box-shadow: var(--s1);
+}
+
+.ag-dlg-pill-user:hover {
+    background: var(--hover);
+    color: var(--t1);
+    border-color: var(--border-2);
+    text-decoration: none;
+}
+
+.ag-dlg-pill-user.active {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+    box-shadow: var(--sb);
+}
+
+/* Avatar inside pill */
+.ag-dlg-pill-av {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .55rem; font-weight: 700;
+    flex-shrink: 0;
+}
+
+.ag-dlg-pill-user .ag-dlg-pill-av {
+    background: linear-gradient(135deg, #5b8dee, #7c6fcd);
+    color: #fff;
+}
+
+.ag-dlg-pill-user.active .ag-dlg-pill-av {
+    background: rgba(255,255,255,.25);
+    color: #fff;
+}
+
+/* Empty state for delegate row */
+.ag-filter-dlg-empty {
+    font-size: .78rem;
+    color: var(--t4);
+    font-style: italic;
+    padding: .4rem 0;
+}
+
+/* Active delegate banner */
+.ag-filter-active-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .6rem 1.4rem;
+    background: var(--blue-l);
+    border-top: 1px solid var(--blue-m);
+    flex-wrap: wrap;
+}
+
+.ag-filter-active-info {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .78rem;
+    color: var(--blue-d);
+    font-weight: 600;
+}
+
+.ag-filter-active-info svg { opacity: .7; }
+
+.ag-filter-clear {
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--blue);
+    text-decoration: none;
+    opacity: .75;
+    transition: opacity var(--t);
+}
+
+.ag-filter-clear:hover { opacity: 1; text-decoration: none; }
+
+/* ── Modal ───────────────────────────────────────────  */
+.ag-modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:99999; opacity:0; visibility:hidden; transition:all .2s ease; }
+.ag-modal-overlay.show { opacity:1; visibility:visible; }
+.ag-modal { width:100%; max-width:520px; background:var(--card); border-radius:var(--r5); border:1px solid var(--border); box-shadow:var(--s3); overflow:hidden; transform:translateY(10px) scale(.98); transition:all .2s ease; }
+.ag-modal-overlay.show .ag-modal { transform:translateY(0) scale(1); }
+.ag-modal-head { display:flex; align-items:flex-start; justify-content:space-between; padding:1.2rem 1.3rem; border-bottom:1px solid var(--border); }
+.ag-modal-head h3 { font-size:1rem; font-weight:800; color:var(--t1); margin-bottom:.2rem; }
+.ag-modal-head p { font-size:.75rem; color:var(--t3); }
+.ag-modal-close { width:34px; height:34px; border-radius:10px; border:none; background:var(--subtle); cursor:pointer; font-size:1rem; color:var(--t2); transition:all var(--t); }
+.ag-modal-close:hover { background:var(--rose-l); color:var(--rose); }
+.ag-modal-grid { padding:1.2rem; display:grid; grid-template-columns:repeat(2,1fr); gap:.8rem; }
+.ag-create-card { display:flex; align-items:center; gap:.75rem; padding:1rem; border-radius:var(--r3); text-decoration:none; border:1px solid var(--border); background:var(--card); transition:all var(--t); }
+.ag-create-card:hover { transform:translateY(-2px); box-shadow:var(--s2); border-color:var(--blue); text-decoration:none; }
+.ag-create-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.ag-create-card h4 { font-size:.82rem; font-weight:700; color:var(--t1); margin-bottom:.15rem; }
+.ag-create-card span { font-size:.7rem; color:var(--t3); }
+
+/* ── Responsive ────────────────────────────────────── */
 @media(max-width:768px) {
     .ag-page { padding:1.25rem 1rem 2rem; }
     .ag-header { flex-direction:column; gap:1rem; }
     .ag-stats { grid-template-columns:1fr 1fr; }
     .ag-toolbar { flex-direction:column; align-items:flex-start; }
     .ag-table th, .ag-table td { padding:.7rem .9rem; }
+    .ag-filter-dlg-row { gap:.4rem; }
+    .ag-modal { margin:1rem; }
+    .ag-modal-grid { grid-template-columns:1fr; }
 }
 @media(max-width:480px) { .ag-stats { grid-template-columns:1fr; } }
-
-
-
-/* Primary button (blue background, white text, shadow) */
-.btn-ag-primary {
-    background: var(--blue);
-    color: #fff;
-    border-color: var(--blue);
-    box-shadow: var(--sb);
-}
-.btn-ag-primary:hover {
-    background: var(--blue-d);
-    border-color: var(--blue-d);
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(91,141,238,.4);
-    text-decoration: none;
-}
-
-/* inhncing the drag and drop animation*/
-
-/* ── Drag & Drop Enhancements ───────────────────── */
-
-/* While dragging */
-.fc-event.fc-event-dragging {
-    opacity: 0.9 !important;
-    transform: scale(1.03);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-}
-
-/* Mirror clone */
-.fc .fc-event-mirror {
-    transform: scale(1.03) translateY(2px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.25);
-}
-
-/* Hover day highlight */
-.fc-daygrid-day.fc-day-highlight {
-    background: rgba(91,141,238,0.12) !important;
-    transition: background 0.2s ease;
-}
-
-/* Drop bounce animation */
-@keyframes dropBounce {
-    0%   { transform: scale(1.05); }
-    50%  { transform: scale(0.95); }
-    100% { transform: scale(1); }
-}
-
-.fc-event.drop-animate {
-    animation: dropBounce 0.25s ease;
-}
-
-/* Error shake */
-@keyframes shake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    75% { transform: translateX(4px); }
-}
-
-.fc-event.shake {
-    animation: shake 0.25s ease;
-}
-
-/* Toast */
-.ag-toast {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #1a1f36;
-    color: #fff;
-    padding: 0.7rem 1rem;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.25s ease;
-    z-index: 9999;
-}
-
-.ag-toast.show {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* ========================== Css for mini caledar widget ==========================*/
-/* ── Mini Calendar ─────────────────────────────────── */
-.ag-calendar-layout {
-    display: flex;
-    gap: 1.25rem;
-    align-items: flex-start;
-}
-
-.ag-sidebar {
-    width: 220px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.ag-main-calendar { flex: 1; min-width: 0; }
-
-/* Mini cal card */
-.mc-wrap {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--r4);
-    overflow: hidden;
-}
-
-.mc-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: .7rem .9rem .5rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.mc-title {
-    font-size: .8rem;
-    font-weight: 700;
-    color: var(--t1);
-    letter-spacing: -.01em;
-    text-transform: capitalize;
-}
-
-.mc-nav { display: flex; gap: .15rem; }
-.mc-nav button {
-    width: 24px; height: 24px;
-    border: none; background: transparent; border-radius: 6px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    color: var(--t3); transition: all var(--t); font-size: 16px; line-height: 1;
-}
-.mc-nav button:hover { background: var(--subtle); color: var(--t1); }
-
-.mc-grid { padding: .5rem .6rem .6rem; }
-
-.mc-dow {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    margin-bottom: .2rem;
-}
-.mc-dow span {
-    text-align: center;
-    font-size: .6rem; font-weight: 700;
-    color: var(--t4); text-transform: uppercase; letter-spacing: .04em;
-    padding: .15rem 0;
-}
-
-.mc-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
-}
-
-.mc-day {
-    position: relative;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    width: 100%; aspect-ratio: 1;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: .72rem; font-weight: 500;
-    color: var(--t2);
-    transition: all var(--t);
-    user-select: none;
-}
-.mc-day:hover:not(.mc-empty):not(.mc-today):not(.mc-selected) {
-    background: var(--subtle); color: var(--t1);
-}
-.mc-day.mc-empty   { cursor: default; pointer-events: none; }
-.mc-day.mc-today   { background: var(--blue); color: #fff; font-weight: 700; }
-.mc-day.mc-selected:not(.mc-today) {
-    background: var(--blue-l); color: var(--blue-d);
-    font-weight: 700; outline: 1.5px solid var(--blue-m);
-}
-.mc-day.mc-other   { color: var(--t4); }
-
-/* Event dots */
-.mc-dot {
-    position: absolute; bottom: 2px;
-    left: 50%; transform: translateX(-50%);
-    display: flex; gap: 1.5px;
-}
-.mc-dot span { width: 3px; height: 3px; border-radius: 50%; background: var(--blue); }
-.mc-day.mc-today .mc-dot span { background: rgba(255,255,255,.7); }
-.mc-day.mc-selected:not(.mc-today) .mc-dot span { background: var(--blue); }
-
-/* Today button */
-.mc-today-btn {
-    display: block; width: 100%;
-    text-align: center; font-size: .69rem; font-weight: 600;
-    color: var(--t3); padding: .45rem;
-    border-top: 1px solid var(--border);
-    cursor: pointer; transition: all var(--t);
-    background: transparent; border: none;
-    border-top: 1px solid var(--border);
-    font-family: var(--font);
-}
-.mc-today-btn:hover { background: var(--hover); color: var(--blue); }
-
-/* Selected day info panel */
-.mc-sel-info {
-    background: var(--blue-l); border: 1px solid var(--blue-m);
-    border-radius: var(--r3); padding: .65rem .9rem;
-    display: none;
-}
-.mc-sel-date { font-size: .75rem; font-weight: 700; color: var(--blue-d); margin-bottom: .2rem; text-transform: capitalize; }
-.mc-sel-count { font-size: .7rem; color: var(--t3); }
-.mc-sel-evts  { margin-top: .45rem; display: flex; flex-direction: column; gap: .2rem; }
-.mc-sel-evt   {
-    font-size: .7rem; font-weight: 600;
-    padding: .18rem .5rem; border-radius: 4px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    cursor: pointer; text-decoration: none; display: block;
-}
-
-/* Legend */
-.mc-legend {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--r3); padding: .7rem .9rem;
-}
-.mc-legend-title {
-    font-size: .65rem; font-weight: 700; color: var(--t4);
-    text-transform: uppercase; letter-spacing: .06em; margin-bottom: .55rem;
-}
-.mc-legend-item {
-    display: flex; align-items: center; gap: .4rem;
-    font-size: .72rem; color: var(--t2);
-    padding: .18rem 0; cursor: pointer;
-    border-radius: 4px; transition: color var(--t);
-}
-.mc-legend-item:hover { color: var(--t1); }
-.mc-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-/* Responsive: collapse sidebar below main on small screens */
-@media(max-width: 700px) {
-    .ag-calendar-layout { flex-direction: column; }
-    .ag-sidebar { width: 100%; }
-}
-/* day select create actions ================================= */
-
-/* ── Day panel create section ──────────────────────── */
-#dpCreateSection a {
-    display: flex;
-    align-items: center;
-    gap: .45rem;
-    padding: .35rem .55rem;
-    border-radius: 6px;
-    font-size: .72rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: filter var(--t), transform var(--t);
-}
-#dpCreateSection a:hover {
-    filter: brightness(.94);
-    transform: translateX(2px);
-    text-decoration: none;
-}
-
-/* Selected day info panel — expanded */
-.mc-sel-info {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--r4);
-    overflow: hidden;
-    display: none;
-}
-
-/* Override the blue-l header when the panel has create buttons */
-.mc-sel-info .mc-sel-date {
-    font-size: .78rem;
-    font-weight: 700;
-    color: var(--blue-d);
-    padding: .65rem .85rem .1rem;
-    background: var(--blue-l);
-    border-bottom: 1px solid var(--blue-m);
-    text-transform: capitalize;
-}
-.mc-sel-info .mc-sel-count {
-    font-size: .67rem;
-    color: var(--t3);
-    padding: .1rem .85rem .5rem;
-    background: var(--blue-l);
-    border-bottom: 1px solid var(--blue-m);
-}
-.mc-sel-info .mc-sel-evts {
-    padding: .45rem .7rem;
-    display: flex;
-    flex-direction: column;
-    gap: .2rem;
-    max-height: 100px;
-    overflow-y: auto;
-}
-
-
-
-
-/* ── Modal ───────────────────────────────────── */
-
-.ag-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15,23,42,.45);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 99999;
-
-    opacity: 0;
-    visibility: hidden;
-    transition: all .2s ease;
-}
-
-.ag-modal-overlay.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-.ag-modal {
-    width: 100%;
-    max-width: 520px;
-    background: var(--card);
-    border-radius: var(--r5);
-    border: 1px solid var(--border);
-    box-shadow: var(--s3);
-    overflow: hidden;
-
-    transform: translateY(10px) scale(.98);
-    transition: all .2s ease;
-}
-
-.ag-modal-overlay.show .ag-modal {
-    transform: translateY(0) scale(1);
-}
-
-.ag-modal-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding: 1.2rem 1.3rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.ag-modal-head h3 {
-    font-size: 1rem;
-    font-weight: 800;
-    color: var(--t1);
-    margin-bottom: .2rem;
-}
-
-.ag-modal-head p {
-    font-size: .75rem;
-    color: var(--t3);
-}
-
-.ag-modal-close {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    border: none;
-    background: var(--subtle);
-    cursor: pointer;
-    font-size: 1rem;
-    color: var(--t2);
-    transition: all var(--t);
-}
-
-.ag-modal-close:hover {
-    background: var(--rose-l);
-    color: var(--rose);
-}
-
-.ag-modal-grid {
-    padding: 1.2rem;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: .8rem;
-}
-
-.ag-create-card {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    padding: 1rem;
-    border-radius: var(--r3);
-    text-decoration: none;
-    border: 1px solid var(--border);
-    background: var(--card);
-    transition: all var(--t);
-}
-
-.ag-create-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--s2);
-    border-color: var(--blue);
-    text-decoration: none;
-}
-
-.ag-create-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.ag-create-card h4 {
-    font-size: .82rem;
-    font-weight: 700;
-    color: var(--t1);
-    margin-bottom: .15rem;
-}
-
-.ag-create-card span {
-    font-size: .7rem;
-    color: var(--t3);
-}
-
-@media(max-width:600px){
-    .ag-modal {
-        margin: 1rem;
-    }
-
-    .ag-modal-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-
 </style>
 @endpush
 
@@ -648,6 +461,17 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
         </a>
         <span class="ag-bc-s">›</span>
         <span style="color:var(--t2);font-weight:600;">Agenda</span>
+        @if($selectedDelegateId)
+            @php
+                $activeDlg = $delegateList->firstWhere('id', $selectedDelegateId);
+            @endphp
+            @if($activeDlg)
+                <span class="ag-bc-s">›</span>
+                <span style="color:var(--blue);font-weight:600;">
+                    {{ $activeDlg->prenom }} {{ $activeDlg->nom }}
+                </span>
+            @endif
+        @endif
     </div>
 
     {{-- Header --}}
@@ -658,24 +482,160 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
         </div>
     </div>
 
-   {{-- <div class="create-actions-toolbar" style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <a href="{{ route('bss.create') }}" class="btn-ag btn-ag-primary">Nouveau BSS</a>
-        <a href="{{ route('examens.create') }}" class="btn-ag btn-ag-primary">Nouvel examen</a>
-        <a href="{{ route('actions.create') }}" class="btn-ag btn-ag-primary">Nouvelle action</a>
-        <a href="{{ route('formations.create') }}" class="btn-ag btn-ag-primary">Nouvelle formation</a>
-        <a href="{{ route('events.create') }}" class="btn-ag btn-ag-primary">Nouvel événement</a>
+    {{-- Create actions toolbar (hidden for RBO) --}}
+    {{-- @if(Auth::user()->role !== 'rbo')
+    <div class="create-actions-toolbar" style="margin-bottom:1rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+        <a href="{{ route('bss.create') }}"              class="btn-ag btn-ag-primary">Nouveau BSS</a>
+        <a href="{{ route('examens.create') }}"          class="btn-ag btn-ag-primary">Nouvel examen</a>
+        <a href="{{ route('actions.create') }}"          class="btn-ag btn-ag-primary">Nouvelle action</a>
+        <a href="{{ route('formations.create') }}"       class="btn-ag btn-ag-primary">Nouvelle formation</a>
+        <a href="{{ route('events.create') }}"           class="btn-ag btn-ag-primary">Nouvel événement</a>
         <a href="{{ route('demandes-specimens.create') }}" class="btn-ag btn-ag-primary">Demande spéciale</a>
-        <a href="{{ route('taches.create') }}" class="btn-ag btn-ag-primary">Nouvelle tâche</a>
-    </div> --}}
+        <a href="{{ route('taches.create') }}"           class="btn-ag btn-ag-primary">Nouvelle tâche</a>
+    </div>
+    @endif --}}
 
-    
+    {{-- ═══════════════════════════════════════════════
+         DELEGATE FILTER PANEL
+         Shown to: rbo, admin, abo
+    ════════════════════════════════════════════════ --}}
+    @if(in_array(Auth::user()->role, ['rbo', 'admin', 'abo']))
+    <div class="ag-filter-panel">
 
-    
+        {{-- Panel header --}}
+        <div class="ag-filter-hd">
+            <div class="ag-filter-hd-left">
+                <div class="ag-filter-ico">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3>Filtrer par délégué</h3>
+                    <p>
+                        @if(Auth::user()->role === 'rbo')
+                            Visualisez l'agenda de l'un de vos délégués assignés
+                        @else
+                            Sélectionnez un RBO puis un délégué pour voir son agenda
+                        @endif
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── ADMIN / ABO: RBO selector ── --}}
+        @if(in_array(Auth::user()->role, ['admin', 'abo']) && $rboList->count() > 0)
+        <div class="ag-filter-rbo-row">
+            <span class="ag-filter-rbo-label">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;margin-right:.25rem"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                RBO
+            </span>
+
+            <select
+                class="ag-filter-rbo-select"
+                id="rboSelect"
+                onchange="onRboChange(this.value)">
+                <option value="">— Sélectionnez un RBO —</option>
+                @foreach($rboList as $rbo)
+                    <option
+                        value="{{ $rbo->id }}"
+                        {{ $selectedRboId == $rbo->id ? 'selected' : '' }}>
+                        {{ $rbo->prenom }} {{ $rbo->nom }}
+                    </option>
+                @endforeach
+            </select>
+
+            @if($selectedRboId && $delegateList->isEmpty())
+                <span style="font-size:.75rem;color:var(--t4);font-style:italic;">
+                    Aucun délégué assigné à ce RBO
+                </span>
+            @endif
+        </div>
+        @endif
+
+        {{-- ── Delegate pills ── --}}
+        @php
+            $canShowDelegates = Auth::user()->role === 'rbo'
+                || (in_array(Auth::user()->role, ['admin','abo']) && $selectedRboId);
+        @endphp
+
+        @if($canShowDelegates)
+        <div class="ag-filter-dlg-row">
+            <span class="ag-filter-dlg-label">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;margin-right:.25rem"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Délégué
+            </span>
+
+            @if($delegateList->isNotEmpty())
+
+                {{-- "All" pill --}}
+                @php
+                    $allUrl = route('agenda.index', array_filter([
+                        'view'    => $viewMode,
+                        'tab'     => $tab,
+                        'rbo_id'  => $selectedRboId ?: null,
+                    ]));
+                @endphp
+                <a href="{{ $allUrl }}"
+                   class="ag-dlg-pill ag-dlg-pill-all {{ !$selectedDelegateId ? 'active' : '' }}">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Tous
+                </a>
+
+                {{-- One pill per delegate --}}
+                @foreach($delegateList as $dlg)
+                    @php
+                        $dlgUrl = route('agenda.index', array_filter([
+                            'view'        => $viewMode,
+                            'tab'         => $tab,
+                            'delegate_id' => $dlg->id,
+                            'rbo_id'      => $selectedRboId ?: null,
+                        ]));
+                        $initials = strtoupper(substr($dlg->prenom, 0, 1) . substr($dlg->nom, 0, 1));
+                    @endphp
+                    <a href="{{ $dlgUrl }}"
+                       class="ag-dlg-pill ag-dlg-pill-user {{ $selectedDelegateId == $dlg->id ? 'active' : '' }}">
+                        <span class="ag-dlg-pill-av">{{ $initials }}</span>
+                        {{ $dlg->prenom }} {{ $dlg->nom }}
+                    </a>
+                @endforeach
+
+            @else
+                <span class="ag-filter-dlg-empty">Aucun délégué disponible</span>
+            @endif
+        </div>
+        @elseif(in_array(Auth::user()->role, ['admin', 'abo']))
+            {{-- Admin hasn't picked an RBO yet --}}
+            <div class="ag-filter-dlg-row">
+                <span style="font-size:.78rem;color:var(--t4);font-style:italic;">
+                    Sélectionnez d'abord un RBO pour afficher ses délégués
+                </span>
+            </div>
+        @endif
+
+        {{-- Active delegate banner --}}
+        @if($selectedDelegateId && $activeDlg = $delegateList->firstWhere('id', $selectedDelegateId))
+        <div class="ag-filter-active-banner">
+            <div class="ag-filter-active-info">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Agenda de
+                <strong>{{ $activeDlg->prenom }} {{ $activeDlg->nom }}</strong>
+                — toutes les données affichées appartiennent à ce délégué
+            </div>
+            <a href="{{ route('agenda.index', array_filter(['view' => $viewMode, 'tab' => $tab, 'rbo_id' => $selectedRboId ?: null])) }}"
+               class="ag-filter-clear">
+                ✕ Réinitialiser le filtre
+            </a>
+        </div>
+        @endif
+
+    </div>
+    @endif
+    {{-- /DELEGATE FILTER PANEL --}}
 
     {{-- Toolbar: tabs + view toggle --}}
     <div class="ag-toolbar">
-
-        {{-- Tab pills --}}
         <div class="ag-tabs">
             @php
                 $tabDefs = [
@@ -699,14 +659,13 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
             @endforeach
         </div>
 
-        {{-- View toggle --}}
         <div class="ag-view-toggle">
-            <a href="{{ route('agenda.index', ['view'=>'calendar','tab'=>$tab]) }}"
+            <a href="{{ route('agenda.index', array_filter(['view'=>'calendar','tab'=>$tab,'delegate_id'=>$selectedDelegateId,'rbo_id'=>$selectedRboId])) }}"
                class="ag-view-btn {{ $viewMode === 'calendar' ? 'active' : '' }}">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
                 Calendrier
             </a>
-            <a href="{{ route('agenda.index', ['view'=>'list','tab'=>$tab]) }}"
+            <a href="{{ route('agenda.index', array_filter(['view'=>'list','tab'=>$tab,'delegate_id'=>$selectedDelegateId,'rbo_id'=>$selectedRboId])) }}"
                class="ag-view-btn {{ $viewMode === 'list' ? 'active' : '' }}">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                 Liste
@@ -714,21 +673,26 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
         </div>
     </div>
 
- {{-- ═══ Calendar view ═══ --}}
-@if($viewMode === 'calendar')
-<div class="ag-card">
-    <div class="ag-card-hd">
-        <div class="ag-card-title">
-            <span class="ag-pip"></span>
-            Calendrier — {{ $tabDefs[$tab]['label'] ?? 'Fusionné' }}
+    {{-- ═══ Calendar view ═══ --}}
+    @if($viewMode === 'calendar')
+    <div class="ag-card">
+        <div class="ag-card-hd">
+            <div class="ag-card-title">
+                <span class="ag-pip"></span>
+                Calendrier —
+                {{ $tabDefs[$tab]['label'] ?? 'Fusionné' }}
+                @if($selectedDelegateId && isset($activeDlg))
+                    <span style="color:var(--t3);font-weight:500;">
+                        · {{ $activeDlg->prenom }} {{ $activeDlg->nom }}
+                    </span>
+                @endif
+            </div>
+        </div>
+        <div class="ag-calendar-wrap">
+            <div id="calendar"></div>
         </div>
     </div>
-
-    <div class="ag-calendar-wrap">
-        <div id="calendar"></div>
-    </div>
-</div>
-@endif
+    @endif
 
     {{-- ═══ List view ═══ --}}
     @if($viewMode === 'list')
@@ -737,10 +701,13 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
             <div class="ag-card-title">
                 <span class="ag-pip"></span>
                 {{ $tabDefs[$tab]['label'] ?? 'Tous les événements' }}
+                @if($selectedDelegateId && isset($activeDlg))
+                    <span style="color:var(--t3);font-weight:500;">
+                        · {{ $activeDlg->prenom }} {{ $activeDlg->nom }}
+                    </span>
+                @endif
             </div>
-            @if($viewMode === 'list')
             <span class="ag-card-count">{{ $events->total() }} événement{{ $events->total() > 1 ? 's' : '' }}</span>
-            @endif
         </div>
 
         <div style="overflow-x:auto;">
@@ -777,8 +744,10 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
                             'tasks'      => 'Tâche',
                             default      => ucfirst($event['type'] ?? '—'),
                         };
-                        $delegate  = $event['delegate'] ?? null;
-                        $initials  = $delegate ? strtoupper(substr($delegate, 0, 1)) : '?';
+                        $delegate = $event['delegate'] ?? null;
+                        $initials = ($delegate && $delegate !== '—')
+                            ? strtoupper(substr($delegate, 0, 1))
+                            : '?';
                     @endphp
                     <tr>
                         <td><span class="ag-date-cell">{{ $event['date']->format('d/m/Y') }}</span></td>
@@ -796,7 +765,7 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
                             @endif
                         </td>
                         <td>
-                            @if($delegate)
+                            @if($delegate && $delegate !== '—')
                                 <div class="ag-dlg">
                                     <div class="ag-dlg-av">{{ $initials }}</div>
                                     <span style="font-size:.81rem;color:var(--t2);">{{ $delegate }}</span>
@@ -837,357 +806,225 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
 
 </div>
 
-
-{{-- ── Create Action Modal ───────────────────────── --}}
+{{-- ── Create Action Modal ────────────────────────────── --}}
 <div id="agCreateModal" class="ag-modal-overlay">
     <div class="ag-modal">
-        
         <div class="ag-modal-head">
             <div>
                 <h3>Créer un élément</h3>
                 <p id="agModalDate"></p>
             </div>
-
-            <button type="button" class="ag-modal-close" id="agModalClose">
-                ✕
-            </button>
+            <button type="button" class="ag-modal-close" id="agModalClose">✕</button>
         </div>
-
         <div class="ag-modal-grid" id="agModalGrid"></div>
-
     </div>
 </div>
-
-
 @endsection
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
-
 <script>
 (function () {
 
-    const viewMode   = '{{ $viewMode }}';
-    const currentTab = '{{ $tab }}';
-    const userRole   = '{{ Auth::user()->role }}';
+    const viewMode          = '{{ $viewMode }}';
+    const currentTab        = '{{ $tab }}';
+    const userRole          = '{{ Auth::user()->role }}';
+    const selectedRboId     = '{{ $selectedRboId ?? "" }}';
+
+    // The delegate_id filter — kept as a JS variable so tab-switching and
+    // the FullCalendar events URL both read from the same source of truth.
+    const selectedDelegateId = '{{ $selectedDelegateId ?? "" }}';
 
     // ── Toast ──────────────────────────────────────────
     function showToast(msg) {
-
         const t = document.createElement('div');
-
         t.className = 'ag-toast';
         t.innerText = msg;
-
         document.body.appendChild(t);
-
         setTimeout(() => t.classList.add('show'), 50);
-
-        setTimeout(() => {
-
-            t.classList.remove('show');
-
-            setTimeout(() => t.remove(), 300);
-
-        }, 2500);
-
+        setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
     }
 
-    // ── Tab switching ──────────────────────────────────
+    // ── Tab switching (preserves delegate + rbo filters) ──
     document.querySelectorAll('.ag-tab').forEach(btn => {
-
         btn.addEventListener('click', () => {
-
-            window.location.href =
-                '{{ route("agenda.index") }}?view=' +
-                viewMode +
-                '&tab=' +
-                btn.dataset.tab;
-
+            const params = new URLSearchParams({
+                view: viewMode,
+                tab:  btn.dataset.tab,
+            });
+            if (selectedDelegateId) params.set('delegate_id', selectedDelegateId);
+            if (selectedRboId)      params.set('rbo_id',      selectedRboId);
+            window.location.href = '{{ route("agenda.index") }}?' + params.toString();
         });
-
     });
+
+    // ── Admin: RBO <select> change → reload page with new rbo_id ──
+    window.onRboChange = function (rboId) {
+        const params = new URLSearchParams({
+            view: viewMode,
+            tab:  currentTab,
+        });
+        if (rboId) params.set('rbo_id', rboId);
+        window.location.href = '{{ route("agenda.index") }}?' + params.toString();
+    };
 
     if (viewMode !== 'calendar') return;
 
-    // ── Modal Elements ─────────────────────────────────
+    // ── Modal ──────────────────────────────────────────
     const modal      = document.getElementById('agCreateModal');
     const modalGrid  = document.getElementById('agModalGrid');
     const modalDate  = document.getElementById('agModalDate');
     const modalClose = document.getElementById('agModalClose');
 
-    // ── Open Modal ─────────────────────────────────────
     function openCreateModal(dateStr) {
-
         modalDate.innerText = 'Date sélectionnée : ' + dateStr;
 
         const actions = [
-
             {
-                title: 'Action',
-                subtitle: 'Créer une action',
-                color: 'var(--blue-l)',
-                iconColor: 'var(--blue)',
-                icon: '📌',
+                title: 'Action', subtitle: 'Créer une action',
+                color: 'var(--blue-l)', iconColor: 'var(--blue)', icon: '📌',
                 url: '{{ route("actions.create") }}?date_planification=' + dateStr
             },
-
             {
-                title: 'Examen',
-                subtitle: 'Planifier un examen',
-                color: 'var(--violet-l)',
-                iconColor: 'var(--violet)',
-                icon: '🧪',
+                title: 'Examen', subtitle: 'Planifier un examen',
+                color: 'var(--violet-l)', iconColor: 'var(--violet)', icon: '🧪',
                 url: '{{ route("examens.create") }}?date_examen=' + dateStr
             },
-
             {
-                title: 'BSS',
-                subtitle: 'Nouvelle demande',
-                color: 'var(--green-l)',
-                iconColor: 'var(--green)',
-                icon: '📦',
+                title: 'BSS', subtitle: 'Nouvelle demande',
+                color: 'var(--green-l)', iconColor: 'var(--green)', icon: '📦',
                 url: '{{ route("bss.create") }}?date_livraison_prevue=' + dateStr
             },
-
             {
-                title: 'Formation',
-                subtitle: 'Nouvelle formation',
-                color: 'var(--teal-l)',
-                iconColor: 'var(--teal)',
-                icon: '🎓',
+                title: 'Formation', subtitle: 'Nouvelle formation',
+                color: 'var(--teal-l)', iconColor: 'var(--teal)', icon: '🎓',
                 url: '{{ route("formations.create") }}?date=' + dateStr
             },
-
             {
-                title: 'Événement',
-                subtitle: 'Créer un événement',
-                color: 'var(--amber-l)',
-                iconColor: 'var(--amber)',
-                icon: '📅',
+                title: 'Événement', subtitle: 'Créer un événement',
+                color: 'var(--amber-l)', iconColor: 'var(--amber)', icon: '📅',
                 url: '{{ route("events.create") }}?date_event=' + dateStr
             },
-
             {
-                title: 'Tâche',
-                subtitle: 'Créer une tâche',
-                color: 'var(--subtle)',
-                iconColor: 'var(--t2)',
-                icon: '✅',
+                title: 'Tâche', subtitle: 'Créer une tâche',
+                color: 'var(--subtle)', iconColor: 'var(--t2)', icon: '✅',
                 url: '{{ route("taches.create") }}?date_planification=' + dateStr
-            }
-
+            },
         ];
 
-        modalGrid.innerHTML = actions.map(action => `
-            <a href="${action.url}" class="ag-create-card">
-
-                <div class="ag-create-icon"
-                     style="background:${action.color}; color:${action.iconColor};">
-                    ${action.icon}
-                </div>
-
-                <div>
-                    <h4>${action.title}</h4>
-                    <span>${action.subtitle}</span>
-                </div>
-
+        modalGrid.innerHTML = actions.map(a => `
+            <a href="${a.url}" class="ag-create-card">
+                <div class="ag-create-icon" style="background:${a.color};color:${a.iconColor};">${a.icon}</div>
+                <div><h4>${a.title}</h4><span>${a.subtitle}</span></div>
             </a>
         `).join('');
 
         modal.classList.add('show');
-
     }
 
-    // ── Close Modal ────────────────────────────────────
-    function closeCreateModal() {
+    function closeCreateModal() { modal.classList.remove('show'); }
 
-        modal.classList.remove('show');
+    if (modalClose) modalClose.addEventListener('click', closeCreateModal);
+    if (modal)      modal.addEventListener('click', e => { if (e.target === modal) closeCreateModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCreateModal(); });
 
-    }
-
-    if (modalClose) {
-
-        modalClose.addEventListener('click', closeCreateModal);
-
-    }
-
-    if (modal) {
-
-        modal.addEventListener('click', function(e) {
-
-            if (e.target === modal) {
-
-                closeCreateModal();
-
-            }
-
-        });
-
-    }
-
-    document.addEventListener('keydown', function(e) {
-
-        if (e.key === 'Escape') {
-
-            closeCreateModal();
-
-        }
-
-    });
-
-    // ══════════════════════════════════════════════════
-    // FullCalendar
-    // ══════════════════════════════════════════════════
-
+    // ── FullCalendar ───────────────────────────────────
     const calendarEl = document.getElementById('calendar');
-
     if (!calendarEl) return;
+
+    // Build the events endpoint URL — include delegate_id when a filter is active
+    function buildEventsUrl() {
+        const params = new URLSearchParams({ tab: currentTab });
+        if (selectedDelegateId) params.set('delegate_id', selectedDelegateId);
+        return '{{ route("agenda.events") }}?' + params.toString();
+    }
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
 
-        initialView: 'dayGridMonth',
-
-        locale: 'fr',
-
-        firstDay: 1,
+        initialView:  'dayGridMonth',
+        locale:       'fr',
+        firstDay:     1,
 
         headerToolbar: {
-            left: 'prev,next today',
+            left:   'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+            right:  'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
         },
 
-        events: '{{ route("agenda.events") }}?tab=' + currentTab,
-
+        events:   buildEventsUrl(),
         editable: true,
-
         droppable: true,
 
-        snapDuration: { days: 1 },
-
+        snapDuration:           { days: 1 },
         allDayMaintainDuration: true,
-
-        eventDragMinDistance: 5,
-
-        fixedMirrorParent: document.body,
-
+        eventDragMinDistance:   5,
+        fixedMirrorParent:      document.body,
         height: 'auto',
 
-        // ── Click on day ───────────────────────────────
-        dateClick: function(info) {
-
-            if (userRole === 'rbo') {
-                return;
-            }
-
+        // ── Date click → open create modal ────────────
+        dateClick: function (info) {
+            // RBO cannot create events
+            if (userRole === 'rbo') return;
+            // If viewing another delegate's agenda, skip creation modal
+            if (selectedDelegateId) return;
             const dateStr = info.dateStr.split('T')[0];
-
             openCreateModal(dateStr);
-
         },
 
         // ── Drag & drop ───────────────────────────────
-        eventDrop: function(info) {
-
-            const el = info.el;
-
-            el.classList.add('drop-animate');
-
-            setTimeout(() => {
-                el.classList.remove('drop-animate');
-            }, 300);
-
+        eventDrop: function (info) {
+            const el      = info.el;
             const event   = info.event;
             const newDate = event.start.toISOString().slice(0, 10);
             const type    = event.extendedProps.type;
             const id      = event.id;
 
+            el.classList.add('drop-animate');
+            setTimeout(() => el.classList.remove('drop-animate'), 300);
+
             if (!type || !id) {
-
                 el.classList.add('shake');
-
-                setTimeout(() => {
-                    el.classList.remove('shake');
-                }, 300);
-
+                setTimeout(() => el.classList.remove('shake'), 300);
                 showToast('Impossible de modifier ❌');
-
                 info.revert();
-
                 return;
             }
 
             fetch(`{{ url('/agenda/event') }}/${type}/${id}/reschedule`, {
-
                 method: 'PATCH',
-
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN':
-                        document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
-
-                body: JSON.stringify({
-                    new_date: newDate
-                })
-
+                body: JSON.stringify({ new_date: newDate })
             })
-
             .then(r => r.json())
-
             .then(data => {
-
                 if (!data.success) {
-
                     el.classList.add('shake');
-
-                    setTimeout(() => {
-                        el.classList.remove('shake');
-                    }, 300);
-
+                    setTimeout(() => el.classList.remove('shake'), 300);
                     showToast(data.error || 'Erreur lors du déplacement ❌');
-
                     info.revert();
-
                 } else {
-
                     showToast('Événement déplacé ✔');
-
                     calendar.refetchEvents();
-
                 }
-
             })
-
             .catch(() => {
-
                 el.classList.add('shake');
-
-                setTimeout(() => {
-                    el.classList.remove('shake');
-                }, 300);
-
+                setTimeout(() => el.classList.remove('shake'), 300);
                 showToast('Erreur réseau ⚠');
-
                 info.revert();
-
             });
-
         },
 
         // ── Event click ───────────────────────────────
-        eventClick: function(info) {
-
+        eventClick: function (info) {
             if (info.event.url) {
-
                 info.jsEvent.preventDefault();
-
                 window.location.href = info.event.url;
-
             }
-
         },
-
     });
 
     calendar.render();
