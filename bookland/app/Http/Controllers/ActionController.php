@@ -13,6 +13,7 @@ use App\Models\Examen;
 use App\Models\Retour;
 use App\Models\AnneeScolaire;
 use App\Models\User;
+use App\Models\MpDelivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
@@ -391,6 +392,11 @@ class ActionController extends Controller
         $this->authorizeView($action);
         $action->load('lignes.contacts', 'lignes.products', 'lignes.examens', 'lignes.bss', 'lignes.retour', 'compte', 'delegate');
 
+        $mpDelivery = null;
+        if ($action->module_lie === 'mp_delivery' && $action->module_id) {
+            $mpDelivery = MpDelivery::with(['mpProduct', 'anneeScolaire'])->find($action->module_id);
+        }
+
         $user = Auth::user();
         $delegateIds = $user->role === 'rbo'
             ? $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique()
@@ -404,7 +410,7 @@ class ActionController extends Controller
             && in_array($user->role, ['admin', 'rbo'], true)
             && ($user->role === 'admin' || $delegateIds->contains($action->delegue_id));
 
-        return view('actions.show', compact('action', 'canValiderLegacy', 'canDevalider'));
+        return view('actions.show', compact('action', 'canValiderLegacy', 'canDevalider', 'mpDelivery'));
     }
 
     public function edit(Action $action)
@@ -504,17 +510,38 @@ class ActionController extends Controller
         }
         $validated = $validator->validated();
 
-        $action->update([
-            'statut' => 'valide',
-            'rapport_titre' => $validated['rapport_titre'],
-            'rapport_description' => $validated['rapport_description'],
-            'rapport_date' => $validated['rapport_date'],
-            'date_realisation' => now(),
-            'date_validation' => now(),
-            'valide_par' => $user->id,
-        ]);
+        $mp = null;
+        if ($action->module_lie === 'mp_delivery' && $action->module_id) {
+            $mp = MpDelivery::with('anneeScolaire')->find($action->module_id);
+            if (! $mp) {
+                return redirect()->back()->with('error', 'Livraison MP introuvable.');
+            }
+            YearLock::check($mp);
+            if ($mp->statut !== 'planifie') {
+                return redirect()->back()->with('error', 'Cette livraison MP est déjà marquée comme livrée.');
+            }
+        }
 
-        return redirect()->route('actions.show', $action)->with('success', 'Rapport enregistré : action réalisée et validée.');
+        DB::transaction(function () use ($action, $validated, $user, $mp) {
+            if ($mp) {
+                $mp->update(['statut' => 'livre']);
+            }
+            $action->update([
+                'statut' => 'valide',
+                'rapport_titre' => $validated['rapport_titre'],
+                'rapport_description' => $validated['rapport_description'],
+                'rapport_date' => $validated['rapport_date'],
+                'date_realisation' => now(),
+                'date_validation' => now(),
+                'valide_par' => $user->id,
+            ]);
+        });
+
+        $msg = $mp
+            ? 'Rapport enregistré : action validée et la livraison MP est marquée comme livrée.'
+            : 'Rapport enregistré : action réalisée et validée.';
+
+        return redirect()->route('actions.show', $action)->with('success', $msg);
     }
 
     public function valider(Action $action)
@@ -550,26 +577,58 @@ class ActionController extends Controller
         if ($action->statut !== 'valide') {
             return redirect()->back()->with('error', 'Seules les actions validées peuvent être dévalidées.');
         }
-        $action->update([
-            'statut' => 'planifie',
-            'rapport_titre' => null,
-            'rapport_description' => null,
-            'rapport_date' => null,
-            'date_realisation' => null,
-            'date_validation' => null,
-            'valide_par' => null,
-        ]);
+
+        $mp = null;
+        if ($action->module_lie === 'mp_delivery' && $action->module_id) {
+            $mp = MpDelivery::with('anneeScolaire')->find($action->module_id);
+            if ($mp) {
+                YearLock::check($mp);
+            }
+        }
+
+        DB::transaction(function () use ($action, $mp) {
+            if ($mp && $mp->statut === 'livre') {
+                $mp->update(['statut' => 'planifie']);
+            }
+            $action->update([
+                'statut' => 'planifie',
+                'rapport_titre' => null,
+                'rapport_description' => null,
+                'rapport_date' => null,
+                'date_realisation' => null,
+                'date_validation' => null,
+                'valide_par' => null,
+            ]);
+        });
 
         return redirect()->route('actions.show', $action)->with('success', 'Action dévalidée : le délégué peut à nouveau la modifier et soumettre un rapport.');
     }
 
     public function annuler(Action $action)
     {
+        $isMp = $action->module_lie === 'mp_delivery';
         $this->authorizeEdit($action);
-        if (!in_array($action->statut, ['planifie', 'realise'])) {
+
+        if (! in_array($action->statut, ['planifie', 'realise'])) {
             return redirect()->back()->with('error', 'Action non annulable.');
         }
-        $action->update(['statut' => 'annule']);
+        if ($isMp && $action->module_id) {
+            $mp = MpDelivery::find($action->module_id);
+            if ($mp && $mp->statut === 'livre') {
+                return redirect()->back()->with('error', 'Impossible d\'annuler : la livraison MP est déjà marquée comme livrée.');
+            }
+        }
+
+        $action->update([
+            'statut' => 'annule',
+            'date_realisation' => null,
+            'date_validation' => null,
+            'valide_par' => null,
+            'rapport_titre' => null,
+            'rapport_description' => null,
+            'rapport_date' => null,
+        ]);
+
         return redirect()->route('actions.show', $action)->with('success', 'Action annulée.');
     }
 

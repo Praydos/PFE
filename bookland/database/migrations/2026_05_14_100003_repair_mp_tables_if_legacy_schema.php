@@ -54,7 +54,7 @@ return new class extends Migration
             $table->foreignId('annee_scolaire_id')->constrained('annees_scolaires')->restrictOnDelete();
             $table->foreignId('mp_product_id')->constrained('mp_products')->restrictOnDelete();
             $table->date('date_delivery');
-            $table->enum('statut', ['delivered', 'returned'])->default('delivered');
+            $table->string('statut', 20)->default('planifie');
             $table->timestamps();
 
             $table->index(['compte_id', 'mp_product_id', 'annee_scolaire_id']);

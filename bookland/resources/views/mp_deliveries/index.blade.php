@@ -13,9 +13,14 @@
             <h1 style="font-size:1.5rem;font-weight:700;margin:0;">Livraisons MP</h1>
             <p style="color:#525f7f;margin-top:.35rem;font-size:.9rem;">Suivi des livraisons de matériel pédagogique par établissement.</p>
         </div>
-        @if(in_array(auth()->user()->role, ['admin', 'rbo', 'delegue']))
-            <a href="{{ route('mp-deliveries.create') }}" class="btn-zn btn-zn-primary" style="display:inline-flex;align-items:center;padding:.55rem 1.1rem;border-radius:8px;background:#5b8dee;color:#fff;text-decoration:none;font-weight:600;font-size:.85rem;">Nouvelle livraison</a>
-        @endif
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+            @if(auth()->user()->role === 'admin')
+                <a href="{{ route('mp-products.index') }}" style="padding:.55rem 1rem;border:1px solid #e4e7f0;border-radius:8px;color:#525f7f;text-decoration:none;font-weight:600;font-size:.82rem;">Catalogue MP</a>
+            @endif
+            @if(in_array(auth()->user()->role, ['admin', 'rbo', 'delegue']))
+                <a href="{{ route('mp-deliveries.create') }}" class="btn-zn btn-zn-primary" style="display:inline-flex;align-items:center;padding:.55rem 1.1rem;border-radius:8px;background:#5b8dee;color:#fff;text-decoration:none;font-weight:600;font-size:.85rem;">Nouvelle livraison</a>
+            @endif
+        </div>
     </div>
 
     @if(session('success'))
@@ -77,7 +82,11 @@
                         <td style="padding:.75rem 1rem;">{{ $row->mpProduct?->nom ?? '—' }} <span style="color:#9ba8c5;">({{ $row->mpProduct?->code_article }})</span></td>
                         <td style="padding:.75rem 1rem;">{{ $row->date_delivery?->format('d/m/Y') }}</td>
                         <td style="padding:.75rem 1rem;">
-                            @if($row->statut === 'delivered') Livré @else Retourné @endif
+                            @if($row->statut === 'livre')
+                                Livré
+                            @else
+                                Planifié
+                            @endif
                         </td>
                         <td style="padding:.75rem 1rem;white-space:nowrap;">
                             <a href="{{ route('mp-deliveries.show', $row) }}" style="color:#5b8dee;font-weight:600;">Voir</a>

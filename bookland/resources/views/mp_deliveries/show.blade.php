@@ -31,7 +31,13 @@
         <p><strong>Éditeur :</strong> {{ $delivery->mpProduct?->editeur }}</p>
         <p><strong>Date de livraison :</strong> {{ $delivery->date_delivery?->format('d/m/Y') }}</p>
         <p><strong>Année scolaire :</strong> {{ $delivery->anneeScolaire?->libelle ?? '—' }}</p>
-        <p><strong>Statut :</strong> @if($delivery->statut === 'delivered') Livré @else Retourné @endif</p>
+        <p><strong>Statut :</strong>
+            @if($delivery->statut === 'livre')
+                Livré
+            @else
+                Planifié
+            @endif
+        </p>
         @if($delivery->linkedCommercialAction)
             <p style="margin-top:1rem;">
                 <strong>Action commerciale liée :</strong>

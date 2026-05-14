@@ -402,6 +402,27 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
                 @endif
             </div>
 
+            @if($action->module_lie === 'mp_delivery' && ($mpDelivery ?? null))
+            <hr>
+            <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem;">Livraison MP</h3>
+            <div class="info-grid" style="margin-bottom: 0;">
+                <div class="info-item"><span class="info-label">N° livraison</span>
+                    <a href="{{ route('mp-deliveries.show', $mpDelivery) }}">{{ $mpDelivery->numero }}</a>
+                </div>
+                <div class="info-item"><span class="info-label">Article</span> {{ $mpDelivery->mpProduct?->nom ?? '—' }}</div>
+                <div class="info-item"><span class="info-label">Statut livraison</span>
+                    @if($mpDelivery->statut === 'livre')
+                        <span class="dr-badge bd-valide">Livré</span>
+                    @else
+                        <span class="dr-badge bd-planifie">Planifié</span>
+                    @endif
+                </div>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.75rem;">
+                Le bouton <strong>Réaliser</strong> ouvre le rapport de visite : une fois le rapport validé, l’action est clôturée et la livraison MP passe à <strong>livré</strong>.
+            </p>
+            @endif
+
             @if($action->rapport_titre)
             <hr>
             <h3 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem;">Rapport de réalisation</h3>
@@ -561,7 +582,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
                 </div>
                 <div class="dlg-modal-titles">
                     <h2>Rapport de réalisation</h2>
-                    <p>Renseignez le rapport pour clôturer et valider l'action</p>
+                    <p>
+                        @if($action->module_lie === 'mp_delivery')
+                            Renseignez le rapport : à la validation, l’action est clôturée et la livraison MP est marquée comme livrée.
+                        @else
+                            Renseignez le rapport pour clôturer et valider l'action
+                        @endif
+                    </p>
                 </div>
                 <button type="button" class="dlg-modal-close" id="closeRealiserModal" aria-label="Fermer">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">

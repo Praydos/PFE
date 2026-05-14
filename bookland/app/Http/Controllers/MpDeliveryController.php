@@ -225,7 +225,7 @@ class MpDeliveryController extends Controller
                 'annee_scolaire_id' => $currentYear->id,
                 'mp_product_id' => $validated['mp_product_id'],
                 'date_delivery' => $validated['date_delivery'],
-                'statut' => 'delivered',
+                'statut' => 'planifie',
             ]);
 
             return redirect()->route('mp-deliveries.show', $delivery)

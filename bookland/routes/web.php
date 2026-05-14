@@ -47,6 +47,7 @@ use App\Http\Controllers\VacationController;
 use App\Http\Controllers\TacheController;
 use App\Http\Controllers\ActionAmeliorationController;
 use App\Http\Controllers\MpDeliveryController;
+use App\Http\Controllers\MpProductController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -129,6 +130,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/products/{product}/edit', [ProductController::class , 'edit'])->name('products.edit');
             Route::put('/products/{product}', [ProductController::class , 'update'])->name('products.update');
             Route::delete('/products/{product}', [ProductController::class , 'destroy'])->name('products.destroy');
+
+            Route::resource('mp-products', MpProductController::class)->except(['show']);
 
 
             // Zone ↔ Delegate detachment
