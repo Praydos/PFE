@@ -23,6 +23,8 @@ return new class extends Migration
             $table->enum('fonction', ['Directeur', 'Responsable', 'Enseignant', 'Autre'])->nullable();
             $table->json('cycles')->nullable(); // store multiple values
             $table->boolean('status')->default(false); // active/inactive status
+
+            //add editeur options for contact
             $table->timestamps();
         });
     }

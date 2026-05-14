@@ -130,6 +130,12 @@ class BssController extends Controller
 
         $validated = $request->validate($rules);
 
+        $compte = Compte::with(['zone', 'ville'])->findOrFail($validated['compte_id']);
+        $delegateId = (int) $compte->delegue_id;
+        if ($user->role === 'delegue' && $delegateId !== (int) $user->id) {
+            abort(403);
+        }
+
         $currentYear = $this->getCurrentYear();
         if (!$currentYear) {
             return redirect()->back()->withErrors(['error' => 'Année scolaire active non trouvée.']);
@@ -179,7 +185,7 @@ class BssController extends Controller
             'numero' => $validated['numero'],
             'compte_id' => $validated['compte_id'],
             'contact_id' => $validated['contact_id'],
-            'delegate_id' => $user->id,
+            'delegate_id' => $delegateId,
             'annee_scolaire_id' => $currentYear->id,
             'date_bss' => now()->toDateString(),
             'date_livraison_prevue' => $validated['date_livraison_prevue'] ?? null,
@@ -191,7 +197,7 @@ class BssController extends Controller
         ]);
 
         foreach ($validated['products'] as $item) {
-            $consignation = Consignation::where('delegate_id', $user->id)
+            $consignation = Consignation::where('delegate_id', $delegateId)
                 ->where('product_id', $item['product_id'])
                 ->where('annee_scolaire_id', $currentYear->id)
                 ->first();
@@ -210,7 +216,6 @@ class BssController extends Controller
             ]);
         }
 
-        $compte = Compte::with(['zone', 'ville'])->find($bss->compte_id);
         $lieu = 'Zone: ' . ($compte->zone->name ?? 'N/A') . ' - Ville: ' . ($compte->ville->nom ?? 'N/A');
 
 
@@ -218,7 +223,7 @@ class BssController extends Controller
         $action = Action::create([
             'objet' => 'Livraison BSS ' . $bss->numero,
             'compte_id' => $bss->compte_id,
-            'delegue_id' => $user->id,
+            'delegue_id' => $delegateId,
             'date_planification' => $bss->date_livraison_prevue ?? now(),
             'statut' => 'planifie',
             'type' => 'commercial',

@@ -302,14 +302,21 @@ Route::get('/api/events/all-contacts', [EventController::class , 'getAllContacts
 
 
 
-// RBO / Admin: create an action on behalf of a specific delegate
-// IMPORTANT: must be declared BEFORE Route::resource('actions') to avoid {action} swallowing 'for-delegate'
-Route::get('/actions/for-delegate/{delegate}',  [ActionController::class, 'createForDelegate'])
-    ->name('actions.createForDelegate')
-    ->middleware('auth', 'role:admin,rbo');
-Route::post('/actions/for-delegate/{delegate}', [ActionController::class, 'storeForDelegate'])
-    ->name('actions.storeForDelegate')
-    ->middleware('auth', 'role:admin,rbo');
+// RBO / Admin: create on behalf of a delegate — MUST be before resource() to avoid wildcard clash
+Route::get('/actions/for-delegate/{delegate}',  [ActionController::class, 'createForDelegate'])->name('actions.createForDelegate')->middleware('auth', 'role:admin,rbo');
+Route::post('/actions/for-delegate/{delegate}', [ActionController::class, 'storeForDelegate'])->name('actions.storeForDelegate')->middleware('auth', 'role:admin,rbo');
+
+Route::get('/bss/for-delegate/{delegate}',  [BssController::class, 'createForDelegate'])->name('bss.createForDelegate')->middleware('auth', 'role:admin,rbo');
+Route::post('/bss/for-delegate/{delegate}', [BssController::class, 'storeForDelegate'])->name('bss.storeForDelegate')->middleware('auth', 'role:admin,rbo');
+
+Route::get('/examens/for-delegate/{delegate}',  [ExamenController::class, 'createForDelegate'])->name('examens.createForDelegate')->middleware('auth', 'role:admin,rbo');
+Route::post('/examens/for-delegate/{delegate}', [ExamenController::class, 'storeForDelegate'])->name('examens.storeForDelegate')->middleware('auth', 'role:admin,rbo');
+
+Route::get('/formations/for-delegate/{delegate}',  [FormationController::class, 'createForDelegate'])->name('formations.createForDelegate')->middleware('auth', 'role:admin,rbo');
+Route::post('/formations/for-delegate/{delegate}', [FormationController::class, 'storeForDelegate'])->name('formations.storeForDelegate')->middleware('auth', 'role:admin,rbo');
+
+Route::get('/events/for-delegate/{delegate}',  [EventController::class, 'createForDelegate'])->name('events.createForDelegate')->middleware('auth', 'role:admin,rbo');
+Route::post('/events/for-delegate/{delegate}', [EventController::class, 'storeForDelegate'])->name('events.storeForDelegate')->middleware('auth', 'role:admin,rbo');
 
 Route::resource('actions', ActionController::class);
 Route::post('/actions/{action}/realiser', [ActionController::class, 'realiser'])->name('actions.realiser');
@@ -360,8 +367,11 @@ Route::resource('vacations', VacationController::class)->only(['index', 'store',
 Route::get('/taches', [TacheController::class , 'index'])->name('taches.index');
 
 // Create
-Route::get('/taches/create', [TacheController::class , 'create'])->name('taches.create');
-Route::post('/taches', [TacheController::class , 'store'])->name('taches.store');
+Route::get('/taches/create', [TacheController::class, 'create'])->name('taches.create');
+Route::post('/taches', [TacheController::class, 'store'])->name('taches.store');
+
+Route::get('/taches/for-delegate/{delegate}',  [TacheController::class, 'createForDelegate'])->name('taches.createForDelegate')->middleware('auth', 'role:admin,rbo');
+Route::post('/taches/for-delegate/{delegate}', [TacheController::class, 'storeForDelegate'])->name('taches.storeForDelegate')->middleware('auth', 'role:admin,rbo');
 
 // Show (IMPORTANT ONE)
 Route::get('/taches/{tache}', [TacheController::class , 'show'])->name('taches.show');

@@ -879,16 +879,39 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
     function openCreateModal(dateStr, delegateId) {
         modalDate.innerText = 'Date sélectionnée : ' + dateStr;
 
-        // When delegateId is given (RBO/Admin acting on behalf), only show Action creation.
-        // Other modules don't yet support the for-delegate flow.
+        // When delegateId is given (RBO/Admin acting on behalf of a delegate), show all modules.
         let actions;
         if (delegateId) {
-            const baseUrl = '{{ url("/actions/for-delegate") }}/' + delegateId;
             actions = [
                 {
-                    title: 'Action', subtitle: 'Créer une action pour ce délégué',
+                    title: 'Action', subtitle: 'Créer une action',
                     color: 'var(--blue-l)', iconColor: 'var(--blue)', icon: '📌',
-                    url: baseUrl + '?date_planification=' + dateStr
+                    url: '{{ url("/actions/for-delegate") }}/' + delegateId + '?date_planification=' + dateStr
+                },
+                {
+                    title: 'BSS / Spécimen', subtitle: 'Nouvelle demande BSS',
+                    color: 'var(--green-l)', iconColor: 'var(--green)', icon: '📦',
+                    url: '{{ url("/bss/for-delegate") }}/' + delegateId + '?date_livraison_prevue=' + dateStr
+                },
+                {
+                    title: 'Examen', subtitle: 'Planifier un examen',
+                    color: 'var(--violet-l)', iconColor: 'var(--violet)', icon: '🧪',
+                    url: '{{ url("/examens/for-delegate") }}/' + delegateId + '?date_examen=' + dateStr
+                },
+                {
+                    title: 'Formation', subtitle: 'Nouvelle formation',
+                    color: 'var(--teal-l)', iconColor: 'var(--teal)', icon: '🎓',
+                    url: '{{ url("/formations/for-delegate") }}/' + delegateId + '?date_demande=' + dateStr
+                },
+                {
+                    title: 'Événement', subtitle: 'Créer un événement',
+                    color: 'var(--amber-l)', iconColor: 'var(--amber)', icon: '📅',
+                    url: '{{ url("/events/for-delegate") }}/' + delegateId + '?date_event=' + dateStr
+                },
+                {
+                    title: 'Tâche', subtitle: 'Créer une tâche',
+                    color: 'var(--subtle)', iconColor: 'var(--t2)', icon: '✅',
+                    url: '{{ url("/taches/for-delegate") }}/' + delegateId + '?date_planification=' + dateStr
                 },
             ];
         } else {

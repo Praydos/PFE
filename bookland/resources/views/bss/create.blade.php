@@ -242,7 +242,7 @@
     @endif
 
     <div class="fp-card">
-        <form method="POST" action="{{ isset($bss) ? route('bss.update', $bss) : route('bss.store') }}" id="bssForm">
+        <form method="POST" action="{{ isset($bss) ? route('bss.update', $bss) : (isset($targetDelegate) ? route('bss.storeForDelegate', $targetDelegate) : route('bss.store')) }}" id="bssForm">
             @csrf
             @if(isset($bss)) @method('PUT') @endif
 

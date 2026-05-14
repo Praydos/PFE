@@ -53,8 +53,8 @@ class ExamenController extends Controller
     // Create form
     public function create(Request $request)    {
         $user = Auth::user();
-        if ($user->role !== 'delegue')
-            abort(403);
+        // if ($user->role !== 'delegue')
+        //     abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
         $currentYear = $this->getCurrentYear();
@@ -79,8 +79,8 @@ class ExamenController extends Controller
     // Store new examen
     public function store(Request $request)    {
         $user = Auth::user();
-        if ($user->role !== 'delegue')
-            abort(403);
+        // if ($user->role !== 'delegue')
+        //     abort(403);
 
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',
@@ -319,6 +319,87 @@ class ExamenController extends Controller
     }
 
 
-    private function hasAction(Examen $examen)    {
-        return Action::where('module_lie', 'examen')->where('module_id', $examen->id)->exists();    }
+    private function hasAction(Examen $examen)
+    {
+        return Action::where('module_lie', 'examen')->where('module_id', $examen->id)->exists();
+    }
+
+    // ── For-delegate flow (RBO / Admin) ──────────────────────────────────
+
+    public function createForDelegate(Request $request, User $delegate)
+    {
+        $this->authorizeForDelegate($delegate);
+
+        $comptes          = Compte::where('delegue_id', $delegate->id)->with('ville')->get();
+        $currentYear      = $this->getCurrentYear();
+        $years            = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+        $langues          = ['Français', 'Anglais', 'Arabe', 'Espagnol'];
+        $organismes       = ['Cambridge Assessment English', 'TOEFL', 'IELTS', 'Other'];
+        $niveauxCECR      = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Pre-A1'];
+        $niveauxScolaires = [
+            'CP', 'CE1', 'CE2', 'CM1', 'CM2',
+            '6ème primaire', '5ème primaire', '4ème primaire', '3ème primaire', '2ème primaire', '1ère primaire',
+            '3ème college', '2ème college', '1ère college', '3ème lycee', '2ème lycee', '1ère lycee'
+        ];
+
+        $selectedCompteId = $request->get('compte_id');
+        $defaultDate      = $request->get('date_examen', now()->toDateString());
+        $targetDelegate   = $delegate;
+
+        return view('examens.create', compact(
+            'comptes', 'currentYear', 'years', 'langues', 'organismes',
+            'niveauxCECR', 'niveauxScolaires', 'selectedCompteId', 'defaultDate', 'targetDelegate'
+        ));
+    }
+
+    public function storeForDelegate(Request $request, User $delegate)
+    {
+        $this->authorizeForDelegate($delegate);
+
+        $validated = $request->validate([
+            'compte_id'         => 'required|exists:comptes,id',
+            'contact_id'        => 'required|exists:contacts,id',
+            'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
+            'langue'            => 'required|string',
+            'organisme'         => 'required|string',
+            'titre'             => 'required|string',
+            'abreviation'       => 'nullable|string',
+            'niveau_cecr'       => 'nullable|string',
+            'niveaux_scolaires' => 'nullable|array',
+            'date_demande'      => 'required|date',
+            'date_examen'       => 'nullable|date',
+            'description'       => 'nullable|string',
+            'observations'      => 'nullable|string',
+            'epreuves'                        => 'nullable|array',
+            'epreuves.*.epreuve'              => 'required_with:epreuves|string',
+            'epreuves.*.duree'                => 'nullable|integer',
+            'epreuves.*.date_realisation'     => 'nullable|date',
+        ]);
+
+        $validated['delegue_id']        = $delegate->id;
+        $validated['statut']            = 'planifie';
+        $validated['niveaux_scolaires'] = $validated['niveaux_scolaires'] ?? [];
+
+        $examen = Examen::create($validated);
+        if (!empty($validated['epreuves'])) {
+            foreach ($validated['epreuves'] as $epreuve) {
+                $examen->epreuves()->create($epreuve);
+            }
+        }
+        $this->createActionForExamen($examen);
+
+        return redirect()->route('examens.index')
+            ->with('success', 'Demande d\'examen créée pour ' . $delegate->prenom . ' ' . $delegate->nom . '.');
+    }
+
+    private function authorizeForDelegate(User $delegate): void
+    {
+        $user = Auth::user();
+        if ($user->role === 'admin') return;
+        if ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            if ($delegateIds->contains($delegate->id)) return;
+        }
+        abort(403, 'Non autorisé à créer des examens pour ce délégué.');
+    }
 }

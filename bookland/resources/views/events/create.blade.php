@@ -153,9 +153,9 @@
 </style>
 @endpush
 
+
 @section('content')
 <div class="zn-page">
-
     {{-- Breadcrumb --}}
     <div class="zn-bc">
         <a href="{{ route('events.index') }}">
@@ -186,7 +186,14 @@
     @endif
 
     <div class="fp-card">
-        <form method="POST" action="{{ isset($event) ? route('events.update', $event) : route('events.store') }}" id="event-form">
+        {{-- Determine the correct form action --}}
+        @php
+            $formAction = isset($event)
+                ? route('events.update', $event)
+                : (isset($targetDelegate) ? route('events.storeForDelegate', $targetDelegate) : route('events.store'));
+        @endphp
+
+        <form method="POST" action="{{ $formAction }}" id="event-form">
             @csrf
             @if(isset($event)) @method('PUT') @endif
 
@@ -195,21 +202,12 @@
                 $defaultVilleId = old('ville_id', $isEdit ? $event->ville_id : '');
                 $defaultType = old('type', $isEdit ? $event->type : '');
                 $defaultEditeur = old('editeur', $isEdit ? $event->editeur : '');
-                // $defaultDate = old('date_event', $isEdit ? $event->date_event->format('Y-m-d') : now()->format('Y-m-d'));
                 $defaultYearId = old('annee_scolaire_id', $isEdit ? $event->annee_scolaire_id : ($currentYear->id ?? ''));
-              
-
-
-                $defaultDate = old(
-                    'date_planification',
-                    $isEdit
-                        ? $tache->date_planification->format('Y-m-d')
-                        : $defaultDate
-                );
-
+                // Properly handle the default date
+                $defaultDate = old('date_event', $isEdit ? $event->date_event->format('Y-m-d') : ($defaultDate ?? now()->toDateString()));
             @endphp
 
-            {{-- Section unique : Détails de l'événement --}}
+            {{-- Section : Détails de l'événement --}}
             <div class="fp-section">
                 <div class="fp-section-head">
                     <div class="fp-section-icon">
@@ -276,14 +274,14 @@
 
                 <div class="fp-row">
                     <div class="frm-group">
-                        <label class="frm-label" for="date_planification">Date de l'événement <span class="req">*</span></label>
-                       <input type="date"
-                                name="date_planification"
-                                id="date_planification"
-                                class="frm-input {{ $errors->has('date_planification') ? 'is-invalid' : '' }}"
-                                value="{{ $defaultDate }}"
-                                required>
-                        @error('date_planification')<span class="frm-error">{{ $message }}</span>@enderror
+                        <label class="frm-label" for="date_event">Date de l'événement <span class="req">*</span></label>
+                        <input type="date"
+                               name="date_event"
+                               id="date_event"
+                               class="frm-input {{ $errors->has('date_event') ? 'is-invalid' : '' }}"
+                               value="{{ $defaultDate }}"
+                               required>
+                        @error('date_event')<span class="frm-error">{{ $message }}</span>@enderror
                     </div>
                 </div>
             </div>

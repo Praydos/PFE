@@ -269,7 +269,16 @@
 
     {{-- Main form (full width, no sidebar) --}}
     <div class="fp-card">
-        <form method="POST" action="{{ isset($examen) ? route('examens.update', $examen) : route('examens.store') }}" id="exam-form">
+        <form method="POST" 
+            action="{{ isset($examen) 
+                ? route('examens.update', $examen) 
+                : (isset($targetDelegate) ? route('examens.storeForDelegate', $targetDelegate) : route('examens.store')) }}" 
+            id="exam-form">
+            @csrf
+            @if(isset($examen))
+                @method('PUT')
+            @endif
+
             @csrf
             @if(isset($examen)) @method('PUT') @endif
 

@@ -240,7 +240,7 @@
     @endif
 
     <div class="fp-card">
-        <form method="POST" action="{{ isset($tache) ? route('taches.update', $tache) : route('taches.store') }}">
+        <form method="POST" action="{{ isset($tache) ? route('taches.update', $tache) : (isset($targetDelegate) ? route('taches.storeForDelegate', $targetDelegate) : route('taches.store')) }}">
             @csrf
             @if(isset($tache)) @method('PUT') @endif
 

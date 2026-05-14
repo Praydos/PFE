@@ -100,8 +100,8 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue')
-            abort(403);
+        // if ($user->role !== 'delegue')
+        //     abort(403);
 
         $validated = $request->validate([
             'ville_id' => 'required|exists:villes,id',
@@ -353,5 +353,73 @@ class EventController extends Controller
                 return;
         }
         abort(403);
+    }
+
+    // ── For-delegate flow (RBO / Admin) ──────────────────────────────────
+
+    public function createForDelegate(Request $request, User $delegate)
+    {
+        $this->authorizeForDelegate($delegate);
+
+        $villes      = $this->getDelegateVillesForUser($delegate);
+        $currentYear = $this->getCurrentYear();
+        $years       = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+        $types       = ['Public Speaking', 'Ateliers de lecture', 'English Day', 'Compétitions', 'Amizing minds', 'Workshop', 'Exposition de livres', 'Salon', 'Formation Editeur', 'Présentation Produit'];
+        $editeurs    = ['Esprit du livre', 'Matifica', 'Express publishing', 'Bookland'];
+
+        $defaultDate    = $request->get('date_event', now()->toDateString());
+        $defaultVilleId = null;
+        $defaultZoneId  = null;
+        $targetDelegate = $delegate;
+
+        return view('events.create', compact(
+            'villes', 'currentYear', 'years', 'types', 'editeurs',
+            'defaultVilleId', 'defaultZoneId', 'defaultDate', 'targetDelegate'
+        ));
+    }
+
+    public function storeForDelegate(Request $request, User $delegate)
+    {
+        $this->authorizeForDelegate($delegate);
+
+        $validated = $request->validate([
+            'ville_id'          => 'required|exists:villes,id',
+            'type'              => 'required|string',
+            'editeur'           => 'required|string',
+            'date_event'        => 'required|date',
+            'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
+        ]);
+
+        $ville = Ville::find($validated['ville_id']);
+        $zone  = $ville->zones()->first();
+        if (!$zone) {
+            return redirect()->back()->withErrors(['ville_id' => 'Cette ville n\'a pas de zone associée.']);
+        }
+
+        $validated['zone_id']    = $zone->id;
+        $validated['delegue_id'] = $delegate->id;
+
+        $event = Event::create($validated);
+
+        return redirect()->route('events.show', $event)
+            ->with('success', 'Événement créé pour ' . $delegate->prenom . ' ' . $delegate->nom . '.');
+    }
+
+    /** Get villes accessible to a given delegate user (via their zones). */
+    private function getDelegateVillesForUser(User $user): \Illuminate\Database\Eloquent\Collection
+    {
+        $zoneIds = $user->zones->pluck('id');
+        return Ville::whereHas('zones', fn($q) => $q->whereIn('zones.id', $zoneIds))->get();
+    }
+
+    private function authorizeForDelegate(User $delegate): void
+    {
+        $user = Auth::user();
+        if ($user->role === 'admin') return;
+        if ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            if ($delegateIds->contains($delegate->id)) return;
+        }
+        abort(403, 'Non autorisé à créer des événements pour ce délégué.');
     }
 }

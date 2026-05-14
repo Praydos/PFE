@@ -237,7 +237,7 @@
     @endif
 
     <div class="fp-card">
-        <form method="POST" action="{{ isset($formation) ? route('formations.update', $formation) : route('formations.store') }}" id="formation-form">
+        <form method="POST" action="{{ isset($formation) ? route('formations.update', $formation) : (isset($targetDelegate) ? route('formations.storeForDelegate', $targetDelegate) : route('formations.store')) }}" id="formation-form">
             @csrf
             @if(isset($formation)) @method('PUT') @endif
 

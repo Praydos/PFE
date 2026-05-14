@@ -64,8 +64,8 @@ class TacheController extends Controller
     public function create(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue')
-            abort(403);
+        // if ($user->role !== 'delegue')
+        //     abort(403);
         $contacts = Contact::whereHas('comptes', fn($q) => $q->where('delegue_id', $user->id))->get();
         $defaultDate = $request->get('date_planification', now()->toDateString());
         return view('taches.create', compact('contacts', 'defaultDate'));
@@ -74,8 +74,8 @@ class TacheController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue')
-            abort(403);
+        // if ($user->role !== 'delegue')
+        //     abort(403);
 
         $validated = $request->validate([
             'objet' => 'required|string|max:255',
