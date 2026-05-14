@@ -46,6 +46,7 @@ use App\Http\Controllers\DemandeSpecimenController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\TacheController;
 use App\Http\Controllers\ActionAmeliorationController;
+use App\Http\Controllers\MpDeliveryController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -255,6 +256,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/bss/{bss}/retour', [RetourController::class , 'store'])
         ->name('retours.store')->middleware('role:admin,delegue'); // delegue admin
+
+    Route::resource('mp-deliveries', MpDeliveryController::class)
+        ->only(['index', 'create', 'store', 'show', 'destroy']);
 
 // In routes/web.php
 

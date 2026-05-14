@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             CompteSeeder::class,    // depends on zones and delegates
             ContactSeeder::class,   // depends on comptes
             ProductSeeder::class,
+            MpProductSeeder::class,
         ]);
     }
 }

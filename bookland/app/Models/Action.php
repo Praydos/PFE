@@ -16,7 +16,7 @@ class Action extends Model
         'recurrence_intervalle', 'recurrence_fin', 'parent_action_id',
         'statut', 'date_realisation', 'date_validation', 'valide_par',
         'rapport_titre', 'rapport_description', 'rapport_date',
-        'type', 'module_lie', 'module_id', 'bss_id',
+        'type', 'module_lie', 'module_id', 'bss_id', 'mp_delivery_id',
     ];
 
     protected $casts = [
@@ -29,6 +29,11 @@ class Action extends Model
     public function bss()
     {
         return $this->belongsTo(Bss::class);
+    }
+
+    public function mpDelivery()
+    {
+        return $this->belongsTo(MpDelivery::class);
     }
 
     public function compte()
