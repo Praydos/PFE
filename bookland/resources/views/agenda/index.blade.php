@@ -876,41 +876,55 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
     const modalDate  = document.getElementById('agModalDate');
     const modalClose = document.getElementById('agModalClose');
 
-    function openCreateModal(dateStr) {
+    function openCreateModal(dateStr, delegateId) {
         modalDate.innerText = 'Date sélectionnée : ' + dateStr;
 
-        const actions = [
-            {
-                title: 'Action', subtitle: 'Créer une action',
-                color: 'var(--blue-l)', iconColor: 'var(--blue)', icon: '📌',
-                url: '{{ route("actions.create") }}?date_planification=' + dateStr
-            },
-            {
-                title: 'Examen', subtitle: 'Planifier un examen',
-                color: 'var(--violet-l)', iconColor: 'var(--violet)', icon: '🧪',
-                url: '{{ route("examens.create") }}?date_examen=' + dateStr
-            },
-            {
-                title: 'BSS', subtitle: 'Nouvelle demande',
-                color: 'var(--green-l)', iconColor: 'var(--green)', icon: '📦',
-                url: '{{ route("bss.create") }}?date_livraison_prevue=' + dateStr
-            },
-            {
-                title: 'Formation', subtitle: 'Nouvelle formation',
-                color: 'var(--teal-l)', iconColor: 'var(--teal)', icon: '🎓',
-                url: '{{ route("formations.create") }}?date=' + dateStr
-            },
-            {
-                title: 'Événement', subtitle: 'Créer un événement',
-                color: 'var(--amber-l)', iconColor: 'var(--amber)', icon: '📅',
-                url: '{{ route("events.create") }}?date_event=' + dateStr
-            },
-            {
-                title: 'Tâche', subtitle: 'Créer une tâche',
-                color: 'var(--subtle)', iconColor: 'var(--t2)', icon: '✅',
-                url: '{{ route("taches.create") }}?date_planification=' + dateStr
-            },
-        ];
+        // When delegateId is given (RBO/Admin acting on behalf), only show Action creation.
+        // Other modules don't yet support the for-delegate flow.
+        let actions;
+        if (delegateId) {
+            const baseUrl = '{{ url("/actions/for-delegate") }}/' + delegateId;
+            actions = [
+                {
+                    title: 'Action', subtitle: 'Créer une action pour ce délégué',
+                    color: 'var(--blue-l)', iconColor: 'var(--blue)', icon: '📌',
+                    url: baseUrl + '?date_planification=' + dateStr
+                },
+            ];
+        } else {
+            actions = [
+                {
+                    title: 'Action', subtitle: 'Créer une action',
+                    color: 'var(--blue-l)', iconColor: 'var(--blue)', icon: '📌',
+                    url: '{{ route("actions.create") }}?date_planification=' + dateStr
+                },
+                {
+                    title: 'Examen', subtitle: 'Planifier un examen',
+                    color: 'var(--violet-l)', iconColor: 'var(--violet)', icon: '🧪',
+                    url: '{{ route("examens.create") }}?date_examen=' + dateStr
+                },
+                {
+                    title: 'BSS', subtitle: 'Nouvelle demande',
+                    color: 'var(--green-l)', iconColor: 'var(--green)', icon: '📦',
+                    url: '{{ route("bss.create") }}?date_livraison_prevue=' + dateStr
+                },
+                {
+                    title: 'Formation', subtitle: 'Nouvelle formation',
+                    color: 'var(--teal-l)', iconColor: 'var(--teal)', icon: '🎓',
+                    url: '{{ route("formations.create") }}?date=' + dateStr
+                },
+                {
+                    title: 'Événement', subtitle: 'Créer un événement',
+                    color: 'var(--amber-l)', iconColor: 'var(--amber)', icon: '📅',
+                    url: '{{ route("events.create") }}?date_event=' + dateStr
+                },
+                {
+                    title: 'Tâche', subtitle: 'Créer une tâche',
+                    color: 'var(--subtle)', iconColor: 'var(--t2)', icon: '✅',
+                    url: '{{ route("taches.create") }}?date_planification=' + dateStr
+                },
+            ];
+        }
 
         modalGrid.innerHTML = actions.map(a => `
             <a href="${a.url}" class="ag-create-card">
@@ -963,12 +977,21 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
 
         // ── Date click → open create modal ────────────
         dateClick: function (info) {
-            // RBO cannot create events
-            if (userRole === 'rbo') return;
-            // If viewing another delegate's agenda, skip creation modal
-            if (selectedDelegateId) return;
             const dateStr = info.dateStr.split('T')[0];
-            openCreateModal(dateStr);
+
+            // Delegue: always opens modal for themselves
+            if (userRole === 'delegue') {
+                openCreateModal(dateStr, null);
+                return;
+            }
+
+            // RBO / Admin: only open modal when a specific delegate is selected
+            if ((userRole === 'rbo' || userRole === 'admin') && selectedDelegateId) {
+                openCreateModal(dateStr, selectedDelegateId);
+                return;
+            }
+
+            // Otherwise (rbo/admin without delegate, etc.): do nothing
         },
 
         // ── Drag & drop ───────────────────────────────

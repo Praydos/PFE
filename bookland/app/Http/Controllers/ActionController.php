@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\Examen;
 use App\Models\Retour;
 use App\Models\AnneeScolaire;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
@@ -24,7 +25,8 @@ class ActionController extends Controller
         $user = Auth::user();
         if ($user->role === 'delegue') {
             $query->where('delegue_id', $user->id);
-        } elseif ($user->role === 'rbo') {
+        }
+        elseif ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
             $query->whereIn('delegue_id', $delegateIds);
         }
@@ -58,187 +60,307 @@ class ActionController extends Controller
         return view('actions.index', compact('actions', 'comptes', 'statuts', 'types'));
     }
 
-    // Add these properties at the top of the class
-private $requiresProduct = [
-    'Alimentation bibliothèque', 'Livraison Matériel promotionnel', 'Cadeaux personnalisés',
-    'Prix / Lots', 'Livres offerts', 'Visite de Prospection – Présentation Produits'
-];
-private $requiresBss = [
-    'Livraison Spécimens', 'Retour Spécimens', 'Livraison Spécimens – Requêtes Spéciales', 'Livraison MP'
-];
-private $requiresRetour = [
-    'Retour MP'
-];
-private $requiresExamen = [
-    'Visite de Prospection – Présentation Examens'
-];
+    // Add these properties at the top of the class    
+    private $requiresProduct = [
+        'Alimentation bibliothèque', 'Livraison Matériel promotionnel', 'Cadeaux personnalisés',
+        'Prix / Lots', 'Livres offerts', 'Visite de Prospection – Présentation Produits'    ];    private $requiresBss = [
+        'Livraison Spécimens', 'Retour Spécimens', 'Livraison Spécimens – Requêtes Spéciales', 'Livraison MP'    ];    private $requiresRetour = [
+        'Retour MP'    ];    private $requiresExamen = [
+        'Visite de Prospection – Présentation Examens'    ];
+    // In the create method:    
+    public function create(Request $request)    {
+        $user = Auth::user();
+        if ($user->role !== 'delegue')
+            abort(403);
 
-// In the create method:
-public function create(Request $request)
-{
-    $user = Auth::user();
-    if ($user->role !== 'delegue') abort(403);
+        $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
+        $categories = $this->getCategories();
+        $products = Product::orderBy('titre')->get();
+        $examens = Examen::orderBy('titre')->get();
+        $bssList = Bss::where('delegue_id', $user->id)
+            ->whereIn('statut', ['valide', 'livre'])
+            ->with('compte')
+            ->get();
+        $retoursList = Retour::whereHas('bss', fn($q) => $q->where('delegue_id', $user->id))
+            ->with('bss.compte')
+            ->get();
 
-    $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
-    $categories = $this->getCategories();
-    $products = Product::orderBy('titre')->get();
-    $examens = Examen::orderBy('titre')->get();
-    $bssList = Bss::where('delegue_id', $user->id)
-        ->whereIn('statut', ['valide', 'livre'])
-        ->with('compte')
-        ->get();
-    $retoursList = Retour::whereHas('bss', fn($q) => $q->where('delegue_id', $user->id))
-        ->with('bss.compte')
-        ->get();
-
-    $selectedCompteId = request('compte_id');
-    if ($selectedCompteId && $comptes->contains('id', $selectedCompteId)) {
-        $selectedCompte = $comptes->find($selectedCompteId);
-    }
-
-    $requiresProduct = $this->requiresProduct;
-    $requiresBss = $this->requiresBss;
-    $requiresRetour = $this->requiresRetour;
-    $requiresExamen = $this->requiresExamen;
-
-
-    $defaultDate = $request->get('date_planification', now()->toDateString());
-    $prefilledDate = $request->get(
-    'date_planification',
-    now()->toDateString()
-    );
-
-    return view('actions.create', compact(
-        'comptes', 'categories', 'products', 'examens', 'bssList', 'retoursList',
-        'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen', 'selectedCompteId', 'defaultDate', 'prefilledDate'
-    ));
-}
-
-    public function store(Request $request)
-{
-    $user = Auth::user();
-    if ($user->role !== 'delegue') abort(403);
-
-    // Base validation rules
-    $rules = [
-        'objet' => 'required|string|max:255',
-        'compte_id' => 'required|exists:comptes,id',
-        'date_planification' => 'required|date',
-        'heure' => 'nullable|date_format:H:i',
-        'duree' => 'nullable|integer|min:0',
-        'lieu' => 'nullable|string|max:255',
-        'rappel' => 'nullable|boolean',
-        'rappel_avant' => 'nullable|integer|min:1',
-        'recurrence_frequence' => 'nullable|in:daily,weekly,monthly,yearly',
-        'recurrence_intervalle' => 'nullable|integer|min:1',
-        'recurrence_fin' => 'nullable|date|after_or_equal:date_planification',
-        'lines' => 'nullable|array',
-        'lines.*.categorie' => 'required_with:lines|string',
-        'lines.*.action_type' => 'required_with:lines|string',
-        'lines.*.moyen' => 'nullable|string',
-        'lines.*.description' => 'nullable|string',
-        'lines.*.contact_ids' => 'nullable|array',
-        'lines.*.contact_ids.*' => 'exists:contacts,id',
-        'lines.*.product_ids' => 'nullable|array',
-        'lines.*.product_ids.*' => 'exists:products,id',
-        'lines.*.examen_ids' => 'nullable|array',
-        'lines.*.examen_ids.*' => 'exists:examens,id',
-        'lines.*.bss_id' => 'nullable|exists:bsses,id',
-        'lines.*.retour_id' => 'nullable|exists:retours,id',
-    ];
-
-    // Add conditional requirements per line based on action type
-    $lines = $request->input('lines', []);
-    foreach ($lines as $idx => $line) {
-        $actionType = $line['action_type'] ?? '';
-        if (in_array($actionType, $this->requiresProduct)) {
-            $rules["lines.{$idx}.product_ids"] = 'required|array|min:1';
-        } elseif (in_array($actionType, $this->requiresBss)) {
-            $rules["lines.{$idx}.bss_id"] = 'required|exists:bsses,id';
-        } elseif (in_array($actionType, $this->requiresRetour)) {
-            $rules["lines.{$idx}.retour_id"] = 'required|exists:retours,id';
-        } elseif (in_array($actionType, $this->requiresExamen)) {
-            $rules["lines.{$idx}.examen_ids"] = 'required|array|min:1';
+        $selectedCompteId = request('compte_id');
+        if ($selectedCompteId && $comptes->contains('id', $selectedCompteId)) {
+            $selectedCompte = $comptes->find($selectedCompteId);
         }
+
+        $requiresProduct = $this->requiresProduct;
+        $requiresBss = $this->requiresBss;
+        $requiresRetour = $this->requiresRetour;
+        $requiresExamen = $this->requiresExamen;
+
+
+        $defaultDate = $request->get('date_planification', now()->toDateString());
+        $prefilledDate = $request->get(
+            'date_planification',
+            now()->toDateString()
+        );
+
+        return view('actions.create', compact(
+            'comptes', 'categories', 'products', 'examens', 'bssList', 'retoursList',
+            'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen', 'selectedCompteId', 'defaultDate', 'prefilledDate'
+        ));
     }
 
-    $validated = $request->validate($rules);
+    /**
+     * RBO / Admin: show the action creation form for a specific delegate.
+     */
+    public function createForDelegate(Request $request, User $delegate)
+    {
+        $this->authorizeForDelegate($delegate);
 
-    $validated['delegue_id'] = $user->id;
-    $validated['type'] = $request->type ?? 'commercial';
-    $validated['rappel'] = $request->has('rappel');
-    $validated['statut'] = 'planifie';
+        $comptes       = Compte::where('delegue_id', $delegate->id)->with('ville')->get();
+        $categories    = $this->getCategories();
+        $products      = Product::orderBy('titre')->get();
+        $examens       = Examen::orderBy('titre')->get();
+        $bssList       = Bss::where('delegue_id', $delegate->id)
+                            ->whereIn('statut', ['valide', 'livre'])
+                            ->with('compte')->get();
+        $retoursList   = Retour::whereHas('bss', fn($q) => $q->where('delegue_id', $delegate->id))
+                            ->with('bss.compte')->get();
 
-    // Handle recurrence
-    $actionsToCreate = $this->generateRecurrence($validated);
-    $createdIds = [];
+        $requiresProduct = $this->requiresProduct;
+        $requiresBss     = $this->requiresBss;
+        $requiresRetour  = $this->requiresRetour;
+        $requiresExamen  = $this->requiresExamen;
 
-    DB::transaction(function () use ($actionsToCreate, &$createdIds) {
-        foreach ($actionsToCreate as $actionData) {
-            $action = Action::create($actionData);
-            $createdIds[] = $action->id;
-            if (!empty($actionData['lines'])) {
-                foreach ($actionData['lines'] as $lineData) {
-                    $line = $action->lignes()->create([
-                        'categorie' => $lineData['categorie'],
-                        'action_type' => $lineData['action_type'],
-                        'moyen' => $lineData['moyen'],
-                        'description' => $lineData['description'],
-                        'bss_id' => $lineData['bss_id'] ?? null,
-                        'retour_id' => $lineData['retour_id'] ?? null,
-                    ]);
-                    if (!empty($lineData['contact_ids'])) {
-                        $line->contacts()->sync($lineData['contact_ids']);
-                    }
-                    if (!empty($lineData['product_ids'])) {
-                        $line->products()->sync($lineData['product_ids']);
-                    }
-                    if (!empty($lineData['examen_ids'])) {
-                        $line->examens()->sync($lineData['examen_ids']);
+        $selectedCompteId = $request->get('compte_id');
+        $prefilledDate    = $request->get('date_planification', now()->toDateString());
+        $defaultDate      = $prefilledDate;
+        $targetDelegate   = $delegate;
+
+        return view('actions.create', compact(
+            'comptes', 'categories', 'products', 'examens', 'bssList', 'retoursList',
+            'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen',
+            'selectedCompteId', 'defaultDate', 'prefilledDate', 'targetDelegate'
+        ));
+    }
+
+    /**
+     * RBO / Admin: store an action for a specific delegate.
+     */
+    public function storeForDelegate(Request $request, User $delegate)
+    {
+        $this->authorizeForDelegate($delegate);
+
+        $rules = [
+            'objet'                  => 'required|string|max:255',
+            'compte_id'              => 'required|exists:comptes,id',
+            'date_planification'     => 'required|date',
+            'heure'                  => 'nullable|date_format:H:i',
+            'duree'                  => 'nullable|integer|min:0',
+            'lieu'                   => 'nullable|string|max:255',
+            'rappel'                 => 'nullable|boolean',
+            'rappel_avant'           => 'nullable|integer|min:1',
+            'recurrence_frequence'   => 'nullable|in:daily,weekly,monthly,yearly',
+            'recurrence_intervalle'  => 'nullable|integer|min:1',
+            'recurrence_fin'         => 'nullable|date|after_or_equal:date_planification',
+            'lines'                  => 'nullable|array',
+            'lines.*.categorie'      => 'required_with:lines|string',
+            'lines.*.action_type'    => 'required_with:lines|string',
+            'lines.*.moyen'          => 'nullable|string',
+            'lines.*.description'    => 'nullable|string',
+            'lines.*.contact_ids'    => 'nullable|array',
+            'lines.*.contact_ids.*'  => 'exists:contacts,id',
+            'lines.*.product_ids'    => 'nullable|array',
+            'lines.*.product_ids.*'  => 'exists:products,id',
+            'lines.*.examen_ids'     => 'nullable|array',
+            'lines.*.examen_ids.*'   => 'exists:examens,id',
+            'lines.*.bss_id'         => 'nullable|exists:bsses,id',
+            'lines.*.retour_id'      => 'nullable|exists:retours,id',
+        ];
+
+        $lines = $request->input('lines', []);
+        foreach ($lines as $idx => $line) {
+            $actionType = $line['action_type'] ?? '';
+            if (in_array($actionType, $this->requiresProduct))    $rules["lines.{$idx}.product_ids"] = 'required|array|min:1';
+            elseif (in_array($actionType, $this->requiresBss))    $rules["lines.{$idx}.bss_id"]      = 'required|exists:bsses,id';
+            elseif (in_array($actionType, $this->requiresRetour)) $rules["lines.{$idx}.retour_id"]   = 'required|exists:retours,id';
+            elseif (in_array($actionType, $this->requiresExamen)) $rules["lines.{$idx}.examen_ids"]  = 'required|array|min:1';
+        }
+
+        $validated = $request->validate($rules);
+
+        $validated['delegue_id'] = $delegate->id;
+        $validated['type']       = $request->type ?? 'commercial';
+        $validated['rappel']     = $request->has('rappel');
+        $validated['statut']     = 'planifie';
+
+        $actionsToCreate = $this->generateRecurrence($validated);
+        $createdIds = [];
+
+        DB::transaction(function () use ($actionsToCreate, &$createdIds) {
+            foreach ($actionsToCreate as $actionData) {
+                $action = Action::create($actionData);
+                $createdIds[] = $action->id;
+                if (!empty($actionData['lines'])) {
+                    foreach ($actionData['lines'] as $lineData) {
+                        $line = $action->lignes()->create([
+                            'categorie'   => $lineData['categorie'],
+                            'action_type' => $lineData['action_type'],
+                            'moyen'       => $lineData['moyen'],
+                            'description' => $lineData['description'],
+                            'bss_id'      => $lineData['bss_id'] ?? null,
+                            'retour_id'   => $lineData['retour_id'] ?? null,
+                        ]);
+                        if (!empty($lineData['contact_ids'])) $line->contacts()->sync($lineData['contact_ids']);
+                        if (!empty($lineData['product_ids'])) $line->products()->sync($lineData['product_ids']);
+                        if (!empty($lineData['examen_ids']))  $line->examens()->sync($lineData['examen_ids']);
                     }
                 }
             }
+        });
+
+        return redirect()->route('actions.index')
+            ->with('success', count($createdIds) . ' action(s) créée(s) pour ' . $delegate->prenom . ' ' . $delegate->nom . '.');
+    }
+
+    /**
+     * Ensure the authenticated user can act on behalf of $delegate.
+     * Admin: always. RBO: only for their supervised delegates.
+     */
+    private function authorizeForDelegate(User $delegate): void
+    {
+        $user = Auth::user();
+        if ($user->role === 'admin') return;
+        if ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            if ($delegateIds->contains($delegate->id)) return;
         }
-    });
-
-    return redirect()->route('actions.index')->with('success', count($createdIds) . ' action(s) créée(s).');
-}
-
-    private function generateRecurrence($data)
-{
-    $actions = [];
-    $start = Carbon::parse($data['date_planification']);
-    $end = $data['recurrence_fin'] ? Carbon::parse($data['recurrence_fin']) : $start;
-    $freq = $data['recurrence_frequence'] ?? null;
-    $interval = $data['recurrence_intervalle'] ?? 1;
-
-    if (!$freq) {
-        // Single occurrence
-        $actions[] = $this->buildActionData($data);
-        return $actions;
+        abort(403, 'Vous n\'êtes pas autorisé à créer des actions pour ce délégué.');
     }
 
-    // Map frequency to Carbon unit
-    $unitMap = [
-        'daily'   => 'days',
-        'weekly'  => 'weeks',
-        'monthly' => 'months',
-        'yearly'  => 'years',
-    ];
-    $unit = $unitMap[$freq] ?? 'days';
+    public function store(Request $request)    {
+        $user = Auth::user();
+        if ($user->role !== 'delegue')
+            abort(403);
 
-    // Generate occurrences
-    $current = $start->copy();
-    while ($current <= $end) {
-        $actionData = $this->buildActionData($data);
-        $actionData['date_planification'] = $current->toDateString();
-        $actions[] = $actionData;
+        // Base validation rules
+        $rules = [
+            'objet' => 'required|string|max:255',
+            'compte_id' => 'required|exists:comptes,id',
+            'date_planification' => 'required|date',
+            'heure' => 'nullable|date_format:H:i',
+            'duree' => 'nullable|integer|min:0',
+            'lieu' => 'nullable|string|max:255',
+            'rappel' => 'nullable|boolean',
+            'rappel_avant' => 'nullable|integer|min:1',
+            'recurrence_frequence' => 'nullable|in:daily,weekly,monthly,yearly',
+            'recurrence_intervalle' => 'nullable|integer|min:1',
+            'recurrence_fin' => 'nullable|date|after_or_equal:date_planification',
+            'lines' => 'nullable|array',
+            'lines.*.categorie' => 'required_with:lines|string',
+            'lines.*.action_type' => 'required_with:lines|string',
+            'lines.*.moyen' => 'nullable|string',
+            'lines.*.description' => 'nullable|string',
+            'lines.*.contact_ids' => 'nullable|array',
+            'lines.*.contact_ids.*' => 'exists:contacts,id',
+            'lines.*.product_ids' => 'nullable|array',
+            'lines.*.product_ids.*' => 'exists:products,id',
+            'lines.*.examen_ids' => 'nullable|array',
+            'lines.*.examen_ids.*' => 'exists:examens,id',
+            'lines.*.bss_id' => 'nullable|exists:bsses,id',
+            'lines.*.retour_id' => 'nullable|exists:retours,id',
+        ];
 
-        $current->add($interval, $unit);
-    }
+        // Add conditional requirements per line based on action type
+        $lines = $request->input('lines', []);
+        foreach ($lines as $idx => $line) {
+            $actionType = $line['action_type'] ?? '';
+            if (in_array($actionType, $this->requiresProduct)) {
+                $rules["lines.{$idx}.product_ids"] = 'required|array|min:1';
+            }
+            elseif (in_array($actionType, $this->requiresBss)) {
+                $rules["lines.{$idx}.bss_id"] = 'required|exists:bsses,id';
+            }
+            elseif (in_array($actionType, $this->requiresRetour)) {
+                $rules["lines.{$idx}.retour_id"] = 'required|exists:retours,id';
+            }
+            elseif (in_array($actionType, $this->requiresExamen)) {
+                $rules["lines.{$idx}.examen_ids"] = 'required|array|min:1';
+            }
+        }
 
-    return $actions;
-}
+        $validated = $request->validate($rules);
+
+        $validated['delegue_id'] = $user->id;
+        $validated['type'] = $request->type ?? 'commercial';
+        $validated['rappel'] = $request->has('rappel');
+        $validated['statut'] = 'planifie';
+
+        // Handle recurrence
+        $actionsToCreate = $this->generateRecurrence($validated);
+        $createdIds = [];
+
+        DB::transaction(function () use ($actionsToCreate, &$createdIds) {
+            foreach ($actionsToCreate as $actionData) {
+                $action = Action::create($actionData);
+                $createdIds[] = $action->id;
+                if (!empty($actionData['lines'])) {
+                    foreach ($actionData['lines'] as $lineData) {
+                        $line = $action->lignes()->create([
+                            'categorie' => $lineData['categorie'],
+                            'action_type' => $lineData['action_type'],
+                            'moyen' => $lineData['moyen'],
+                            'description' => $lineData['description'],
+                            'bss_id' => $lineData['bss_id'] ?? null,
+                            'retour_id' => $lineData['retour_id'] ?? null,
+                        ]);
+                        if (!empty($lineData['contact_ids'])) {
+                            $line->contacts()->sync($lineData['contact_ids']);
+                        }
+                        if (!empty($lineData['product_ids'])) {
+                            $line->products()->sync($lineData['product_ids']);
+                        }
+                        if (!empty($lineData['examen_ids'])) {
+                            $line->examens()->sync($lineData['examen_ids']);
+                        }
+                    }
+                }
+            }
+        });
+
+        return redirect()->route('actions.index')->with('success', count($createdIds) . ' action(s) créée(s).');    }
+
+    private function generateRecurrence($data)    {
+        $actions = [];
+        $start = Carbon::parse($data['date_planification']);
+        $end = $data['recurrence_fin'] ?Carbon::parse($data['recurrence_fin']) : $start;
+        $freq = $data['recurrence_frequence'] ?? null;
+        $interval = $data['recurrence_intervalle'] ?? 1;
+
+        if (!$freq) {
+            // Single occurrence
+            $actions[] = $this->buildActionData($data);
+            return $actions;
+        }
+
+        // Map frequency to Carbon unit
+        $unitMap = [
+            'daily' => 'days',
+            'weekly' => 'weeks',
+            'monthly' => 'months',
+            'yearly' => 'years',
+        ];
+        $unit = $unitMap[$freq] ?? 'days';
+
+        // Generate occurrences
+        $current = $start->copy();
+        while ($current <= $end) {
+            $actionData = $this->buildActionData($data);
+            $actionData['date_planification'] = $current->toDateString();
+            $actions[] = $actionData;
+
+            $current->add($interval, $unit);
+        }
+
+        return $actions;    }
 
     private function buildActionData($data)
     {
@@ -287,7 +409,7 @@ public function create(Request $request)
 
     public function edit(Action $action)
     {
-        
+
         $this->authorizeEdit($action);
         $user = Auth::user();
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
@@ -361,7 +483,7 @@ public function create(Request $request)
     public function realiser(Request $request, Action $action)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || (int) $action->delegue_id !== (int) $user->id) {
+        if ($user->role !== 'delegue' || (int)$action->delegue_id !== (int)$user->id) {
             abort(403);
         }
         YearLock::check($action);
@@ -376,7 +498,7 @@ public function create(Request $request)
             'rapport_date' => 'required|date',
         ]);
         if ($validator->fails()) {
-            return redirect()->to(route('actions.show', $action).'?realiser=1')
+            return redirect()->to(route('actions.show', $action) . '?realiser=1')
                 ->withErrors($validator)
                 ->withInput();
         }
@@ -398,7 +520,7 @@ public function create(Request $request)
     public function valider(Action $action)
     {
         $user = Auth::user();
-        if (! in_array($user->role, ['admin', 'rbo'])) {
+        if (!in_array($user->role, ['admin', 'rbo'])) {
             abort(403);
         }
         $this->authorizeRboOrAdminForDelegateAction($action);
@@ -421,7 +543,7 @@ public function create(Request $request)
     public function devalider(Action $action)
     {
         $user = Auth::user();
-        if (! in_array($user->role, ['admin', 'rbo'])) {
+        if (!in_array($user->role, ['admin', 'rbo'])) {
             abort(403);
         }
         $this->authorizeRboOrAdminForDelegateAction($action);
@@ -576,11 +698,14 @@ public function create(Request $request)
     private function authorizeView(Action $action)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'delegue' && $action->delegue_id === $user->id) return;
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'delegue' && $action->delegue_id === $user->id)
+            return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($action->delegue_id)) return;
+            if ($delegateIds->contains($action->delegue_id))
+                return;
         }
         abort(403);
     }
@@ -626,4 +751,4 @@ public function create(Request $request)
 
 
 
-    }
+}

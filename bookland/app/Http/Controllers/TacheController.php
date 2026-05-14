@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tache;
-use Carbon\Carbon;
+use App\Models\User;
 use App\Models\Contact;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,11 +14,14 @@ class TacheController extends Controller
     private function authorizeView(Tache $tache)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'delegue' && $tache->delegue_id === $user->id) return;
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'delegue' && $tache->delegue_id === $user->id)
+            return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($tache->delegue_id)) return;
+            if ($delegateIds->contains($tache->delegue_id))
+                return;
         }
         dd($user->role, $tache->lieu, $user->id); // temporary
         abort(403);
@@ -26,8 +30,10 @@ class TacheController extends Controller
     private function authorizeEdit(Tache $tache)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'delegue' && $tache->delegue_id === $user->id) return;
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'delegue' && $tache->delegue_id === $user->id)
+            return;
         abort(403);
     }
 
@@ -38,14 +44,17 @@ class TacheController extends Controller
 
         if ($user->role === 'delegue') {
             $query->where('delegue_id', $user->id);
-        } elseif ($user->role === 'rbo') {
+        }
+        elseif ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
             $query->whereIn('delegue_id', $delegateIds);
         }
 
         if ($request->filled('statut')) {
-            if ($request->statut === 'validated') $query->where('is_validated', true);
-            else $query->where('is_validated', false);
+            if ($request->statut === 'validated')
+                $query->where('is_validated', true);
+            else
+                $query->where('is_validated', false);
         }
 
         $taches = $query->orderBy('date_planification', 'desc')->paginate(15);
@@ -55,70 +64,72 @@ class TacheController extends Controller
     public function create(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+        if ($user->role !== 'delegue')
+            abort(403);
         $contacts = Contact::whereHas('comptes', fn($q) => $q->where('delegue_id', $user->id))->get();
         $defaultDate = $request->get('date_planification', now()->toDateString());
         return view('taches.create', compact('contacts', 'defaultDate'));
     }
 
     public function store(Request $request)
-{
-    $user = Auth::user();
-    if ($user->role !== 'delegue') abort(403);
+    {
+        $user = Auth::user();
+        if ($user->role !== 'delegue')
+            abort(403);
 
-    $validated = $request->validate([
-        'objet' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'date_planification' => 'required|date',
-        'heure' => 'nullable|date_format:H:i',
-        'lieu' => 'nullable|string',
-        'contacts' => 'nullable|array',
-        'contacts.*' => 'exists:contacts,id',
-        'all_day' => 'nullable|boolean',
-        'date_fin' => 'nullable|date|after_or_equal:date_planification',
-        'recurrence_frequence' => 'nullable|in:daily,weekly,monthly,yearly',
-        'recurrence_intervalle' => 'nullable|integer|min:1',
-        'recurrence_fin' => 'nullable|date|after_or_equal:date_planification',
-    ]);
+        $validated = $request->validate([
+            'objet' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'date_planification' => 'required|date',
+            'heure' => 'nullable|date_format:H:i',
+            'lieu' => 'nullable|string',
+            'contacts' => 'nullable|array',
+            'contacts.*' => 'exists:contacts,id',
+            'all_day' => 'nullable|boolean',
+            'date_fin' => 'nullable|date|after_or_equal:date_planification',
+            'recurrence_frequence' => 'nullable|in:daily,weekly,monthly,yearly',
+            'recurrence_intervalle' => 'nullable|integer|min:1',
+            'recurrence_fin' => 'nullable|date|after_or_equal:date_planification',
+        ]);
 
-    $validated['delegue_id'] = $user->id;
-    $validated['contacts'] = $validated['contacts'] ?? [];
-    $validated['all_day'] = $request->has('all_day');
-    $validated['is_validated'] = false;
+        $validated['delegue_id'] = $user->id;
+        $validated['contacts'] = $validated['contacts'] ?? [];
+        $validated['all_day'] = $request->has('all_day');
+        $validated['is_validated'] = false;
 
-    // Create parent task
-    $parent = Tache::create($validated);
+        // Create parent task
+        $parent = Tache::create($validated);
 
-    // Generate recurrence
-    if (!empty($validated['recurrence_frequence']) && !empty($validated['recurrence_fin'])) {
-        $occurrences = $this->generateRecurrence($validated);
-        // Remove the first occurrence (already created as parent)
-        $occurrences = array_values(array_filter($occurrences, fn($d) => $d != $validated['date_planification']));
-        for ($i = 0; $i < count($occurrences); $i++) {
-            $date = $occurrences[$i];
-            $childData = [
-                'objet' => $validated['objet'],
-                'description' => $validated['description'] ?? null,
-                'date_planification' => $date,
-                'heure' => $validated['heure'] ?? null,
-                'lieu' => $validated['lieu'] ?? null,
-                'contacts' => $validated['contacts'],
-                'all_day' => $validated['all_day'],
-                'date_fin' => $validated['date_fin'] ?? null,
-                'delegue_id' => $user->id,
-                'parent_tache_id' => $parent->id,
-                'is_validated' => false,
-            ];
-            Tache::create($childData);
+        // Generate recurrence
+        if (!empty($validated['recurrence_frequence']) && !empty($validated['recurrence_fin'])) {
+            $occurrences = $this->generateRecurrence($validated);
+            // Remove the first occurrence (already created as parent)
+            $occurrences = array_values(array_filter($occurrences, fn($d) => $d != $validated['date_planification']));
+            for ($i = 0; $i < count($occurrences); $i++) {
+                $date = $occurrences[$i];
+                $childData = [
+                    'objet' => $validated['objet'],
+                    'description' => $validated['description'] ?? null,
+                    'date_planification' => $date,
+                    'heure' => $validated['heure'] ?? null,
+                    'lieu' => $validated['lieu'] ?? null,
+                    'contacts' => $validated['contacts'],
+                    'all_day' => $validated['all_day'],
+                    'date_fin' => $validated['date_fin'] ?? null,
+                    'delegue_id' => $user->id,
+                    'parent_tache_id' => $parent->id,
+                    'is_validated' => false,
+                ];
+                Tache::create($childData);
+            }
         }
-    }
 
-    return redirect()->route('taches.index')->with('success', 'Tâche créée.');
-}
+        return redirect()->route('taches.index')->with('success', 'Tâche créée.');
+    }
 
     public function show(Tache $tache)
     {
-       
+
         $this->authorizeView($tache);
         return view('taches.show', compact('tache'));
     }
@@ -152,10 +163,11 @@ class TacheController extends Controller
 
         $tache->update($validated);
 
-         // Regenerate children
+        // Regenerate children
         $occurrences = $this->generateRecurrence($validated);
         foreach ($occurrences as $date) {
-            if ($date == $validated['date_planification']) continue;
+            if ($date == $validated['date_planification'])
+                continue;
             $childData = $validated;
             $childData['date_planification'] = $date;
             $childData['parent_tache_id'] = $tache->id;
@@ -176,7 +188,8 @@ class TacheController extends Controller
     public function validateTache(Tache $tache)
     {
         $user = Auth::user();
-        if (!in_array($user->role, ['admin', 'rbo'])) abort(403);
+        if (!in_array($user->role, ['admin', 'rbo']))
+            abort(403);
         if ($tache->is_validated) {
             return redirect()->back()->with('error', 'Déjà validée.');
         }
@@ -188,26 +201,28 @@ class TacheController extends Controller
     }
 
 
-  // Fix the interval — wrap in parentheses so ?? fires correctly
+    // Fix the interval — wrap in parentheses so ?? fires correctly
     private function generateRecurrence($data)
     {
-        $start    = Carbon::parse($data['date_planification']);
-        $end      = $data['recurrence_fin'] ? Carbon::parse($data['recurrence_fin']) : $start;
-        $freq     = $data['recurrence_frequence'] ?? null;
+        $start = Carbon::parse($data['date_planification']);
+        $end = $data['recurrence_fin'] ?Carbon::parse($data['recurrence_fin']) : $start;
+        $freq = $data['recurrence_frequence'] ?? null;
         $interval = (int)($data['recurrence_intervalle'] ?? 1);
-        if ($interval < 1) $interval = 1; // ← parentheses fixed
+        if ($interval < 1)
+            $interval = 1; // ← parentheses fixed
 
-        if (!$freq || $interval < 1) return []; // ← also guard interval < 1
+        if (!$freq || $interval < 1)
+            return []; // ← also guard interval < 1
 
         $unitMap = [
-            'daily'   => 'days',
-            'weekly'  => 'weeks',
+            'daily' => 'days',
+            'weekly' => 'weeks',
             'monthly' => 'months',
-            'yearly'  => 'years',
+            'yearly' => 'years',
         ];
         $unit = $unitMap[$freq];
 
-        $dates   = [];
+        $dates = [];
         $current = $start->copy();
         while ($current <= $end) {
             $dates[] = $current->toDateString();
@@ -225,7 +240,7 @@ class TacheController extends Controller
 
         // Resolve the root parent of the series
         $parent = $tache->parent_tache_id
-            ? Tache::findOrFail($tache->parent_tache_id)
+            ?Tache::findOrFail($tache->parent_tache_id)
             : $tache;
 
         switch ($scope) {
@@ -239,9 +254,9 @@ class TacheController extends Controller
                 // If the task IS the parent, also clear its own recurrence fields
                 if (!$tache->parent_tache_id) {
                     $parent->update([
-                        'recurrence_frequence'  => null,
+                        'recurrence_frequence' => null,
                         'recurrence_intervalle' => null,
-                        'recurrence_fin'        => null,
+                        'recurrence_fin' => null,
                     ]);
                     return redirect()->route('taches.show', $parent)
                         ->with('success', 'Récurrences futures supprimées.');
@@ -264,9 +279,9 @@ class TacheController extends Controller
 
                 // Clear recurrence on the parent so it becomes a one-off task
                 $parent->update([
-                    'recurrence_frequence'  => null,
+                    'recurrence_frequence' => null,
                     'recurrence_intervalle' => null,
-                    'recurrence_fin'        => null,
+                    'recurrence_fin' => null,
                 ]);
 
                 return redirect()->route('taches.show', $parent)
@@ -274,5 +289,81 @@ class TacheController extends Controller
         }
 
         return redirect()->route('taches.show', $tache);
+    }
+
+    // ── For-delegate flow (RBO / Admin) ──────────────────────────────────
+
+    public function createForDelegate(Request $request, User $delegate)
+    {
+        $this->authorizeForDelegate($delegate);
+
+        $contacts = Contact::whereHas('comptes', fn($q) => $q->where('delegue_id', $delegate->id))->get();
+        $defaultDate = $request->get('date_planification', now()->toDateString());
+        $targetDelegate = $delegate;
+
+        return view('taches.create', compact('contacts', 'defaultDate', 'targetDelegate'));
+    }
+
+    public function storeForDelegate(Request $request, User $delegate)
+    {
+        $this->authorizeForDelegate($delegate);
+
+        $validated = $request->validate([
+            'objet' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'date_planification' => 'required|date',
+            'heure' => 'nullable|date_format:H:i',
+            'lieu' => 'nullable|string',
+            'contacts' => 'nullable|array',
+            'contacts.*' => 'exists:contacts,id',
+            'all_day' => 'nullable|boolean',
+            'date_fin' => 'nullable|date|after_or_equal:date_planification',
+            'recurrence_frequence' => 'nullable|in:daily,weekly,monthly,yearly',
+            'recurrence_intervalle' => 'nullable|integer|min:1',
+            'recurrence_fin' => 'nullable|date|after_or_equal:date_planification',
+        ]);
+
+        $validated['delegue_id'] = $delegate->id;
+        $validated['contacts'] = $validated['contacts'] ?? [];
+        $validated['all_day'] = $request->has('all_day');
+        $validated['is_validated'] = false;
+
+        $parent = Tache::create($validated);
+
+        if (!empty($validated['recurrence_frequence']) && !empty($validated['recurrence_fin'])) {
+            $occurrences = $this->generateRecurrence($validated);
+            $occurrences = array_values(array_filter($occurrences, fn($d) => $d != $validated['date_planification']));
+            foreach ($occurrences as $date) {
+                Tache::create([
+                    'objet' => $validated['objet'],
+                    'description' => $validated['description'] ?? null,
+                    'date_planification' => $date,
+                    'heure' => $validated['heure'] ?? null,
+                    'lieu' => $validated['lieu'] ?? null,
+                    'contacts' => $validated['contacts'],
+                    'all_day' => $validated['all_day'],
+                    'date_fin' => $validated['date_fin'] ?? null,
+                    'delegue_id' => $delegate->id,
+                    'parent_tache_id' => $parent->id,
+                    'is_validated' => false,
+                ]);
+            }
+        }
+
+        return redirect()->route('taches.index')
+            ->with('success', 'Tâche créée pour ' . $delegate->prenom . ' ' . $delegate->nom . '.');
+    }
+
+    private function authorizeForDelegate(User $delegate): void
+    {
+        $user = Auth::user();
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            if ($delegateIds->contains($delegate->id))
+                return;
+        }
+        abort(403, 'Non autorisé à créer des tâches pour ce délégué.');
     }
 }

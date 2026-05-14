@@ -206,13 +206,29 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
         <a href="{{ route('actions.index') }}">Actions</a>
         <span class="ac-bc-s">›</span>
         <span style="color:var(--t2);font-weight:600;">Nouvelle action</span>
+        @isset($targetDelegate)
+            <span class="ac-bc-s">›</span>
+            <span style="color:var(--blue);font-weight:600;">Pour {{ $targetDelegate->prenom }} {{ $targetDelegate->nom }}</span>
+        @endisset
     </div>
 
     {{-- Header --}}
     <div class="ac-header">
-        <h1>Nouvelle action</h1>
-        <p>Créez une action commerciale ou une tâche planifiée</p>
+        @isset($targetDelegate)
+            <h1>Nouvelle action</h1>
+            <p>Création au nom de <strong>{{ $targetDelegate->prenom }} {{ $targetDelegate->nom }}</strong></p>
+        @else
+            <h1>Nouvelle action</h1>
+            <p>Créez une action commerciale ou une tâche planifiée</p>
+        @endisset
     </div>
+
+    @isset($targetDelegate)
+    <div style="display:flex;align-items:center;gap:.6rem;padding:.75rem 1.1rem;background:var(--blue-l);border:1px solid var(--blue-m);border-radius:var(--r3);margin-bottom:1.25rem;">
+        <svg width="15" height="15" fill="none" stroke="var(--blue)" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span style="font-size:.82rem;font-weight:600;color:var(--blue-d);">Vous créez cette action au nom de <strong>{{ $targetDelegate->prenom }} {{ $targetDelegate->nom }}</strong>. Elle lui sera attribuée automatiquement.</span>
+    </div>
+    @endisset
 
     <div class="ac-card">
         <div class="ac-card-hd">
@@ -220,7 +236,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
             <span class="ac-card-title">Formulaire d'action</span>
         </div>
 
-        <form method="POST" action="{{ route('actions.store') }}" id="actionForm" novalidate>
+        <form method="POST"
+              action="{{ isset($targetDelegate) ? route('actions.storeForDelegate', $targetDelegate) : route('actions.store') }}"
+              id="actionForm" novalidate>
             @csrf
 
             {{-- Main fields --}}
