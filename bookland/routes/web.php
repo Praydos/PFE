@@ -48,6 +48,8 @@ use App\Http\Controllers\TacheController;
 use App\Http\Controllers\ActionAmeliorationController;
 use App\Http\Controllers\MpDeliveryController;
 use App\Http\Controllers\MpProductController;
+use App\Http\Controllers\ReclamationController;
+use App\Http\Controllers\NonConformiteController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -406,3 +408,13 @@ Route::get('/actions-amelioration/{actions_amelioration}/edit-suivi', [ActionAme
 Route::put('/actions-amelioration/{actions_amelioration}/suivi', [ActionAmeliorationController::class , 'updateSuivi'])->name('actions-amelioration.update-suivi');
 Route::get('/actions-amelioration/{actions_amelioration}/edit-efficacite', [ActionAmeliorationController::class , 'editEfficacite'])->name('actions-amelioration.edit-efficacite');
 Route::put('/actions-amelioration/{actions_amelioration}/efficacite', [ActionAmeliorationController::class , 'updateEfficacite'])->name('actions-amelioration.update-efficacite');
+
+//=========================================================================================================
+//reclamations routes
+Route::resource('reclamations', ReclamationController::class);
+
+//=========================================================================================================
+//non conformites routes
+Route::resource('non-conformites', NonConformiteController::class);
+Route::get('/non-conformites/{non_conformite}/edit-efficacite', [NonConformiteController::class, 'editEfficacite'])->name('non-conformites.edit-efficacite');
+Route::put('/non-conformites/{non_conformite}/efficacite', [NonConformiteController::class, 'updateEfficacite'])->name('non-conformites.update-efficacite');
