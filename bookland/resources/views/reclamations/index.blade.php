@@ -29,7 +29,7 @@
                 <tr>
                     <td>{{ $r->reference }}</td>
                     <td>{{ $r->compte->etablissement }}</td>
-                    <td>{{ $r->categorie }}@{if($r->sous_categorie)} ({{ $r->sous_categorie }})@endif</td>
+                   <td>{{ $r->categorie }} @if($r->sous_categorie) ({{ $r->sous_categorie }}) @endif</td>
                     <td>{{ $r->date_reclamation->format('d/m/Y') }}</td>
                     <td><span class="dr-badge">{{ ucfirst($r->statut) }}</span></td>
                     <td>

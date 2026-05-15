@@ -6,6 +6,9 @@ use App\Models\Reclamation;
 use App\Models\Compte;
 use App\Models\Contact;
 use App\Models\User;
+use App\Models\Product;
+use App\Models\Bss;
+use App\Models\MpProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -68,12 +71,15 @@ class ReclamationController extends Controller
         if ($user->role !== 'delegue') abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->get();
+        $produits = Product::orderBy('titre')->get();
+        $specimens = Bss::where('delegue_id', $user->id)->whereIn('statut', ['valide', 'livre'])->with('compte')->get();
+        $mps = MpProduct::orderBy('nom')->get();
         $types = ['face_a_face', 'email', 'telephone', 'fax'];
         $categories = $this->getCategories();
-        $sousCategories = $this->getSousCategories();
-        $modules = ['product', 'specimen', 'mp', 'examen', 'event', 'facturation'];
+        $sousCategoriesMap = $this->getSousCategories();
+        $statuts = ['brouillon', 'en_cours', 'mise_en_attente', 'cloturee', 'annulee'];
 
-        return view('reclamations.create', compact('comptes', 'types', 'categories', 'sousCategories', 'modules'));
+        return view('reclamations.create', compact('comptes', 'produits', 'specimens', 'mps', 'types', 'categories', 'sousCategoriesMap', 'statuts'));
     }
 
     public function store(Request $request)
@@ -89,8 +95,11 @@ class ReclamationController extends Controller
             'categorie' => 'required|string',
             'sous_categorie' => 'nullable|string',
             'description' => 'required|string|min:10',
-            'module_lie' => 'nullable|string',
-            'module_id' => 'nullable|integer',
+            'produit_id' => 'nullable|exists:products,id',
+            'specimen_id' => 'nullable|exists:bss,id',
+            'mp_id' => 'nullable|exists:mp_products,id',
+            'est_non_conformite' => 'nullable|boolean',
+            'besoin_action_amelioration' => 'nullable|boolean',
         ]);
 
         $validated['reference'] = $this->generateReference();
@@ -106,7 +115,7 @@ class ReclamationController extends Controller
     public function show(Reclamation $reclamation)
     {
         $this->authorizeView($reclamation);
-        $reclamation->load(['compte', 'contact', 'delegate', 'responsable', 'createdBy', 'updatedBy']);
+        $reclamation->load(['compte', 'contact', 'delegate', 'responsable', 'createdBy', 'updatedBy', 'produit', 'specimen', 'mp']);
         return view('reclamations.show', compact('reclamation'));
     }
 
@@ -115,13 +124,15 @@ class ReclamationController extends Controller
         $this->authorizeEdit($reclamation);
         $user = Auth::user();
         $comptes = Compte::where('delegue_id', $user->id)->get();
+        $produits = Product::orderBy('titre')->get();
+        $specimens = Bss::where('delegue_id', $user->id)->whereIn('statut', ['valide', 'livre'])->with('compte')->get();
+        $mps = MpProduct::orderBy('nom')->get();
         $types = ['face_a_face', 'email', 'telephone', 'fax'];
         $categories = $this->getCategories();
-        $sousCategories = $this->getSousCategories();
-        $modules = ['product', 'specimen', 'mp', 'examen', 'event', 'facturation'];
+        $sousCategoriesMap = $this->getSousCategories();
         $statuts = ['brouillon', 'en_cours', 'mise_en_attente', 'cloturee', 'annulee'];
 
-        return view('reclamations.edit', compact('reclamation', 'comptes', 'types', 'categories', 'sousCategories', 'modules', 'statuts'));
+        return view('reclamations.edit', compact('reclamation', 'comptes', 'produits', 'specimens', 'mps', 'types', 'categories', 'sousCategoriesMap', 'statuts'));
     }
 
     public function update(Request $request, Reclamation $reclamation)
@@ -133,7 +144,6 @@ class ReclamationController extends Controller
             'compte_id' => 'required|exists:comptes,id',
             'contact_id' => 'required|exists:contacts,id',
             'date_reclamation' => 'required|date',
-            'date_echeance' => 'nullable|date',
             'priorite' => 'nullable|in:basse,moyenne,haute',
             'type' => 'nullable|in:face_a_face,email,telephone,fax',
             'categorie' => 'required|string',
@@ -141,9 +151,15 @@ class ReclamationController extends Controller
             'description' => 'required|string',
             'analyse' => 'nullable|string',
             'reponse' => 'nullable|string',
+            'date_reponse' => 'nullable|date',
             'responsable_id' => 'nullable|exists:users,id',
             'statut' => 'required|in:brouillon,en_cours,mise_en_attente,cloturee,annulee',
             'date_cloture' => 'nullable|date',
+            'produit_id' => 'nullable|exists:products,id',
+            'specimen_id' => 'nullable|exists:bss,id',
+            'mp_id' => 'nullable|exists:mp_products,id',
+            'est_non_conformite' => 'nullable|boolean',
+            'besoin_action_amelioration' => 'nullable|boolean',
         ]);
 
         if ($validated['statut'] === 'cloturee' && !$validated['date_cloture']) {

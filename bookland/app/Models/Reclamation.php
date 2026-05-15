@@ -10,12 +10,26 @@ class Reclamation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'reference', 'compte_id', 'contact_id', 'delegue_id', 'date_reclamation',
-        'date_echeance', 'priorite', 'type', 'categorie', 'sous_categorie',
-        'description', 'analyse', 'reponse', 'responsable_id', 'statut',
-        'date_cloture', 'created_by', 'updated_by', 'module_lie', 'module_id',
-        'non_conformite_id', 'action_amelioration_id'
-    ];
+    'reference', 'compte_id', 'contact_id', 'delegue_id', 'date_reclamation',
+    'priorite', 'type', 'categorie', 'sous_categorie', 'produit_id', 'specimen_id', 'mp_id',
+    'description', 'analyse', 'reponse', 'date_reponse', 'responsable_id', 'statut',
+    'date_cloture', 'created_by', 'updated_by', 'est_non_conformite', 'besoin_action_amelioration'
+];
+
+public function produit()
+{
+    return $this->belongsTo(Product::class, 'produit_id');
+}
+
+public function specimen()
+{
+    return $this->belongsTo(Bss::class, 'specimen_id');
+}
+
+public function mp()
+{
+    return $this->belongsTo(MpProduct::class, 'mp_id');
+}
 
     protected $casts = [
         'date_reclamation' => 'date',
