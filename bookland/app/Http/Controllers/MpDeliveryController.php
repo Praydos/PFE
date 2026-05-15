@@ -201,7 +201,7 @@ class MpDeliveryController extends Controller
 
         $duplicate = MpDelivery::where('compte_id', $validated['compte_id'])
             ->where('mp_product_id', $validated['mp_product_id'])
-            ->whereIn('annee_scolaire_id', $yearIds)
+            ->whereIn('annee_scolaire_id', [$currentYear->id])
             ->exists();
 
         if ($duplicate) {
@@ -211,7 +211,7 @@ class MpDeliveryController extends Controller
             return redirect()->back()
                 ->withErrors([
                     'mp_product_id' => 'Ce matériel pédagogique a déjà été livré à cette école dans l\'année scolaire '
-                        .$curLabel.' ou '.$prevLabel.'. Une seule livraison par établissement est autorisée, même pour les années antérieures.',
+                        .$curLabel.'. Une seule livraison par année est autorisée.',
                 ])
                 ->withInput();
         }
