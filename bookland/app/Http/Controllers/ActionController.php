@@ -71,8 +71,8 @@ class ActionController extends Controller
     // In the create method:    
     public function create(Request $request)    {
         $user = Auth::user();
-        if ($user->role !== 'delegue')
-            abort(403);
+        // if ($user->role == 'ABO')
+        //     abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
         $categories = $this->getCategories();
@@ -684,17 +684,21 @@ class ActionController extends Controller
     // Helpers
     private function getCategories()
     {
-        return ['Visite', 'Action Marketing', 'Correspondance', 'Action Promotion'];
+        return [ 'Action Marketing', 'Correspondance', 'Action Promotion'];
     }
 
     private function getActionTypesForCategory($category)
     {
         $map = [
-            'Visite' => [
+           
+            'Action Marketing' => [
                 'Visite de courtoisie',
-                'Visite de Prospection – Renseignements & Prise de contact',
-                'Visite de Prospection – Présentation Produits',
-                'Visite de Prospection – Présentation Examens',
+                'Livraison Matériel promotionnel',
+                'Livres offerts',
+                'Prix / Lots',
+                'Cadeaux personnalisés',
+            ],
+            'Correspondance' => [
                 'Livraison Spécimens',
                 'Retour Spécimens',
                 'Livraison Spécimens – Requêtes Spéciales',
@@ -703,19 +707,6 @@ class ActionController extends Controller
                 'Livraison Commande',
                 'Retour Commande',
                 'Recouvrement',
-            ],
-            'Action Marketing' => [
-                'Livraison Matériel promotionnel',
-                'Livres offerts',
-                'Prix / Lots',
-                'Cadeaux personnalisés',
-            ],
-            'Correspondance' => [
-                'Appel téléphonique',
-                'Courrier',
-                'E-mail',
-                'SMS',
-                'Fax',
             ],
             'Action Promotion' => [
                 'Visite de Prospection – Renseignements & Prise de contact',

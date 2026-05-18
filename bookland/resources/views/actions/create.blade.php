@@ -281,10 +281,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
 
 </div>
 @endsection
-
 @push('scripts')
 <script>
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
     let lineCounter = 1;
     const categories      = @json($categories);
     const requiresProduct = @json($requiresProduct);
@@ -292,83 +291,119 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
     const requiresRetour  = @json($requiresRetour);
     const requiresExamen  = @json($requiresExamen);
 
+    const compteSelect = document.getElementById('compte_id');
+
     /* ── API helpers ───────────────────────── */
     function loadContacts(compteId, selectEl) {
-        if (!compteId) { selectEl.innerHTML = '<option value="">— Sélectionnez —</option>'; return; }
+        if (!compteId) {
+            selectEl.innerHTML = '<option value="">— Sélectionnez —</option>';
+            return;
+        }
         fetch(`/api/comptes/${compteId}/contacts`)
             .then(r => r.json())
             .then(data => {
-                selectEl.innerHTML = '<option value="">— Sélectionnez —</option>' +
-                    data.map(c => `<option value="${c.id}">${c.prenom} ${c.nom}${c.fonction ? ' · '+c.fonction : ''}</option>`).join('');
-            });
+                selectEl.innerHTML =
+                    data.map(c =>
+                        `<option value="${c.id}">${c.prenom} ${c.nom}${c.fonction ? ' · ' + c.fonction : ''}</option>`
+                    ).join('');
+            })
+            .catch(err => console.error('Error loading contacts:', err));
     }
 
-    function loadActionTypes(categorie, selectEl) {
+    function loadActionTypes(categorie, selectEl, currentValue) {
         selectEl.innerHTML = '<option value="">Chargement…</option>';
         fetch(`/api/action-types-by-categorie?categorie=${encodeURIComponent(categorie)}`)
             .then(r => r.json())
             .then(data => {
-                selectEl.innerHTML = '<option value="">— Sélectionnez —</option>' +
-                    data.map(at => `<option value="${at}">${at}</option>`).join('');
+                selectEl.innerHTML =
+                    '<option value="">— Sélectionnez —</option>' +
+                    data.map(at =>
+                        `<option value="${at}" ${currentValue === at ? 'selected' : ''}>${at}</option>`
+                    ).join('');
                 selectEl.dispatchEvent(new Event('change'));
-            });
+            })
+            .catch(err => console.error('Error loading action types:', err));
     }
 
-    function loadMoyens(actionType, selectEl) {
+    function loadMoyens(actionType, selectEl, currentValue) {
         fetch(`/api/moyens-by-action-type?action_type=${encodeURIComponent(actionType)}`)
             .then(r => r.json())
             .then(data => {
-                selectEl.innerHTML = '<option value="">— Sélectionnez —</option>' +
-                    data.map(m => `<option value="${m}">${m}</option>`).join('');
-            });
+                selectEl.innerHTML =
+                    '<option value="">— Sélectionnez —</option>' +
+                    data.map(m =>
+                        `<option value="${m}" ${currentValue === m ? 'selected' : ''}>${m}</option>`
+                    ).join('');
+            })
+            .catch(err => console.error('Error loading moyens:', err));
     }
 
     /* ── Show/hide conditional fields ──────── */
     function updateConditional(lineEl) {
-        const actionType  = lineEl.querySelector('.action-type-select')?.value || '';
-        const idx         = lineEl.dataset.lineIndex;
-        const productGrp  = lineEl.querySelector('.cond-product');
-        const examenGrp   = lineEl.querySelector('.cond-examen');
-        const bssGrp      = lineEl.querySelector(`#bss-group-${idx}`);
-        const retourGrp   = lineEl.querySelector(`#retour-group-${idx}`);
+        const actionType = lineEl.querySelector('.action-type-select')?.value || '';
+        const idx        = lineEl.dataset.lineIndex;
+        const bssGrp     = lineEl.querySelector(`#bss-group-${idx}`);
+        const retourGrp  = lineEl.querySelector(`#retour-group-${idx}`);
+        const productGrp = lineEl.querySelector('.cond-product');
+        const examenGrp  = lineEl.querySelector('.cond-examen');
 
-        [productGrp, examenGrp, bssGrp, retourGrp].forEach(g => { if (g) g.classList.remove('visible'); });
+        [bssGrp, retourGrp, productGrp, examenGrp].forEach(g => {
+            if (g) g.classList.remove('visible');
+        });
 
-        if (requiresProduct.includes(actionType) && productGrp) productGrp.classList.add('visible');
-        else if (requiresBss.includes(actionType) && bssGrp)    bssGrp.classList.add('visible');
-        else if (requiresRetour.includes(actionType) && retourGrp) retourGrp.classList.add('visible');
-        else if (requiresExamen.includes(actionType) && examenGrp) examenGrp.classList.add('visible');
+        if      (requiresProduct.includes(actionType) && productGrp) productGrp.classList.add('visible');
+        else if (requiresBss.includes(actionType)     && bssGrp)     bssGrp.classList.add('visible');
+        else if (requiresRetour.includes(actionType)  && retourGrp)  retourGrp.classList.add('visible');
+        else if (requiresExamen.includes(actionType)  && examenGrp)  examenGrp.classList.add('visible');
     }
 
     /* ── Wire up a single line ──────────────── */
     function attachLineEvents(lineEl) {
-        const compteSelect    = document.getElementById('compte_id');
-        const categorieSelect = lineEl.querySelector('.categorie-select');
-        const actionTypeSelect= lineEl.querySelector('.action-type-select');
-        const moyenSelect     = lineEl.querySelector('.moyen-select');
-        const contactSelect   = lineEl.querySelector('.contact-multiselect');
+        const categorieSelect  = lineEl.querySelector('.categorie-select');
+        const actionTypeSelect = lineEl.querySelector('.action-type-select');
+        const moyenSelect      = lineEl.querySelector('.moyen-select');
+        const contactSelect    = lineEl.querySelector('.contact-multiselect');
 
-        if (compteSelect && contactSelect) {
-            compteSelect.addEventListener('change', () => loadContacts(compteSelect.value, contactSelect));
-            if (compteSelect.value) loadContacts(compteSelect.value, contactSelect);
+        // Initial contact load for this line
+        if (compteSelect?.value && contactSelect) {
+            loadContacts(compteSelect.value, contactSelect);
         }
+
+        // Catégorie → action types
         if (categorieSelect && actionTypeSelect) {
-            categorieSelect.addEventListener('change', () => loadActionTypes(categorieSelect.value, actionTypeSelect));
-            if (categorieSelect.value) loadActionTypes(categorieSelect.value, actionTypeSelect);
+            categorieSelect.addEventListener('change', () => {
+                loadActionTypes(categorieSelect.value, actionTypeSelect, '');
+            });
+            // If already has a value (edit mode), restore it
+            if (categorieSelect.value) {
+                const savedActionType = actionTypeSelect.dataset.saved || '';
+                loadActionTypes(categorieSelect.value, actionTypeSelect, savedActionType);
+            }
         }
+
+        // Action type → moyens + conditional fields
         if (actionTypeSelect) {
             actionTypeSelect.addEventListener('change', () => {
-                if (moyenSelect) loadMoyens(actionTypeSelect.value, moyenSelect);
+                if (moyenSelect) loadMoyens(actionTypeSelect.value, moyenSelect, '');
                 updateConditional(lineEl);
             });
             if (actionTypeSelect.value) {
-                if (moyenSelect) loadMoyens(actionTypeSelect.value, moyenSelect);
+                const savedMoyen = moyenSelect?.dataset.saved || '';
+                if (moyenSelect) loadMoyens(actionTypeSelect.value, moyenSelect, savedMoyen);
                 updateConditional(lineEl);
             }
         }
     }
 
-    /* ── Clone a new line ───────────────────── */
+    /* ── Global compte change → reload contacts for ALL lines ── */
+    compteSelect?.addEventListener('change', () => {
+        document.querySelectorAll('.line-item').forEach(lineEl => {
+            const contactSel = lineEl.querySelector('.contact-multiselect');
+            if (contactSel) loadContacts(compteSelect.value, contactSel);
+        });
+    });
+
+    /* ── Add line ───────────────────────────── */
     document.getElementById('add-line')?.addEventListener('click', () => {
         const container = document.getElementById('lines-container');
         const template  = container.querySelector('.line-item').cloneNode(true);
@@ -378,20 +413,26 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
 
         template.querySelectorAll('[name]').forEach(el => {
             el.name = el.name.replace(/\[\d+\]/, `[${idx}]`);
+
             if (el.tagName === 'SELECT') {
-                if (el.name.includes('categorie'))   el.selectedIndex = 0;
-                if (el.name.includes('action_type')) el.innerHTML = '<option value="">— D\'abord choisir catégorie —</option>';
-                if (el.name.includes('moyen'))       el.innerHTML = '<option value="">— Sélectionnez —</option>';
-                if (el.name.includes('contact_ids')) el.innerHTML = '';
+                if (el.name.includes('categorie'))    el.selectedIndex = 0;
+                if (el.name.includes('action_type'))  el.innerHTML = '<option value="">— D\'abord choisir catégorie —</option>';
+                if (el.name.includes('moyen'))        el.innerHTML = '<option value="">— Sélectionnez —</option>';
+                if (el.name.includes('contact_ids'))  el.innerHTML = '';
                 if (el.name.includes('product_ids') || el.name.includes('examen_ids'))
                     Array.from(el.options).forEach(o => o.selected = false);
-                if (el.name.includes('bss_id') || el.name.includes('retour_id')) el.value = '';
+                if (el.name.includes('bss_id') || el.name.includes('retour_id'))
+                    el.value = '';
             }
+
             if (el.tagName === 'INPUT') el.value = '';
         });
 
-        template.querySelectorAll('[id^="bss-group-"]').forEach(el => el.id = `bss-group-${idx}`);
+        // Update dynamic IDs for conditional groups
+        template.querySelectorAll('[id^="bss-group-"]').forEach(el    => el.id = `bss-group-${idx}`);
         template.querySelectorAll('[id^="retour-group-"]').forEach(el => el.id = `retour-group-${idx}`);
+
+        // Hide all conditional fields on the new line
         template.querySelectorAll('.cond-field').forEach(el => el.classList.remove('visible'));
 
         // Update line number badge
@@ -414,8 +455,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
         }
     });
 
-    /* ── Init existing lines ────────────────── */
+    /* ── Init existing lines on page load ───── */
     document.querySelectorAll('.line-item').forEach(attachLineEvents);
-})();
+});
 </script>
 @endpush
