@@ -240,11 +240,11 @@
                 {{-- Row 1: Date efficacité + Responsable efficacité (2 columns) --}}
                 <div class="fp-row fp-row-2">
                     <div class="frm-group">
-                        <label class="frm-label" for="date_efficacite">Date efficacité</label>
-                        <input type="date" name="date_efficacite" id="date_efficacite"
-                               class="frm-input @error('date_efficacite') is-invalid @enderror"
-                               value="{{ old('date_efficacite', $actions_amelioration->date_efficacite ? $actions_amelioration->date_efficacite->format('Y-m-d') : '') }}">
-                        @error('date_efficacite')<span class="frm-error">{{ $message }}</span>@enderror
+                        <label class="frm-label" for="date_effecacite">Date efficacité</label>
+                        <input type="date" name="date_effecacite" id="date_effecacite"
+                               class="frm-input @error('date_effecacite') is-invalid @enderror"
+                               value="{{ old('date_effecacite', $actions_amelioration->date_effecacite ? $actions_amelioration->date_effecacite->format('Y-m-d') : '') }}">
+                        @error('date_effecacite')<span class="frm-error">{{ $message }}</span>@enderror
                     </div>
 
                     <div class="frm-group">
@@ -255,7 +255,7 @@
                                 <option value="">-- Sélectionnez un contact --</option>
                                 @foreach($contacts as $c)
                                     <option value="{{ $c->id }}" {{ old('responsable_effecacite_id', $actions_amelioration->responsable_effecacite_id) == $c->id ? 'selected' : '' }}>
-                                        {{ $c->prenom }} {{ $c->nom }} ({{ $c->fonction ?? 'Contact' }})
+                                        {{ $c->prenom }} {{ $c->nom }}{{ $c->fonction ? ' (' . $c->fonction . ')' : '' }}
                                     </option>
                                 @endforeach
                             </select>
@@ -285,16 +285,16 @@
                 {{-- Row 3: Action efficace ? + Besoin d'action d'amélioration ? + Statut (3 columns) --}}
                 <div class="fp-row fp-row-3">
                     <div class="frm-group">
-                        <label class="frm-label" for="action_effecace">Action efficace ?</label>
+                        <label class="frm-label" for="action_efficace">Action efficace ?</label>
                         <div class="frm-select-wrap">
-                            <select name="action_effecace" id="action_effecace"
-                                    class="frm-select @error('action_effecace') is-invalid @enderror">
+                            <select name="action_efficace" id="action_efficace"
+                                    class="frm-select @error('action_efficace') is-invalid @enderror">
                                 <option value="">-- Non spécifié --</option>
-                                <option value="1" {{ old('action_effecace', $actions_amelioration->action_effecace) === '1' ? 'selected' : '' }}>Oui</option>
-                                <option value="0" {{ old('action_effecace', $actions_amelioration->action_effecace) === '0' ? 'selected' : '' }}>Non</option>
+                                <option value="1" {{ old('action_efficace', $actions_amelioration->action_efficace) === '1' || old('action_efficace', $actions_amelioration->action_efficace) === true ? 'selected' : '' }}>Oui</option>
+                                <option value="0" {{ old('action_efficace', $actions_amelioration->action_efficace) === '0' || old('action_efficace', $actions_amelioration->action_efficace) === false ? 'selected' : '' }}>Non</option>
                             </select>
                         </div>
-                        @error('action_effecace')<span class="frm-error">{{ $message }}</span>@enderror
+                        @error('action_efficace')<span class="frm-error">{{ $message }}</span>@enderror
                     </div>
 
                     <div class="frm-group">

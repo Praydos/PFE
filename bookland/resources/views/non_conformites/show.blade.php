@@ -366,7 +366,7 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Date efficacité</span>
-                    <span class="info-value">{{ $non_conformite->date_efficacite ? $non_conformite->date_efficacite->format('d/m/Y') : '-' }}</span>
+                    <span class="info-value">{{ $non_conformite->date_effecacite ? $non_conformite->date_effecacite->format('d/m/Y') : '-' }}</span>
                 </div>
             </div>
         </div>

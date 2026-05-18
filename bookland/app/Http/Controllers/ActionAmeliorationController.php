@@ -119,10 +119,10 @@ class ActionAmeliorationController extends Controller
         $this->authorizeEdit($actions_amelioration);
         $validated = $request->validate([
             'date_effecacite' => 'nullable|date',
-            'responsable_effecacite_id' => 'required|exists:users,id',
+            'responsable_effecacite_id' => 'required|exists:contacts,id',
             'mode_controle' => 'nullable|string',
             'description_resultat' => 'nullable|string',
-            'action_effecace' => 'nullable|boolean',
+            'action_efficace' => 'nullable|boolean',
             'besoin_action_amelioration' => 'nullable|boolean',
             'statut' => 'required|in:brouillon,en_cours,termine,annule,en_attente',
             'date_cloture' => 'nullable|date',

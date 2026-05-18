@@ -15,7 +15,7 @@ class ActionAmelioration extends Model
         'numero', 'compte_id', 'emetteur_id', 'dateAA', 'type', 'origine',
         'analyse_causes', 'sanctions', 'resultats_attendus',
         'verification_mise_en_oeuvre', 'responsable_suivi_id', 'date_suivi',
-        'date_efficacite', 'responsable_efficacite_id', 'mode_controle',
+        'date_effecacite', 'responsable_effecacite_id', 'mode_controle',
         'description_resultat', 'action_efficace', 'besoin_action_amelioration',
         'statut', 'date_cloture'
     ];
@@ -23,7 +23,7 @@ class ActionAmelioration extends Model
     protected $casts = [
         'dateAA' => 'date',
         'date_suivi' => 'date',
-        'date_efficacite' => 'date',
+        'date_effecacite' => 'date',
         'date_cloture' => 'date',
         'action_efficace' => 'boolean',
         'besoin_action_amelioration' => 'boolean',
@@ -46,7 +46,7 @@ class ActionAmelioration extends Model
 
     public function responsableEfficacite()
     {
-        return $this->belongsTo(User::class, 'responsable_efficacite_id');
+        return $this->belongsTo(Contact::class, 'responsable_effecacite_id');
     }
 
     public function anneeScolaire()

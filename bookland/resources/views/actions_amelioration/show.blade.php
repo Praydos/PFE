@@ -256,7 +256,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
 
     {{-- ── Section 3 : Efficacité ── --}}
 {{-- ── Section 3 : Efficacité ── --}}
-@if($actions_amelioration->responsable_efficacite_id)
+@if($actions_amelioration->responsable_effecacite_id)
 <div class="aa-section">
     <div class="aa-section-hd">
         <div class="aa-section-icon si-green">
@@ -278,9 +278,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
 
         <div class="aa-info-item">
             <span class="aa-info-label">Date efficacité</span>
-            <span class="aa-info-value mono {{ $actions_amelioration->date_efficacite ? '' : 'muted' }}">
-                {{ $actions_amelioration->date_efficacite 
-                    ? $actions_amelioration->date_efficacite->format('d/m/Y') 
+            <span class="aa-info-value mono {{ $actions_amelioration->date_effecacite ? '' : 'muted' }}">
+                {{ $actions_amelioration->date_effecacite 
+                    ? $actions_amelioration->date_effecacite->format('d/m/Y') 
                     : '—' }}
             </span>
         </div>
@@ -353,7 +353,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             Ajouter le suivi
         </a>
-        @elseif(!$actions_amelioration->responsable_efficacite_id)
+        @elseif(!$actions_amelioration->responsable_effecacite_id)
         <a href="{{ route('actions-amelioration.edit-efficacite', $actions_amelioration) }}" class="btn-aa btn-aa-teal">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             Ajouter l'évaluation

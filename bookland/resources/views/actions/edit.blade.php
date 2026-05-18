@@ -220,10 +220,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
     </div>
 
     {{-- Edit notice --}}
-    <div class="ac-edit-badge">
+    {{-- <div class="ac-edit-badge">
         <svg width="15" height="15" fill="none" stroke="var(--amber)" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         <span style="font-size:.82rem;font-weight:600;color:var(--amber);">Vous modifiez une action existante. Les changements seront enregistrés immédiatement.</span>
-    </div>
+    </div> --}}
 
     <div class="ac-card">
         <div class="ac-card-hd">

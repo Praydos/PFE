@@ -295,25 +295,25 @@
                 {{-- Row 3: Responsable efficacité / Date efficacité (2 columns) --}}
                 <div class="fp-row fp-row-2">
                     <div class="frm-group">
-                        <label class="frm-label" for="responsable_efficacite_id">Responsable efficacité <span class="req">*</span></label>
+                        <label class="frm-label" for="responsable_effecacite_id">Responsable efficacité <span class="req">*</span></label>
                         <div class="frm-select-wrap">
-                            <select name="responsable_efficacite_id" id="responsable_efficacite_id" class="frm-select @error('responsable_efficacite_id') is-invalid @enderror" required>
+                            <select name="responsable_effecacite_id" id="responsable_effecacite_id" class="frm-select @error('responsable_effecacite_id') is-invalid @enderror" required>
                                 <option value="">-- Sélectionnez --</option>
                                 @foreach($users as $u)
-                                    <option value="{{ $u->id }}" {{ old('responsable_efficacite_id', $non_conformite->responsable_efficacite_id) == $u->id ? 'selected' : '' }}>
+                                    <option value="{{ $u->id }}" {{ old('responsable_effecacite_id', $non_conformite->responsable_effecacite_id) == $u->id ? 'selected' : '' }}>
                                         {{ $u->prenom }} {{ $u->nom }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
-                        @error('responsable_efficacite_id')<span class="frm-error">{{ $message }}</span>@enderror
+                        @error('responsable_effecacite_id')<span class="frm-error">{{ $message }}</span>@enderror
                     </div>
 
                     <div class="frm-group">
                         <label class="frm-label" for="date_efficacite">Date efficacité</label>
                         <input type="date" name="date_efficacite" id="date_efficacite"
                                class="frm-input @error('date_efficacite') is-invalid @enderror"
-                               value="{{ old('date_efficacite', $non_conformite->date_efficacite ? $non_conformite->date_efficacite->format('Y-m-d') : '') }}">
+                               value="{{ old('date_efficacite', $non_conformite->date_effecacite ? $non_conformite->date_effecacite->format('Y-m-d') : '') }}">
                         @error('date_efficacite')<span class="frm-error">{{ $message }}</span>@enderror
                     </div>
                 </div>
