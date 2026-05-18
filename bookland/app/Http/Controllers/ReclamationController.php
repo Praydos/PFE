@@ -96,7 +96,7 @@ class ReclamationController extends Controller
             'sous_categorie' => 'nullable|string',
             'description' => 'required|string|min:10',
             'produit_id' => 'nullable|exists:products,id',
-            'specimen_id' => 'nullable|exists:bss,id',
+            'specimen_id' => 'nullable|exists:bsses,id',
             'mp_id' => 'nullable|exists:mp_products,id',
             'est_non_conformite' => 'nullable|boolean',
             'besoin_action_amelioration' => 'nullable|boolean',

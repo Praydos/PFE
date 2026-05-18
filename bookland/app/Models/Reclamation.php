@@ -35,6 +35,7 @@ public function mp()
         'date_reclamation' => 'date',
         'date_echeance' => 'date',
         'date_cloture' => 'date',
+        'date_reponse' => 'date',
     ];
 
     public function compte()

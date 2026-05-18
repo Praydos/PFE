@@ -3,7 +3,7 @@
 @push('styles')
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ===== FULL DESIGN SYSTEM CSS (same as actions, non-conformites) ===== */
+/* ===== FULL DESIGN SYSTEM CSS (same as create view) ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -135,12 +135,14 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
         <span class="ac-bc-s">›</span>
         <a href="{{ route('reclamations.index') }}">Réclamations</a>
         <span class="ac-bc-s">›</span>
-        <span style="color:var(--t2);font-weight:600;">{{ isset($reclamation) ? 'Modifier' : 'Nouvelle' }}</span>
+        <a href="{{ route('reclamations.show', $reclamation) }}">{{ $reclamation->reference }}</a>
+        <span class="ac-bc-s">›</span>
+        <span style="color:var(--t2);font-weight:600;">Modifier</span>
     </div>
 
     <div class="ac-header">
-        <h1>{{ isset($reclamation) ? 'Modifier la réclamation' : 'Nouvelle réclamation' }}</h1>
-        <p>{{ isset($reclamation) ? 'Mettez à jour les informations de la réclamation.' : 'Enregistrez une nouvelle réclamation client.' }}</p>
+        <h1>Modifier la réclamation</h1>
+        <p>Mettez à jour les informations de la réclamation.</p>
     </div>
 
     @if($errors->any())
@@ -150,21 +152,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
     </div>
     @endif
 
-    @php
-        $isEdit = isset($reclamation);
-        $action = $isEdit ? route('reclamations.update', $reclamation) : route('reclamations.store');
-        $method = $isEdit ? 'PUT' : 'POST';
-    @endphp
-
     <div class="ac-card">
         <div class="ac-card-hd">
             <span class="ac-card-pip"></span>
             <span class="ac-card-title">Formulaire de réclamation</span>
         </div>
 
-        <form method="POST" action="{{ $action }}">
+        <form method="POST" action="{{ route('reclamations.update', $reclamation) }}">
             @csrf
-            @if($isEdit) @method('PUT') @endif
+            @method('PUT')
 
             <div class="ac-card-body">
                 {{-- Section 1 : Informations générales --}}
@@ -176,7 +172,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                             <select name="compte_id" id="compte_id" class="ac-select @error('compte_id') err @enderror" required>
                                 <option value="">-- Sélectionnez --</option>
                                 @foreach($comptes as $c)
-                                    <option value="{{ $c->id }}" {{ old('compte_id', $isEdit ? $reclamation->compte_id : '') == $c->id ? 'selected' : '' }}>{{ $c->etablissement }}</option>
+                                    <option value="{{ $c->id }}" {{ old('compte_id', $reclamation->compte_id) == $c->id ? 'selected' : '' }}>{{ $c->etablissement }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -196,7 +192,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                 <div class="ac-row ac-row-3">
                     <div class="ac-group">
                         <label class="ac-label" for="date_reclamation">Date réclamation <span class="req">*</span></label>
-                        <input type="date" name="date_reclamation" id="date_reclamation" class="ac-input @error('date_reclamation') err @enderror" value="{{ old('date_reclamation', $isEdit ? $reclamation->date_reclamation->format('Y-m-d') : now()->format('Y-m-d')) }}" required>
+                        <input type="date" name="date_reclamation" id="date_reclamation" class="ac-input @error('date_reclamation') err @enderror" value="{{ old('date_reclamation', $reclamation->date_reclamation->format('Y-m-d')) }}" required>
                         @error('date_reclamation')<span class="ac-error">{{ $message }}</span>@enderror
                     </div>
                     <div class="ac-group">
@@ -205,7 +201,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                             <select name="type" id="type" class="ac-select @error('type') err @enderror">
                                 <option value="">-- Sélectionnez --</option>
                                 @foreach($types as $t)
-                                    <option value="{{ $t }}" {{ old('type', $isEdit ? $reclamation->type : '') == $t ? 'selected' : '' }}>{{ str_replace('_', ' ', $t) }}</option>
+                                    <option value="{{ $t }}" {{ old('type', $reclamation->type) == $t ? 'selected' : '' }}>{{ str_replace('_', ' ', $t) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -215,9 +211,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                         <label class="ac-label" for="priorite">Priorité</label>
                         <div class="ac-sel-wrap">
                             <select name="priorite" id="priorite" class="ac-select @error('priorite') err @enderror">
-                                <option value="basse" {{ old('priorite', $isEdit ? $reclamation->priorite : '') == 'basse' ? 'selected' : '' }}>Basse</option>
-                                <option value="moyenne" {{ old('priorite', $isEdit ? $reclamation->priorite : '') == 'moyenne' ? 'selected' : '' }}>Moyenne</option>
-                                <option value="haute" {{ old('priorite', $isEdit ? $reclamation->priorite : '') == 'haute' ? 'selected' : '' }}>Haute</option>
+                                <option value="basse" {{ old('priorite', $reclamation->priorite) == 'basse' ? 'selected' : '' }}>Basse</option>
+                                <option value="moyenne" {{ old('priorite', $reclamation->priorite) == 'moyenne' ? 'selected' : '' }}>Moyenne</option>
+                                <option value="haute" {{ old('priorite', $reclamation->priorite) == 'haute' ? 'selected' : '' }}>Haute</option>
                             </select>
                         </div>
                         @error('priorite')<span class="ac-error">{{ $message }}</span>@enderror
@@ -231,7 +227,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                             <select name="categorie" id="categorie" class="ac-select @error('categorie') err @enderror" required>
                                 <option value="">-- Sélectionnez --</option>
                                 @foreach($categories as $c)
-                                    <option value="{{ $c }}" {{ old('categorie', $isEdit ? $reclamation->categorie : '') == $c ? 'selected' : '' }}>{{ $c }}</option>
+                                    <option value="{{ $c }}" {{ old('categorie', $reclamation->categorie) == $c ? 'selected' : '' }}>{{ $c }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -248,14 +244,14 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                     </div>
                 </div>
 
-                {{-- Linked items containers (produit, specimen, mp) --}}
+                {{-- Linked items containers --}}
                 <div id="linked_product_container" class="ac-group" style="display:none;">
                     <label class="ac-label" for="produit_id">Produit lié</label>
                     <div class="ac-sel-wrap">
                         <select name="produit_id" id="produit_id" class="ac-select">
                             <option value="">-- Sélectionnez --</option>
                             @foreach($produits as $p)
-                                <option value="{{ $p->id }}" {{ old('produit_id', $isEdit ? $reclamation->produit_id : '') == $p->id ? 'selected' : '' }}>{{ $p->titre }} ({{ $p->isbn_13 ?? $p->isbn_10 }})</option>
+                                <option value="{{ $p->id }}" {{ old('produit_id', $reclamation->produit_id) == $p->id ? 'selected' : '' }}>{{ $p->titre }} ({{ $p->isbn_13 ?? $p->isbn_10 }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -267,7 +263,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                         <select name="specimen_id" id="specimen_id" class="ac-select">
                             <option value="">-- Sélectionnez --</option>
                             @foreach($specimens as $s)
-                                <option value="{{ $s->id }}" {{ old('specimen_id', $isEdit ? $reclamation->specimen_id : '') == $s->id ? 'selected' : '' }}>{{ $s->numero }} - {{ $s->compte->etablissement }}</option>
+                                <option value="{{ $s->id }}" {{ old('specimen_id', $reclamation->specimen_id) == $s->id ? 'selected' : '' }}>{{ $s->numero }} - {{ $s->compte->etablissement }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -279,7 +275,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                         <select name="mp_id" id="mp_id" class="ac-select">
                             <option value="">-- Sélectionnez --</option>
                             @foreach($mps as $mp)
-                                <option value="{{ $mp->id }}" {{ old('mp_id', $isEdit ? $reclamation->mp_id : '') == $mp->id ? 'selected' : '' }}>{{ $mp->nom }} ({{ $mp->code_article }})</option>
+                                <option value="{{ $mp->id }}" {{ old('mp_id', $reclamation->mp_id) == $mp->id ? 'selected' : '' }}>{{ $mp->nom }} ({{ $mp->code_article }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -287,12 +283,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
 
                 <div class="ac-group">
                     <label class="ac-label" for="description">Description <span class="req">*</span></label>
-                    <textarea name="description" id="description" rows="3" class="ac-textarea @error('description') err @enderror" required>{{ old('description', $isEdit ? $reclamation->description : '') }}</textarea>
+                    <textarea name="description" id="description" rows="3" class="ac-textarea @error('description') err @enderror" required>{{ old('description', $reclamation->description) }}</textarea>
                     @error('description')<span class="ac-error">{{ $message }}</span>@enderror
                 </div>
 
-                {{-- Section 2 : Analyse & réponse (only for edit mode) --}}
-                @if($isEdit)
+                {{-- Section 2 : Traitement (only for edit mode) --}}
                 <div class="ac-sec" style="margin-top:1.5rem;">Traitement</div>
                 <div class="ac-row ac-row-2">
                     <div class="ac-group">
@@ -352,17 +347,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                         </label>
                     </div>
                 </div>
-                @endif
             </div>
 
             <div class="ac-footer">
-                <a href="{{ route('reclamations.index') }}" class="btn-ac btn-ac-ghost">
+                <a href="{{ route('reclamations.show', $reclamation) }}" class="btn-ac btn-ac-ghost">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                     Annuler
                 </a>
                 <button type="submit" class="btn-ac btn-ac-primary">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                    {{ $isEdit ? 'Mettre à jour' : 'Créer' }}
+                    Mettre à jour
                 </button>
             </div>
         </form>
@@ -373,7 +367,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
     // ── 1. Load contacts when compte changes ──
     const compteSelect = document.getElementById('compte_id');
     const contactSelect = document.getElementById('contact_id');
-    const currentContactId = @json(old('contact_id', $isEdit ? $reclamation->contact_id : ''));
+    const currentContactId = @json(old('contact_id', $reclamation->contact_id));
 
     function loadContacts() {
         const compteId = compteSelect.value;

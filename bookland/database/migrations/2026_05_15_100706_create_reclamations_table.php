@@ -20,7 +20,7 @@ return new class extends Migration
         $table->string('categorie');
         $table->string('sous_categorie')->nullable();
         $table->foreignId('produit_id')->nullable()->constrained('products')->onDelete('set null');
-        $table->foreignId('specimen_id')->nullable()->constrained('bss')->onDelete('set null');
+        $table->foreignId('specimen_id')->nullable()->constrained('bsses')->onDelete('set null');
         $table->foreignId('mp_id')->nullable()->constrained('mp_products')->onDelete('set null');
         $table->text('description');
         $table->text('analyse')->nullable();
