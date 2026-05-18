@@ -414,23 +414,31 @@ class ActionController extends Controller
     }
 
     public function edit(Action $action)
-    {
+{
+    $this->authorizeEdit($action);
+    $user = Auth::user();
+    $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
+    $categories = $this->getCategories();
+    $action->load('lignes.contacts', 'lignes.products', 'lignes.examens');
 
-        $this->authorizeEdit($action);
-        $user = Auth::user();
-        $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
-        $categories = $this->getCategories();
-        $action->load('lignes.contacts', 'lignes.products', 'lignes.examens');
+    $products = Product::orderBy('titre')->get();
+    $examens = Examen::orderBy('titre')->get();
+    $bssOptions = Bss::where('delegue_id', $user->id)
+        ->whereIn('statut', ['valide', 'livre'])
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(fn($b) => ['id' => $b->id, 'label' => $b->numero . ' - ' . $b->compte->etablissement]);
 
-        $products = Product::orderBy('titre')->get();
-        $examens = Examen::orderBy('titre')->get();
-        $bssOptions = Bss::where('delegue_id', $user->id)
-            ->whereIn('statut', ['valide', 'livre'])
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(fn($b) => ['id' => $b->id, 'label' => $b->numero . ' - ' . $b->compte->etablissement]);
-        return view('actions.edit', compact('action', 'comptes', 'categories', 'products', 'examens', 'bssOptions'));
-    }
+    $requiresProduct = $this->requiresProduct;
+    $requiresBss     = $this->requiresBss;
+    $requiresRetour  = $this->requiresRetour;
+    $requiresExamen  = $this->requiresExamen;
+
+    return view('actions.edit', compact(
+        'action', 'comptes', 'categories', 'products', 'examens', 'bssOptions',
+        'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen'
+    ));
+}
 
     public function update(Request $request, Action $action)
     {
