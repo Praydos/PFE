@@ -218,13 +218,29 @@ class AgendaController extends Controller
             case 'examen':   $model = Examen::findOrFail($id);  $model->date_examen           = $newDate; break;
             case 'event':    $model = Event::findOrFail($id);   $model->date_event            = $newDate; break;
             case 'specimen': $model = Bss::findOrFail($id);     $model->date_livraison_prevue = $newDate; break;
-            case 'tache':    $model = Tache::findOrFail($id);   $model->date_planification    = $newDate; break;
+            case 'tache':
+            case 'task':     $model = Tache::findOrFail($id);   $model->date_planification    = $newDate; break;
+            case 'formation': $model = Formation::findOrFail($id); $model->dates_proposees   = [$newDate]; break;
             default:         return response()->json(['error' => 'Type non supporté'], 400);
         }
 
-        // Authorization: only admin/abo can move anything; others only their own items
+        // Authorization:
+        // Admin and ABO can move anything.
+        // RBO can move their delegates' items.
+        // Délégué can only move their own items.
         $ownerField = ($type === 'specimen') ? 'delegate_id' : 'delegue_id';
-        if (!in_array($user->role, ['admin', 'abo']) && $model->$ownerField !== $user->id) {
+        $authorized = false;
+
+        if (in_array($user->role, ['admin', 'abo'])) {
+            $authorized = true;
+        } elseif ($user->role === 'rbo') {
+            $delegateIds = $this->getDelegateIdsForRbo($user);
+            $authorized = $delegateIds->contains($model->$ownerField);
+        } else {
+            $authorized = ((int) $model->$ownerField === (int) $user->id);
+        }
+
+        if (!$authorized) {
             return response()->json(['error' => 'Non autorisé'], 403);
         }
 

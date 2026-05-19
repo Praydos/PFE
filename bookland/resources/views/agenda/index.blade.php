@@ -1021,7 +1021,8 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
         eventDrop: function (info) {
             const el      = info.el;
             const event   = info.event;
-            const newDate = event.start.toISOString().slice(0, 10);
+            const d       = event.start;
+            const newDate = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
             const type    = event.extendedProps.type;
             const id      = event.id;
 
