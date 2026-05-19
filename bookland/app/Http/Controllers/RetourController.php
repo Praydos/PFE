@@ -57,16 +57,6 @@ class RetourController extends Controller
 
 
 
-
-
-
-
-
-
-
-
-
-
     public function create(Bss $bss)
     {
         $user = Auth::user();

@@ -284,6 +284,38 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                         </select>
                     </div>
                 </div>
+                {{-- Linked Exam --}}
+<div id="linked_exam_container" class="ac-group" style="display:none;">
+    <label class="ac-label" for="examen_id">Examen lié</label>
+    <div class="ac-sel-wrap">
+        <select name="module_id" id="examen_id" class="ac-select">
+            <option value="">-- Sélectionnez un examen --</option>
+            @foreach($examens as $examen)
+                <option value="{{ $examen->id }}" {{ old('module_id', ($isEdit && $reclamation->module_lie == 'examen') ? $reclamation->module_id : '') == $examen->id ? 'selected' : '' }}>
+                    {{ $examen->titre }} ({{ $examen->date_examen?->format('d/m/Y') }})
+                </option>
+            @endforeach
+        </select>
+    </div>
+</div>
+
+{{-- Linked Event --}}
+<div id="linked_event_container" class="ac-group" style="display:none;">
+    <label class="ac-label" for="event_id">Événement lié</label>
+    <div class="ac-sel-wrap">
+        <select name="module_id" id="event_id" class="ac-select">
+            <option value="">-- Sélectionnez un événement --</option>
+            @foreach($events as $event)
+                <option value="{{ $event->id }}" {{ old('module_id', ($isEdit && $reclamation->module_lie == 'event') ? $reclamation->module_id : '') == $event->id ? 'selected' : '' }}>
+                    {{ $event->nom }} ({{ $event->date_event?->format('d/m/Y') }})
+                </option>
+            @endforeach
+        </select>
+    </div>
+</div>
+
+<!-- Also add a hidden input to store the type of linked module -->
+<input type="hidden" name="module_lie" id="module_lie" value="{{ old('module_lie', $isEdit ? $reclamation->module_lie : '') }}">
 
                 <div class="ac-group">
                     <label class="ac-label" for="description">Description <span class="req">*</span></label>
@@ -415,18 +447,36 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
     const mpDiv = document.getElementById('linked_mp_container');
 
     function updateLinkedSelectorByCategory() {
-        const cat = categorieSelect.value;
-        productDiv.style.display = 'none';
-        specimenDiv.style.display = 'none';
-        mpDiv.style.display = 'none';
-        if (cat === 'Produit') {
-            productDiv.style.display = 'block';
-        } else if (cat === 'Spécimen') {
-            specimenDiv.style.display = 'block';
-        } else if (cat === 'Matériel pédagogique') {
-            mpDiv.style.display = 'block';
-        }
+    const cat = categorieSelect.value;
+    // hide all containers
+    document.getElementById('linked_product_container').style.display = 'none';
+    document.getElementById('linked_specimen_container').style.display = 'none';
+    document.getElementById('linked_mp_container').style.display = 'none';
+    document.getElementById('linked_exam_container').style.display = 'none';
+    document.getElementById('linked_event_container').style.display = 'none';
+
+    // Also set the hidden module_lie value
+    const moduleLieInput = document.getElementById('module_lie');
+    
+    if (cat === 'Produit') {
+        document.getElementById('linked_product_container').style.display = 'block';
+        moduleLieInput.value = 'product';
+    } else if (cat === 'Spécimen') {
+        document.getElementById('linked_specimen_container').style.display = 'block';
+        moduleLieInput.value = 'specimen';
+    } else if (cat === 'Matériel pédagogique') {
+        document.getElementById('linked_mp_container').style.display = 'block';
+        moduleLieInput.value = 'mp';
+    } else if (cat === 'Examen') {
+        document.getElementById('linked_exam_container').style.display = 'block';
+        moduleLieInput.value = 'examen';
+    } else if (cat === 'Événement') {
+        document.getElementById('linked_event_container').style.display = 'block';
+        moduleLieInput.value = 'event';
+    } else {
+        moduleLieInput.value = '';
     }
+}
     categorieSelect.addEventListener('change', updateLinkedSelectorByCategory);
     updateLinkedSelectorByCategory();
 </script>

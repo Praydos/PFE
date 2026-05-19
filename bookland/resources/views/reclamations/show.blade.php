@@ -204,15 +204,45 @@
                 <div class="info-item"><span class="info-label">Priorité</span><span class="info-value">{{ ucfirst($reclamation->priorite) }}</span></div>
                 <div class="info-item"><span class="info-label">Catégorie</span><span class="info-value">{{ $reclamation->categorie }} @if($reclamation->sous_categorie) / {{ $reclamation->sous_categorie }} @endif</span></div>
 
-                @if($reclamation->produit_id)
-                <div class="info-item"><span class="info-label">Produit lié</span><span class="info-value"><a href="{{ route('products.show', $reclamation->produit_id) }}">{{ optional($reclamation->produit)->titre }}</a></span></div>
+
+    @if(($reclamation->module_lie && $reclamation->module_id) ||$reclamation->produit_id
+    ||$reclamation->specimen_id||$reclamation->mp_id)
+    @php
+        $linked = $reclamation->linked_module;
+    //      dd([
+    //     'module_lie' => $reclamation->module_lie,
+    //     'module_id'  => $reclamation->module_id,
+    //     'linked'     => $reclamation->linked_module,
+    // ]);
+
+    @endphp
+    @if($linked || $reclamation->produit_id || $reclamation->specimen_id || $reclamation->mp_id)
+        <div class="info-item">
+            <span class="info-label">
+                @switch($reclamation->module_lie)
+                    @case('examen') Examen lié @break
+                    @case('event') Événement lié   @break
+                    @case('product') Produit lié @break
+                    @case('specimen') Spécimen lié @break
+                    @case('mp') Matériel pédagogique lié @break
+                @endswitch
+            </span>
+            <span class="info-value">
+                @if($reclamation->module_lie === 'examen')
+                    <a href="{{ route('examens.show', $reclamation->module_id) }}">{{ $linked->titre }}</a>
+                @elseif($reclamation->module_lie === 'event')
+                    <a href="{{ route('events.show', $reclamation->module_id) }}">Go to Événement lié </a>
+                @elseif($reclamation->module_lie === 'product')
+                    <a href="{{ route('products.show', $reclamation->produit_id) }}">Go to Produit lié </a>
+                @elseif($reclamation->module_lie === 'specimen')
+                    <a href="{{ route('bss.show', $reclamation->specimen_id) }}">Go to Spécimen lié </a>
+                @elseif($reclamation->module_lie === 'mp')
+                    <a href="{{ route('mp-products.index', $reclamation->mp_id) }}">Go to Matériel pédagogique lié </a>
                 @endif
-                @if($reclamation->specimen_id)
-                <div class="info-item"><span class="info-label">Spécimen lié</span><span class="info-value"><a href="{{ route('bss.show', $reclamation->specimen_id) }}">{{ optional($reclamation->specimen)->numero }}</a></span></div>
-                @endif
-                @if($reclamation->mp_id)
-                <div class="info-item"><span class="info-label">MP lié</span><span class="info-value"><a href="{{ route('mp-products.show', $reclamation->mp_id) }}">{{ optional($reclamation->mp)->nom }}</a></span></div>
-                @endif
+            </span>
+        </div>
+    @endif
+@endif
 
                 <div class="info-item full"><span class="info-label">Description</span><span class="info-value">{{ $reclamation->description }}</span></div>
 

@@ -33,6 +33,8 @@ return new class extends Migration
         $table->foreignId('updated_by')->nullable()->constrained('users');
         $table->boolean('est_non_conformite')->default(false);
         $table->boolean('besoin_action_amelioration')->default(false);
+        $table->string('module_lie')->nullable()->after('mp_id'); // e.g. 'examen', 'event', 'product', 'specimen', 'mp'
+        $table->unsignedBigInteger('module_id')->nullable()->after('module_lie');
         $table->timestamps();
     });
 }

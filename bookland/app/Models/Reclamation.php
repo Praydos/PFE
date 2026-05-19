@@ -13,9 +13,10 @@ class Reclamation extends Model
     'reference', 'compte_id', 'contact_id', 'delegue_id', 'date_reclamation',
     'priorite', 'type', 'categorie', 'sous_categorie', 'produit_id', 'specimen_id', 'mp_id',
     'description', 'analyse', 'reponse', 'date_reponse', 'responsable_id', 'statut',
-    'date_cloture', 'created_by', 'updated_by', 'est_non_conformite', 'besoin_action_amelioration'
+    'date_cloture', 'created_by', 'updated_by', 'est_non_conformite', 'besoin_action_amelioration', 'module_lie', 'module_id'
 ];
 
+// 
 public function produit()
 {
     return $this->belongsTo(Product::class, 'produit_id');
@@ -88,7 +89,7 @@ public function mp()
             'mp'        => MpDelivery::class,
             'examen'    => Examen::class,
             'event'     => Event::class,
-            'facturation'=> null,
+            
         ];
         $class = $classMap[$this->module_lie] ?? null;
         return $class ? $class::find($this->module_id) : null;

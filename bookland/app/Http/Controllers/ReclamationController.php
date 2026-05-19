@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Reclamation;
 use App\Models\Compte;
 use App\Models\Contact;
+use App\Models\Examen;
+use App\Models\Event;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\Bss;
@@ -78,8 +80,12 @@ class ReclamationController extends Controller
         $categories = $this->getCategories();
         $sousCategoriesMap = $this->getSousCategories();
         $statuts = ['brouillon', 'en_cours', 'mise_en_attente', 'cloturee', 'annulee'];
+        $examens = Examen::orderBy('date_demande', 'desc')->get();
+        $events  = Event::orderBy('date_event', 'desc')->get();
+        
 
-        return view('reclamations.create', compact('comptes', 'produits', 'specimens', 'mps', 'types', 'categories', 'sousCategoriesMap', 'statuts'));
+        return view('reclamations.create', compact('comptes', 'produits', 'specimens', 'mps', 'types', 'categories', 
+        'sousCategoriesMap', 'statuts', 'examens', 'events'));
     }
 
     public function store(Request $request)
@@ -98,6 +104,8 @@ class ReclamationController extends Controller
             'produit_id' => 'nullable|exists:products,id',
             'specimen_id' => 'nullable|exists:bsses,id',
             'mp_id' => 'nullable|exists:mp_products,id',
+            'module_lie' => 'nullable|in:product,specimen,mp,examen,event',
+            'module_id'  => 'nullable|integer',
             'est_non_conformite' => 'nullable|boolean',
             'besoin_action_amelioration' => 'nullable|boolean',
         ]);
@@ -107,17 +115,48 @@ class ReclamationController extends Controller
         $validated['statut'] = 'brouillon';
         $validated['created_by'] = $user->id;
 
+
+        if ($validated['module_lie'] && $validated['module_id']) {
+    $model = match($validated['module_lie']) {
+        'product'  => Product::class,
+        'specimen' => Bss::class,
+        'mp'       => MpProduct::class,
+        'examen'   => Examen::class,
+        'event'    => Event::class,
+        default    => null,
+    };
+    if ($model && !$model::where('id', $validated['module_id'])->exists()) {
+        return back()->withErrors(['module_id' => 'Élément lié introuvable.']);
+    }
+}
+
         Reclamation::create($validated);
 
         return redirect()->route('reclamations.index')->with('success', 'Réclamation enregistrée.');
     }
 
     public function show(Reclamation $reclamation)
-    {
-        $this->authorizeView($reclamation);
-        $reclamation->load(['compte', 'contact', 'delegate', 'responsable', 'createdBy', 'updatedBy', 'produit', 'specimen', 'mp']);
-        return view('reclamations.show', compact('reclamation'));
+{
+    $this->authorizeView($reclamation);
+    $reclamation->load(['compte', 'contact', 'delegate', 'responsable', 'createdBy', 'updatedBy']);
+
+    $linkedModule = null;
+    if ($reclamation->module_lie && $reclamation->module_id) {
+        $modelMap = [
+            'examen'   => Examen::class,
+            'event'    => Event::class,
+            'product'  => Product::class,
+            'specimen' => Bss::class,
+            'mp'       => MpProduct::class,
+        ];
+        $class = $modelMap[$reclamation->module_lie] ?? null;
+        if ($class) {
+            $linkedModule = $class::find($reclamation->module_id);
+        }
     }
+
+    return view('reclamations.show', compact('reclamation', 'linkedModule'));
+}
 
     public function edit(Reclamation $reclamation)
     {
@@ -131,8 +170,12 @@ class ReclamationController extends Controller
         $categories = $this->getCategories();
         $sousCategoriesMap = $this->getSousCategories();
         $statuts = ['brouillon', 'en_cours', 'mise_en_attente', 'cloturee', 'annulee'];
+        $examens = Examen::orderBy('date_demande', 'desc')->get();
+        $events  = Event::orderBy('date_event', 'desc')->get();
+        
 
-        return view('reclamations.edit', compact('reclamation', 'comptes', 'produits', 'specimens', 'mps', 'types', 'categories', 'sousCategoriesMap', 'statuts'));
+        return view('reclamations.edit', compact('reclamation', 'comptes', 'produits', 'specimens', 'mps', 'types',
+         'categories', 'sousCategoriesMap', 'statuts', 'examens', 'events'));
     }
 
     public function update(Request $request, Reclamation $reclamation)
@@ -181,7 +224,7 @@ class ReclamationController extends Controller
 
     private function getCategories()
     {
-        return ['Produit', 'Spécimen', 'Matériel pédagogique', 'Examen', 'Événement', 'Facturation', 'Autre'];
+        return ['Produit', 'Spécimen', 'Matériel pédagogique',  'Événement', 'Autre'];
     }
 
     private function getSousCategories()
