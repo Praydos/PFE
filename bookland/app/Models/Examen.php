@@ -20,6 +20,7 @@ class Examen extends Model
         'niveaux_scolaires' => 'array',
         'date_demande' => 'date',
         'date_examen' => 'date',
+        'date_realisation' => 'date',
     ];
 
     public function compte()

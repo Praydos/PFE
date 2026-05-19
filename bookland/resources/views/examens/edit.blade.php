@@ -251,14 +251,15 @@
                 $defaultCompteId    = old('compte_id', $examen->compte_id ?? '');
                 $defaultContactId   = old('contact_id', $examen->contact_id ?? '');
                 $defaultYearId      = old('annee_scolaire_id', $examen->annee_scolaire_id ?? ($currentYear->id ?? null));
-                $defaultDateDemande = old('date_demande', $examen->date_demande ?? now()->format('Y-m-d'));
+                $defaultDateDemande = old('date_demande', $examen->date_demande ? $examen->date_demande->format('Y-m-d') : now()->format('Y-m-d'));
+                $defaultDateExamen  = old('date_examen',  $examen->date_examen  ? $examen->date_examen->format('Y-m-d')  : '');
                 $defaultLangue      = old('langue', $examen->langue ?? '');
                 $defaultOrganisme   = old('organisme', $examen->organisme ?? '');
                 $defaultNiveauCECR  = old('niveau_cecr', $examen->niveau_cecr ?? '');
                 $defaultTitre       = old('titre', $examen->titre ?? '');
                 $defaultAbreviation = old('abreviation', $examen->abreviation ?? '');
                 $defaultNiveauScolaire = old('niveau_scolaire', $examen->niveau_scolaire ?? '');
-                $defaultDateExamen  = old('date_examen', $examen->date_examen ?? '');
+                $defaultDateExamen  = old('date_examen', $examen->date_examen ? $examen->date_examen->format('Y-m-d') : '');
                 $defaultDescription = old('description', $examen->description ?? '');
                 $defaultObservations= old('observations', $examen->observations ?? '');
             @endphp
@@ -321,7 +322,21 @@
                         @error('date_demande')<span class="frm-error">{{ $message }}</span>@enderror
                     </div>
                 </div>
+                <div class="frm-group">
+                    <label class="frm-label" for="statut">Statut</label>
+                    <div class="frm-select-wrap">
+                        <select name="statut" id="statut" class="frm-select" required>
+                            @foreach($statuts as $value => $label)
+                                <option value="{{ $value }}" {{ $examen->statut == $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
             </div>
+
+            
 
             {{-- Section 2: Examen --}}
             <div class="fp-section" id="sec-examen">
@@ -461,7 +476,7 @@
                             <div class="epreuve-row">
                                 <input type="text"   name="epreuves[{{ $index }}][epreuve]"          class="frm-input" value="{{ $ep->epreuve }}"         placeholder="ex : Compréhension écrite">
                                 <input type="number" name="epreuves[{{ $index }}][duree]"             class="frm-input" value="{{ $ep->duree }}"           placeholder="60" min="0">
-                                <input type="date"   name="epreuves[{{ $index }}][date_realisation]"  class="frm-input" value="{{ $ep->date_realisation }}">
+                                <input type="date" name="epreuves[{{ $index }}][date_realisation]" class="frm-input" value="{{ $ep->date_realisation ? $ep->date_realisation->format('Y-m-d') : '' }}">
                                 <button type="button" class="ep-del-btn remove-epreuve" title="Supprimer l'épreuve">
                                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                                 </button>

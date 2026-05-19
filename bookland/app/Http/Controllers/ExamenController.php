@@ -166,18 +166,22 @@ class ExamenController extends Controller
     }
 
     // Edit form (only for certain statuts? we allow edit if not closed)
-    public function edit(Examen $examen)    {
-
-        $user = Auth::user();
-        $this->authorizeEdit($examen);
-        $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
-        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
-        $langues = ['Français', 'Anglais', 'Arabe', 'Espagnol'];
-        $organismes = ['Cambridge Assessment English', 'TOEFL', 'IELTS', 'Other'];
-        $niveauxCECR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Pre-A1'];
-        $niveauxScolaires = ['CP', 'CE1', 'CE2', 'CM1', 'CM2', '6ème', '5ème', '4ème', '3ème', '2ème', '1ère', 'Terminale'];
-        $currentYear = $this->getCurrentYear();
-        return view('examens.edit', compact('examen', 'comptes', 'years', 'langues', 'organismes', 'niveauxCECR', 'niveauxScolaires', 'currentYear'));    }
+    public function edit(Examen $examen)
+{
+    $user = Auth::user();
+    $this->authorizeEdit($examen);
+    
+    $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
+    $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+    $langues = ['Français', 'Anglais', 'Arabe', 'Espagnol'];
+    $organismes = ['Cambridge Assessment English', 'TOEFL', 'IELTS', 'Other'];
+    $niveauxCECR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Pre-A1'];
+    $niveauxScolaires = ['CP', 'CE1', 'CE2', 'CM1', 'CM2', '6ème', '5ème', '4ème', '3ème', '2ème', '1ère', 'Terminale'];
+    $currentYear = $this->getCurrentYear();
+    $statuts = $this->getStatutOptions();  // ✅ Add this line
+    
+    return view('examens.edit', compact('examen', 'comptes', 'years', 'langues', 'organismes', 'niveauxCECR', 'niveauxScolaires', 'currentYear', 'statuts'));
+}
 
     // Update
     public function update(Request $request, Examen $examen)    {
