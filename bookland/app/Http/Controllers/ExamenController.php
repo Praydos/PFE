@@ -253,7 +253,8 @@ class ExamenController extends Controller
     {
         YearLock::check($examen);
         $user = Auth::user();
-        if (!in_array($user->role, ['admin', 'rbo']) && $examen->delegate_id !== $user->id) {
+        
+        if (!in_array($user->role, ['admin', 'rbo']) && $examen->delegue_id !== $user->id) {
             abort(403);
         }
         $request->validate([
