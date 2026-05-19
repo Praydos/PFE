@@ -249,7 +249,7 @@
                 $defaultZoneId = old('zone_id', $isEdit ? $formation->zone_id : ($defaultZoneId ?? ''));
                 $defaultType = old('type', $isEdit ? $formation->type : '');
                 $defaultCible = old('cible', $isEdit ? $formation->cible : '');
-                $defaultDatesEcole = old('dates_ecole', $isEdit ? ($formation->dates_ecole ?? []) : []);
+                $defaultDatesEcole = old('dates_ecole', $isEdit ? ($formation->date_demande ?? []) : []);
                 $defaultDatesProposees = old('dates_proposees', $isEdit ? ($formation->dates_proposees ?? []) : []);
                 $defaultStatut = old('statut', $isEdit ? $formation->statut : '');
             @endphp
