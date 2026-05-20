@@ -659,6 +659,19 @@
                     </span>
                     <span class="sb-item-label">Specimens & BSS</span>
                 </a>
+                 <a href="{{ route('reclamations.index') }}"
+                   class="sb-item {{ request()->routeIs('reclamations.*') ? 'active' : '' }}"
+                   data-label="Reclamations">
+                    <span class="sb-item-icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 12h-8"/>
+                            <path d="M17 8l4 4-4 4"/>
+                            <path d="M3 7l9-4 9 4-9 4-9-4z"/>
+                            <path d="M3 7v10l9 4 9-4v-3"/>
+                        </svg>
+                    </span>
+                    <span class="sb-item-label">Reclamations</span>
+                </a>
 
                 @if(in_array(auth()->user()->role, ['admin', 'rbo', 'delegue', 'abo']))
                 <a href="{{ route('mp-deliveries.index') }}"
