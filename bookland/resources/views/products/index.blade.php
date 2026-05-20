@@ -702,6 +702,12 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         </div>
         @if (auth()->user()->role == 'admin')
             <div class="dr-header-actions">
+                <button type="button" onclick="document.getElementById('import-modal').classList.add('visible')" class="btn-dr btn-dr-teal">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Importer Excel
+                </button>
                 <a href="{{ route('products.create') }}" class="btn-dr btn-dr-primary">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -816,4 +822,39 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
         @endif
     </div>
 </div>
+
+<!-- Modal d'importation -->
+<div id="import-modal" class="dr-modal-overlay">
+    <div class="dr-modal">
+        <div class="dr-modal-hd">
+            <div class="modal-icon">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+            </div>
+            <div class="modal-title-grp">
+                <h2>Importer des produits</h2>
+                <p>Uploadez un fichier Excel (.xlsx, .xls) ou CSV pour importer en masse.</p>
+            </div>
+            <button class="modal-close" onclick="document.getElementById('import-modal').classList.remove('visible')">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="dr-modal-body">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.4rem; color:var(--text-primary);">Fichier Excel / CSV <span style="color:var(--rose)">*</span></label>
+                    <input type="file" name="file" required accept=".xlsx,.xls,.csv" style="width:100%; padding:.6rem; border:1px solid var(--border); border-radius:var(--r-sm); background:var(--bg-base); font-size:.85rem;">
+                    <p style="font-size:.75rem; color:var(--text-muted); margin-top:.4rem;">Les en-têtes doivent correspondre aux champs de la table de données.</p>
+                </div>
+            </div>
+            <div class="dr-modal-ft">
+                <button type="button" class="btn-dr btn-dr-ghost" onclick="document.getElementById('import-modal').classList.remove('visible')">Annuler</button>
+                <button type="submit" class="btn-dr btn-dr-primary">Importer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
