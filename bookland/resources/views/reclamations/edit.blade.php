@@ -309,10 +309,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
                         <label class="ac-label" for="responsable_id">Responsable</label>
                         <div class="ac-sel-wrap">
                             <select name="responsable_id" id="responsable_id" class="ac-select">
-                                <option value="">-- Sélectionnez --</option>
-                                @foreach(\App\Models\User::whereIn('role', ['admin','rbo'])->get() as $u)
-                                    <option value="{{ $u->id }}" {{ old('responsable_id', $reclamation->responsable_id) == $u->id ? 'selected' : '' }}>{{ $u->prenom }} {{ $u->nom }}</option>
-                                @endforeach
+                                <option value="">-- Sélectionnez un contact --</option>
                             </select>
                         </div>
                     </div>
@@ -367,21 +364,38 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
     // ── 1. Load contacts when compte changes ──
     const compteSelect = document.getElementById('compte_id');
     const contactSelect = document.getElementById('contact_id');
+    const responsableSelect = document.getElementById('responsable_id');
     const currentContactId = @json(old('contact_id', $reclamation->contact_id));
+    const currentResponsableId = @json(old('responsable_id', $reclamation->responsable_id));
 
     function loadContacts() {
         const compteId = compteSelect.value;
         if (!compteId) {
             contactSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
+            if (responsableSelect) {
+                responsableSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
+            }
             return;
         }
         fetch(`/api/comptes/${compteId}/contacts`)
             .then(r => r.json())
             .then(data => {
-                let options = '<option value="">-- Sélectionnez un contact --</option>';
-                data.forEach(c => options += `<option value="${c.id}">${c.prenom} ${c.nom} (${c.fonction || ''})</option>`);
-                contactSelect.innerHTML = options;
+                let contactOptions = '<option value="">-- Sélectionnez un contact --</option>';
+                let responsableOptions = '<option value="">-- Sélectionnez --</option>';
+                
+                data.forEach(c => {
+                    const optText = `${c.prenom} ${c.nom} (${c.fonction || ''})`;
+                    contactOptions += `<option value="${c.id}">${optText}</option>`;
+                    responsableOptions += `<option value="${c.id}">${optText}</option>`;
+                });
+                
+                contactSelect.innerHTML = contactOptions;
                 if (currentContactId) contactSelect.value = currentContactId;
+
+                if (responsableSelect) {
+                    responsableSelect.innerHTML = responsableOptions;
+                    if (currentResponsableId) responsableSelect.value = currentResponsableId;
+                }
             });
     }
     compteSelect.addEventListener('change', loadContacts);

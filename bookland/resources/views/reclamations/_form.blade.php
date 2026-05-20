@@ -116,11 +116,8 @@
     </div>
     <div class="col-md-4 mb-3">
         <label>Responsable</label>
-        <select name="responsable_id" class="form-select">
-            <option value="">-- Sélectionnez --</option>
-            @foreach(\App\Models\User::whereIn('role', ['admin','rbo'])->get() as $u)
-                <option value="{{ $u->id }}" {{ old('responsable_id', $reclamation->responsable_id) == $u->id ? 'selected' : '' }}>{{ $u->prenom }} {{ $u->nom }}</option>
-            @endforeach
+        <select name="responsable_id" id="responsable_id" class="form-select">
+            <option value="">-- Sélectionnez un contact --</option>
         </select>
     </div>
     <div class="col-md-4 mb-3">
@@ -155,18 +152,36 @@
     document.getElementById('compte_id')?.addEventListener('change', function() {
         let compteId = this.value;
         let contactSelect = document.getElementById('contact_id');
+        let responsableSelect = document.getElementById('responsable_id');
         if (!compteId) {
             contactSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
+            if (responsableSelect) {
+                responsableSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
+            }
             return;
         }
         fetch(`/api/comptes/${compteId}/contacts`)
             .then(r => r.json())
             .then(data => {
-                let options = '<option value="">-- Sélectionnez un contact --</option>';
-                data.forEach(c => options += `<option value="${c.id}">${c.prenom} ${c.nom} (${c.fonction || ''})</option>`);
-                contactSelect.innerHTML = options;
+                let contactOptions = '<option value="">-- Sélectionnez un contact --</option>';
+                let responsableOptions = '<option value="">-- Sélectionnez --</option>';
+                
+                data.forEach(c => {
+                    const optText = `${c.prenom} ${c.nom} (${c.fonction || ''})`;
+                    contactOptions += `<option value="${c.id}">${optText}</option>`;
+                    responsableOptions += `<option value="${c.id}">${optText}</option>`;
+                });
+                
+                contactSelect.innerHTML = contactOptions;
+                if (responsableSelect) {
+                    responsableSelect.innerHTML = responsableOptions;
+                }
+                
                 @if($isEdit)
                     contactSelect.value = '{{ old('contact_id', $reclamation->contact_id) }}';
+                    if (responsableSelect) {
+                        responsableSelect.value = '{{ old('responsable_id', $reclamation->responsable_id) }}';
+                    }
                 @endif
             });
     });

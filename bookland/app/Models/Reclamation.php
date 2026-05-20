@@ -56,7 +56,7 @@ public function mp()
 
     public function responsable()
     {
-        return $this->belongsTo(User::class, 'responsable_id');
+        return $this->belongsTo(Contact::class, 'responsable_id');
     }
 
     public function createdBy()

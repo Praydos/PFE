@@ -195,7 +195,7 @@ class ReclamationController extends Controller
             'analyse' => 'nullable|string',
             'reponse' => 'nullable|string',
             'date_reponse' => 'nullable|date',
-            'responsable_id' => 'nullable|exists:users,id',
+            'responsable_id' => 'nullable|exists:contacts,id',
             'statut' => 'required|in:brouillon,en_cours,mise_en_attente,cloturee,annulee',
             'date_cloture' => 'nullable|date',
             'produit_id' => 'nullable|exists:products,id',
