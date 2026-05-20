@@ -313,13 +313,54 @@ if ($createdCount > 0) {
 
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',
-            'product_id' => 'required|exists:products,id',
+            'contact_id' => 'required|exists:contacts,id',
+            'methode' => 'required|string|max:255',
             'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
-            'quantity' => 'required|integer|min:1',
             'date_adoption' => 'required|date',
+            'product_id' => 'required|exists:products,id',
+            'type_adoption' => 'required|in:BOOKLAND,ESPRIT_DU_LIVRE,CONCURRENT',
+            'isbn' => 'nullable|string|max:255',
+            'sous_categorie' => 'nullable|string|max:255',
             'niveau' => 'required|string|max:255',
             'cycle' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1',
         ]);
+
+        $previousYear = $this->getPreviousYear();
+        $yearIds = collect([$validated['annee_scolaire_id']]);
+        if ($previousYear) {
+            $yearIds->push($previousYear->id);
+        }
+
+        // Check duplicate adoption excluding current one
+        $adoptionExists = Adoption::where('compte_id', $validated['compte_id'])
+            ->where('product_id', $validated['product_id'])
+            ->whereIn('annee_scolaire_id', $yearIds->all())
+            ->where('id', '!=', $adoption->id)
+            ->exists();
+
+        // Also check if a BSS specimen was already delivered in current or previous year
+        $bssExists = false;
+        if (!$adoption->bss_ligne_id) {
+            $bssExists = BssLigne::whereHas('bss', function ($q) use ($validated, $yearIds) {
+                $q->where('compte_id', $validated['compte_id'])
+                  ->whereIn('annee_scolaire_id', $yearIds->all())
+                  ->where('statut', '!=', 'refuse');
+            })->where('product_id', $validated['product_id'])->exists();
+        } else {
+            $bssExists = BssLigne::whereHas('bss', function ($q) use ($validated, $yearIds) {
+                $q->where('compte_id', $validated['compte_id'])
+                  ->whereIn('annee_scolaire_id', $yearIds->all())
+                  ->where('statut', '!=', 'refuse');
+            })
+            ->where('product_id', $validated['product_id'])
+            ->where('id', '!=', $adoption->bss_ligne_id)
+            ->exists();
+        }
+
+        if ($adoptionExists || $bssExists) {
+            return redirect()->back()->withErrors(['product_id' => 'Le produit a déjà été livré ou adopté pour ce compte cette année ou l\'année précédente.'])->withInput();
+        }
 
         $adoption->update($validated);
         return redirect()->route('adoptions.index')->with('success', 'Adoption mise à jour.');

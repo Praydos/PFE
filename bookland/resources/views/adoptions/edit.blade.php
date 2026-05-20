@@ -154,28 +154,6 @@
         min-width: 150px;
         margin-bottom: 0;
     }
-    .product-row .remove-btn {
-        flex-shrink: 0;
-        margin-bottom: 0;
-    }
-    .product-row .remove-btn button {
-        background: var(--bg-subtle);
-        border: 1px solid var(--border);
-        border-radius: var(--r-sm);
-        width: 38px;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all var(--t);
-        color: var(--text-muted);
-    }
-    .product-row .remove-btn button:hover {
-        background: var(--rose-light);
-        color: var(--rose);
-        border-color: rgba(232,80,106,.2);
-    }
 
     /* Readonly fields styling */
     .frm-input[readonly] {
@@ -212,7 +190,6 @@
         .zn-page { padding: 1.25rem 1rem 2rem; }
         .fp-row-2, .fp-row-3 { grid-template-columns: 1fr; }
         .product-row { flex-direction: column; align-items: stretch; }
-        .product-row .remove-btn { align-self: flex-start; }
         .fp-footer { flex-wrap: wrap; }
         .fp-footer-spacer { display: none; }
         .btn-zn { width: 100%; justify-content: center; }
@@ -234,12 +211,12 @@
         <span class="zn-bc-sep">›</span>
         <a href="{{ route('adoptions.index') }}">Adoptions</a>
         <span class="zn-bc-sep">›</span>
-        <span class="zn-bc-cur">Nouvelle adoption manuelle</span>
+        <span class="zn-bc-cur">Modifier l'adoption</span>
     </div>
 
     <div class="zn-header">
-        <h1>Nouvelle adoption manuelle</h1>
-        <p>Créez une adoption directement sans passer par un BSS</p>
+        <h1>Modifier l'adoption</h1>
+        <p>Mettez à jour les informations de l'adoption manuelle</p>
     </div>
 
     @if($errors->any())
@@ -253,8 +230,9 @@
     @endif
 
     <div class="fp-card">
-        <form method="POST" action="{{ route('adoptions.store') }}" id="adoption-form">
+        <form method="POST" action="{{ route('adoptions.update', $adoption) }}" id="adoption-form">
             @csrf
+            @method('PUT')
 
             {{-- Section 1 : Informations de l'adoption --}}
             <div class="fp-section">
@@ -276,7 +254,7 @@
                             <select name="compte_id" id="compte_id" class="frm-select {{ $errors->has('compte_id') ? 'is-invalid' : '' }}" required>
                                 <option value="">-- Sélectionnez --</option>
                                 @foreach($comptes as $c)
-                                    <option value="{{ $c->id }}" {{ old('compte_id') == $c->id ? 'selected' : '' }}>{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
+                                    <option value="{{ $c->id }}" {{ old('compte_id', $adoption->compte_id) == $c->id ? 'selected' : '' }}>{{ $c->etablissement }} ({{ $c->ville->nom }})</option>
                                 @endforeach
                             </select>
                         </div>
@@ -289,7 +267,7 @@
                         <div class="frm-select-wrap">
                             <select name="annee_scolaire_id" id="annee_scolaire_id" class="frm-select {{ $errors->has('annee_scolaire_id') ? 'is-invalid' : '' }}" required>
                                 @foreach($years as $y)
-                                    <option value="{{ $y->id }}" {{ old('annee_scolaire_id', ($currentYear->id ?? '')) == $y->id ? 'selected' : '' }}>{{ $y->libelle }}</option>
+                                    <option value="{{ $y->id }}" {{ old('annee_scolaire_id', $adoption->annee_scolaire_id) == $y->id ? 'selected' : '' }}>{{ $y->libelle }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -303,7 +281,7 @@
                         <label class="frm-label" for="date_adoption">Date adoption <span class="req">*</span></label>
                         <input type="date" name="date_adoption" id="date_adoption"
                                class="frm-input {{ $errors->has('date_adoption') ? 'is-invalid' : '' }}"
-                               value="{{ old('date_adoption', now()->format('Y-m-d')) }}" required>
+                               value="{{ old('date_adoption', $adoption->date_adoption->format('Y-m-d')) }}" required>
                         @error('date_adoption')<span class="frm-error">{{ $message }}</span>@enderror
                     </div>
 
@@ -312,7 +290,12 @@
                         <label class="frm-label" for="contact_id">Contact <span class="req">*</span></label>
                         <div class="frm-select-wrap">
                             <select name="contact_id" id="contact_id" class="frm-select {{ $errors->has('contact_id') ? 'is-invalid' : '' }}" required>
-                                <option value="">-- Sélectionnez d'abord un compte --</option>
+                                <option value="">-- Sélectionnez --</option>
+                                @foreach($contacts as $co)
+                                    <option value="{{ $co->id }}" {{ old('contact_id', $adoption->contact_id) == $co->id ? 'selected' : '' }}>
+                                        {{ $co->prenom }} {{ $co->nom }} ({{ $co->fonction ?? '' }})
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                         @error('contact_id')<span class="frm-error">{{ $message }}</span>@enderror
@@ -325,32 +308,106 @@
                         <label class="frm-label" for="methode">Méthode <span class="req">*</span></label>
                         <input type="text" name="methode" id="methode"
                                class="frm-input {{ $errors->has('methode') ? 'is-invalid' : '' }}"
-                               value="{{ old('methode') }}" required>
+                               value="{{ old('methode', $adoption->methode) }}" required>
                         @error('methode')<span class="frm-error">{{ $message }}</span>@enderror
                     </div>
                 </div>
             </div>
 
-            {{-- Section 2 : Produits adoptés --}}
+            {{-- Section 2 : Produit adopté --}}
             <div class="fp-section">
                 <div class="fp-section-head">
                     <div class="fp-section-icon amber">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                     </div>
                     <div class="fp-section-meta">
-                        <div class="fp-section-title">Produits adoptés</div>
-                        <div class="fp-section-sub">Sélectionnez les produits et renseignez les niveaux/cycles</div>
+                        <div class="fp-section-title">Produit adopté</div>
+                        <div class="fp-section-sub">Sélectionnez le produit et renseignez le niveau/cycle</div>
                     </div>
                 </div>
 
-                <div id="products-container"></div>
+                <div class="product-row">
+                    {{-- Product --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="product_id">Produit <span class="req">*</span></label>
+                        <div class="frm-select-wrap">
+                            <select name="product_id" id="product_id" class="frm-select {{ $errors->has('product_id') ? 'is-invalid' : '' }}" required>
+                                <option value="">-- Sélectionnez --</option>
+                                @foreach($products as $p)
+                                    <option value="{{ $p->id }}" 
+                                            data-isbn="{{ $p->isbn_13 ?? $p->isbn_10 ?? '' }}" 
+                                            data-sous-categorie="{{ $p->sous_categorie ?? '' }}"
+                                            {{ old('product_id', $adoption->product_id) == $p->id ? 'selected' : '' }}>
+                                        {{ $p->titre }} ({{ $p->isbn_13 ?? $p->isbn_10 }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('product_id')<span class="frm-error">{{ $message }}</span>@enderror
+                    </div>
 
-                <button type="button" id="add-product" class="btn-zn btn-zn-ghost btn-zn-sm" style="margin-top: .5rem;">
-                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    Ajouter un produit
-                </button>
+                    {{-- Type adoption --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="type_adoption">Type adoption <span class="req">*</span></label>
+                        <div class="frm-select-wrap">
+                            <select name="type_adoption" id="type_adoption" class="frm-select {{ $errors->has('type_adoption') ? 'is-invalid' : '' }}" required>
+                                <option value="">-- Sélectionnez --</option>
+                                <option value="BOOKLAND" {{ old('type_adoption', $adoption->type_adoption) == 'BOOKLAND' ? 'selected' : '' }}>BOOKLAND</option>
+                                <option value="ESPRIT_DU_LIVRE" {{ old('type_adoption', $adoption->type_adoption) == 'ESPRIT_DU_LIVRE' ? 'selected' : '' }}>ESPRIT DU LIVRE</option>
+                                <option value="CONCURRENT" {{ old('type_adoption', $adoption->type_adoption) == 'CONCURRENT' ? 'selected' : '' }}>CONCURRENT</option>
+                            </select>
+                        </div>
+                        @error('type_adoption')<span class="frm-error">{{ $message }}</span>@enderror
+                    </div>
+
+                    {{-- ISBN --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="isbn">ISBN</label>
+                        <input type="text" name="isbn" id="isbn" class="frm-input" value="{{ old('isbn', $adoption->isbn) }}" readonly>
+                    </div>
+
+                    {{-- Sous-catégorie --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="sous_categorie">Sous-catégorie</label>
+                        <input type="text" name="sous_categorie" id="sous_categorie" class="frm-input" value="{{ old('sous_categorie', $adoption->sous_categorie) }}" readonly>
+                    </div>
+
+                    {{-- Niveau --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="niveau">Niveau <span class="req">*</span></label>
+                        <div class="frm-select-wrap">
+                            <select name="niveau" id="niveau" class="frm-select niveau-select {{ $errors->has('niveau') ? 'is-invalid' : '' }}" required>
+                                <option value="{{ $adoption->niveau }}" selected>{{ $adoption->niveau }}</option>
+                            </select>
+                        </div>
+                        @error('niveau')<span class="frm-error">{{ $message }}</span>@enderror
+                    </div>
+
+                    {{-- Cycle --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="cycle">Cycle <span class="req">*</span></label>
+                        <div class="frm-select-wrap">
+                            <select name="cycle" id="cycle" class="frm-select cycle-select {{ $errors->has('cycle') ? 'is-invalid' : '' }}" required>
+                                <option value="">-- Cycle --</option>
+                                <option value="primaire" {{ old('cycle', $adoption->cycle) == 'primaire' ? 'selected' : '' }}>Primaire</option>
+                                <option value="college" {{ old('cycle', $adoption->cycle) == 'college' ? 'selected' : '' }}>Collège</option>
+                                <option value="Lycée" {{ old('cycle', $adoption->cycle) == 'Lycée' ? 'selected' : '' }}>Lycée</option>
+                                <option value="Learners" {{ old('cycle', $adoption->cycle) == 'Learners' ? 'selected' : '' }}>Learners</option>
+                                <option value="Pre-teens" {{ old('cycle', $adoption->cycle) == 'Pre-teens' ? 'selected' : '' }}>Pre-teens</option>
+                                <option value="Teens" {{ old('cycle', $adoption->cycle) == 'Teens' ? 'selected' : '' }}>Teens</option>
+                                <option value="Adults" {{ old('cycle', $adoption->cycle) == 'Adults' ? 'selected' : '' }}>Adults</option>
+                            </select>
+                        </div>
+                        @error('cycle')<span class="frm-error">{{ $message }}</span>@enderror
+                    </div>
+
+                    {{-- Quantité --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="quantity">Quantité <span class="req">*</span></label>
+                        <input type="number" name="quantity" id="quantity" class="frm-input quantity-input {{ $errors->has('quantity') ? 'is-invalid' : '' }}" value="{{ old('quantity', $adoption->quantity) }}" readonly required>
+                        @error('quantity')<span class="frm-error">{{ $message }}</span>@enderror
+                    </div>
+                </div>
             </div>
 
             <div class="fp-footer">
@@ -373,30 +430,24 @@
     </div>
 </div>
 
-@php
-    $productsData = $products->map(function($p) {
-        return [
-            'id' => $p->id,
-            'name' => $p->titre . ' (' . ($p->isbn_13 ?? $p->isbn_10) . ')',
-            'isbn' => $p->isbn_13 ?? $p->isbn_10 ?? '',
-            'sous_categorie' => $p->sous_categorie ?? '',
-        ];
-    });
-@endphp
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const compteSelect = document.getElementById('compte_id');
         const yearSelect = document.getElementById('annee_scolaire_id');
         const contactSelect = document.getElementById('contact_id');
+        const productSelect = document.getElementById('product_id');
+        const niveauSelect = document.getElementById('niveau');
+        const cycleSelect = document.getElementById('cycle');
+        const quantityInput = document.getElementById('quantity');
+        
         let currentNiveaux = [];
-        let productIndex = 0;
 
         // ── Load contacts based on compte ──
-        function loadContacts() {
+        function loadContacts(callback) {
             const compteId = compteSelect.value;
             if (!compteId) {
                 contactSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
+                if (callback) callback();
                 return;
             }
             fetch(`/api/comptes/${compteId}/contacts`)
@@ -407,47 +458,51 @@
                         html += `<option value="${c.id}">${c.prenom} ${c.nom} (${c.fonction || ''})</option>`;
                     });
                     contactSelect.innerHTML = html;
-                    const defaultContactId = '{{ old('contact_id') }}';
+                    const defaultContactId = '{{ old('contact_id', $adoption->contact_id) }}';
                     if (defaultContactId) contactSelect.value = defaultContactId;
+                    if (callback) callback();
                 })
-                .catch(err => console.error('Erreur chargement contacts:', err));
+                .catch(err => {
+                    console.error('Erreur chargement contacts:', err);
+                    if (callback) callback();
+                });
         }
 
-        // ── Load niveaux for the compte and populate all rows ──
-        function loadNiveauxForRows() {
+        // ── Load niveaux for the compte ──
+        function loadNiveaux(callback) {
             const compteId = compteSelect.value;
             if (!compteId) {
-                document.querySelectorAll('.niveau-select').forEach(sel => {
-                    sel.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
-                });
+                niveauSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
+                if (callback) callback();
                 return;
             }
             fetch(`/api/comptes/${compteId}/niveaux`)
                 .then(r => r.json())
                 .then(data => {
                     currentNiveaux = data;
-                    const options = '<option value="">-- Sélectionnez un niveau --</option>' + data.map(n => `<option value="${n}">${n}</option>`).join('');
-                    document.querySelectorAll('.niveau-select').forEach(sel => {
-                        sel.innerHTML = options;
+                    let html = '<option value="">-- Sélectionnez un niveau --</option>';
+                    data.forEach(n => {
+                        html += `<option value="${n}">${n}</option>`;
                     });
-                    // After loading, trigger quantity fetch for each row
-                    document.querySelectorAll('.product-row').forEach(row => fetchQuantityForRow(row));
+                    niveauSelect.innerHTML = html;
+                    const defaultNiveau = '{{ old('niveau', $adoption->niveau) }}';
+                    if (defaultNiveau) niveauSelect.value = defaultNiveau;
+                    if (callback) callback();
                 })
-                .catch(err => console.error('Erreur chargement niveaux:', err));
+                .catch(err => {
+                    console.error('Erreur chargement niveaux:', err);
+                    if (callback) callback();
+                });
         }
 
-        // ── Fetch quantity for a single row ──
-        function fetchQuantityForRow(row) {
+        // ── Fetch quantity ──
+        function fetchQuantity() {
             const compteId = compteSelect.value;
             const yearId = yearSelect.value;
-            const niveauSelect = row.querySelector('.niveau-select');
-            const cycleSelect = row.querySelector('.cycle-select');
-            const quantityInput = row.querySelector('.quantity-input');
-            const niveau = niveauSelect?.value;
-            const cycle = cycleSelect?.value;
+            const niveau = niveauSelect.value;
+            const cycle = cycleSelect.value;
 
             if (!compteId || !yearId || !niveau || !cycle) {
-                if (quantityInput) quantityInput.value = '';
                 return;
             }
 
@@ -463,156 +518,29 @@
                 .catch(err => console.error('Erreur chargement effectif:', err));
         }
 
-        // ── Product data from PHP ──
-        const productsData = @json($productsData);
+        // Product select change: fill ISBN and sous-catégorie
+        productSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const isbn = selectedOption.dataset.isbn || '';
+            const sousCategorie = selectedOption.dataset.sousCategorie || '';
+            document.getElementById('isbn').value = isbn;
+            document.getElementById('sous_categorie').value = sousCategorie;
+        });
 
-        // ── Create a new product row ──
-        function createProductRow(index) {
-            const row = document.createElement('div');
-            row.className = 'product-row';
-
-            let productOptions = '<option value="">-- Sélectionnez --</option>';
-            productsData.forEach(p => {
-                productOptions += `<option value="${p.id}" data-isbn="${p.isbn}" data-sous-categorie="${p.sous_categorie}">${p.name}</option>`;
-            });
-
-            row.innerHTML = `
-                <div class="frm-group">
-                    <label class="frm-label">Produit *</label>
-                    <div class="frm-select-wrap">
-                        <select name="products[${index}][product_id]" class="frm-select product-select" required>
-                            ${productOptions}
-                        </select>
-                    </div>
-                </div>
-                <div class="frm-group">
-                    <label class="frm-label">Type adoption *</label>
-                    <div class="frm-select-wrap">
-                        <select name="products[${index}][type_adoption]" class="frm-select type-select" required>
-                            <option value="">-- Sélectionnez --</option>
-                            <option value="BOOKLAND">BOOKLAND</option>
-                            <option value="ESPRIT_DU_LIVRE">ESPRIT DU LIVRE</option>
-                            <option value="CONCURRENT">CONCURRENT</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="frm-group">
-                    <label class="frm-label">ISBN</label>
-                    <input type="text" name="products[${index}][isbn]" class="frm-input isbn-input" readonly>
-                </div>
-                <div class="frm-group">
-                    <label class="frm-label">Sous-catégorie</label>
-                    <input type="text" name="products[${index}][sous_categorie]" class="frm-input sous-categorie-input" readonly>
-                </div>
-                <div class="frm-group">
-                    <label class="frm-label">Niveau</label>
-                    <div class="frm-select-wrap">
-                        <select name="products[${index}][niveau]" class="frm-select niveau-select" required>
-                            <option value="">-- Niveau --</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="frm-group">
-                    <label class="frm-label">Cycle</label>
-                    <div class="frm-select-wrap">
-                        <select name="products[${index}][cycle]" class="frm-select cycle-select" required>
-                            <option value="">-- Cycle --</option>
-                            <option value="primaire">Primaire</option>
-                            <option value="college">Collège</option>
-                            <option value="Lycée">Lycée</option>
-                            <option value="Learners">Learners</option>
-                            <option value="Pre-teens">Pre-teens</option>
-                            <option value="Teens">Teens</option>
-                            <option value="Adults">Adults</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="frm-group">
-                    <label class="frm-label">Quantité</label>
-                    <input type="number" name="products[${index}][quantity]" class="frm-input quantity-input" readonly required>
-                </div>
-                <div class="remove-btn">
-                    <button type="button" class="remove-product" title="Supprimer ce produit">
-                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                    </button>
-                </div>
-            `;
-
-            // Product select change: fill ISBN and sous-catégorie
-            const productSelect = row.querySelector('.product-select');
-            productSelect.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const isbn = selectedOption.dataset.isbn || '';
-                const sousCategorie = selectedOption.dataset.sousCategorie || '';
-                row.querySelector('.isbn-input').value = isbn;
-                row.querySelector('.sous-categorie-input').value = sousCategorie;
-            });
-
-            return row;
-        }
-
-        // ── Attach events to a row (niveau / cycle change, remove) ──
-        function attachRowEvents(row) {
-            const niveauSelect = row.querySelector('.niveau-select');
-            const cycleSelect = row.querySelector('.cycle-select');
-            const removeBtn = row.querySelector('.remove-product');
-
-            if (niveauSelect) {
-                niveauSelect.addEventListener('change', () => fetchQuantityForRow(row));
-            }
-            if (cycleSelect) {
-                cycleSelect.addEventListener('change', () => fetchQuantityForRow(row));
-            }
-            if (removeBtn) {
-                removeBtn.addEventListener('click', () => {
-                    if (document.querySelectorAll('.product-row').length > 1) {
-                        row.remove();
-                    } else {
-                        alert('Vous devez conserver au moins un produit.');
-                    }
-                });
-            }
-        }
-
-        // ── Add a new product row ──
-        function addProductRow() {
-            productIndex++;
-            const container = document.getElementById('products-container');
-            const newRow = createProductRow(productIndex);
-            container.appendChild(newRow);
-            attachRowEvents(newRow);
-            // If niveaux already loaded, populate the new row's niveau dropdown
-            if (currentNiveaux.length > 0) {
-                const options = '<option value="">-- Sélectionnez un niveau --</option>' + currentNiveaux.map(n => `<option value="${n}">${n}</option>`).join('');
-                newRow.querySelector('.niveau-select').innerHTML = options;
-            }
-        }
-
-        // ── Initial product row ──
-        productIndex = 0;
-        const container = document.getElementById('products-container');
-        const initialRow = createProductRow(0);
-        container.appendChild(initialRow);
-        attachRowEvents(initialRow);
-
-        // ── Add product button ──
-        document.getElementById('add-product').addEventListener('click', addProductRow);
-
-        // ── Event listeners for compte and year changes ──
+        // Event listeners
         compteSelect.addEventListener('change', function() {
             loadContacts();
-            loadNiveauxForRows();
+            loadNiveaux();
         });
-        yearSelect.addEventListener('change', function() {
-            document.querySelectorAll('.product-row').forEach(row => fetchQuantityForRow(row));
-        });
+        yearSelect.addEventListener('change', fetchQuantity);
+        niveauSelect.addEventListener('change', fetchQuantity);
+        cycleSelect.addEventListener('change', fetchQuantity);
 
-        // ── Initial load if compte already selected ──
+        // Initial load if compte already selected
         if (compteSelect.value) {
+            // Load contacts and levels, keeping initial selections intact
             loadContacts();
-            loadNiveauxForRows();
+            loadNiveaux();
         }
     });
 </script>
