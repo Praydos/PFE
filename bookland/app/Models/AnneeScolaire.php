@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsModelActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class AnneeScolaire extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsModelActivity;
 
     protected $table = 'annees_scolaires';
 

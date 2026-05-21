@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsModelActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Adoption extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsModelActivity;
 
     protected $fillable = [
         'compte_id', 'product_id', 'annee_scolaire_id', 'quantity',

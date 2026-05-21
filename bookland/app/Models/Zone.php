@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsModelActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Testing\Fluent\Concerns\Has;
 
 class Zone extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsModelActivity;
 
     protected $fillable = ['name', 'ville_id', 'rbo_id'];
 

@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\Concerns\LogsModelActivity;
+
 class Compte extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsModelActivity;
 
     protected $fillable = [
         'type', 'etablissement', 'ville_id', 'zone_id', 'adresse',

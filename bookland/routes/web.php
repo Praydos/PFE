@@ -49,8 +49,9 @@ use App\Http\Controllers\ActionAmeliorationController;
 use App\Http\Controllers\MpDeliveryController;
 use App\Http\Controllers\MpProductController;
 use App\Http\Controllers\ReclamationController;
-use App\Http\Controllers\NonConformiteController;
 
+use App\Http\Controllers\NonConformiteController;
+use App\Http\Controllers\LogController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -116,6 +117,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->group(function () {
 
             // Core resources
+            Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
             Route::resource('villes', VilleController::class);
             Route::resource('zones', ZoneController::class);
             Route::resource('quartiers', QuartierController::class);

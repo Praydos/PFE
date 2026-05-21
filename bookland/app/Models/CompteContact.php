@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsModelActivity;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
 class CompteContact extends Model
 {
+    use LogsModelActivity;
     protected $table = 'compte_contact';
 
     protected $fillable = [

@@ -22,5 +22,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         MpDelivery::observe(MpDeliveryObserver::class);
+
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event) {
+            activity('auth')
+                ->causedBy($event->user)
+                ->log('logged_in');
+        });
+
     }
 }
