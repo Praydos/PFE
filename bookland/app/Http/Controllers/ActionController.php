@@ -239,7 +239,7 @@ class ActionController extends Controller
 
     public function store(Request $request)    {
         $user = Auth::user();
-        if ($user->role !== 'delegue')
+        if ($user->role !== 'admin' && ($user->role !== 'delegue'))
             abort(403);
 
         // Base validation rules
@@ -497,7 +497,7 @@ class ActionController extends Controller
     public function realiser(Request $request, Action $action)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || (int)$action->delegue_id !== (int)$user->id) {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || (int) $action->delegue_id !== (int)$user->id)) {
             abort(403);
         }
         YearLock::check($action);
@@ -757,6 +757,8 @@ class ActionController extends Controller
     {
         $user = Auth::user();
         if ($user->role === 'admin')
+            return;
+        if($user->role === 'abo')
             return;
         if ($user->role === 'delegue' && $action->delegue_id === $user->id)
             return;

@@ -38,7 +38,7 @@ class ConsignationController extends Controller
         // Admin sees all
 
         // Filter by delegate (only for admin/RBO)
-        if ($user->role !== 'delegue' && $request->filled('delegate_id')) {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' && $request->filled('delegate_id'))) {
             $query->where('delegate_id', $request->delegate_id);
         }
 

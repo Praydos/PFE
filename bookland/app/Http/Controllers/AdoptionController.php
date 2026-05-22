@@ -56,7 +56,7 @@ class AdoptionController extends Controller
     public function create()
 {
     $user = Auth::user();
-    if ($user->role !== 'delegue') abort(403);
+    if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
 
     $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
     // Include the fields needed for the form
@@ -73,7 +73,7 @@ class AdoptionController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
 
         $validated = $request->validate([
         'compte_id' => 'required|exists:comptes,id',
@@ -158,7 +158,7 @@ if ($createdCount > 0) {
     public function convertFromBss(Bss $bss)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre') {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre')) {
             abort(403);
         }
         // Check if any line is already converted
@@ -207,7 +207,7 @@ if ($createdCount > 0) {
     public function storeFromBss(Request $request, Bss $bss)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre') {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre')) {
             abort(403);
         }
 
@@ -294,7 +294,7 @@ if ($createdCount > 0) {
     public function edit(Adoption $adoption)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id)) abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
         $products = Product::orderBy('titre')->get();
@@ -309,7 +309,7 @@ if ($createdCount > 0) {
     public function update(Request $request, Adoption $adoption)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id)) abort(403);
 
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',
@@ -370,7 +370,7 @@ if ($createdCount > 0) {
     public function destroy(Adoption $adoption)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id) abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id)) abort(403);
         $adoption->delete();
         return redirect()->route('adoptions.index')->with('success', 'Adoption supprimée.');
     }
@@ -436,6 +436,7 @@ if ($createdCount > 0) {
     {
         $user = Auth::user();
         if ($user->role === 'admin') return;
+        if ($user->role === 'abo') return;
         if ($user->role === 'delegue' && $adoption->delegate_id === $user->id) return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();

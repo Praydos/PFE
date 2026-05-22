@@ -54,7 +54,7 @@ class BssController extends Controller
         if ($request->filled('statut')) {
             $query->where('statut', $request->statut);
         }
-        if ($request->filled('delegate_id') && $user->role !== 'delegue') {
+        if ($user->role !== 'admin' && ($request->filled('delegate_id') && $user->role !== 'delegue')) {
             $query->where('delegate_id', $request->delegate_id);
         }
         if ($request->filled('compte_id')) {
@@ -267,7 +267,7 @@ class BssController extends Controller
 
         $user = Auth::user();
         // Only delegate who created it can edit feedback, and only if status is 'valide'
-        if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'valide') {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'valide')) {
             abort(403, 'Vous ne pouvez modifier que les BSS validés que vous avez créés.');
         }
         return view('bss.edit_feedback', compact('bss'));
@@ -277,7 +277,7 @@ class BssController extends Controller
     public function update(Request $request, Bss $bss)    {
         YearLock::check($bss);
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'valide') {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'valide')) {
             abort(403);
         }
         $validated = $request->validate([
@@ -349,6 +349,8 @@ class BssController extends Controller
     {
         $user = Auth::user();
         if ($user->role === 'admin')
+            return;
+        if ($user->role === 'abo')
             return;
         if ($user->role === 'delegue' && $bss->delegate_id === $user->id)
             return;

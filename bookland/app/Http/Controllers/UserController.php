@@ -244,7 +244,7 @@ class UserController extends Controller
 
     public function getZones(User $user)
     {
-        if (! in_array($user->role, ['delegue', 'rbo'])) {
+        if (! in_array($user->role, ['admin', 'delegue', 'rbo'])) {
             return response()->json(['error' => 'Invalid user type'], 400);
         }
 
@@ -277,7 +277,7 @@ class UserController extends Controller
 
     public function updateZones(Request $request, User $user)
 {
-    if (! in_array($user->role, ['delegue', 'rbo'])) {
+    if (! in_array($user->role, ['admin', 'delegue', 'rbo'])) {
         return response()->json(['error' => 'Invalid user type'], 400);
     }
 
@@ -310,7 +310,7 @@ class UserController extends Controller
 
     public function getAssignedZones(User $user)
     {
-        if ($user->role !== 'delegue') {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue')) {
             return response()->json(['error' => 'Invalid user type'], 400);
         }
 
@@ -322,7 +322,7 @@ class UserController extends Controller
 
     public function getComptes(User $user)
     {
-        if ($user->role !== 'delegue') {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue')) {
             return response()->json(['error' => 'Invalid user type'], 400);
         }
 
@@ -346,7 +346,7 @@ class UserController extends Controller
     public function updateComptes(Request $request, User $user)
     {
         try {
-            if ($user->role !== 'delegue') {
+            if ($user->role !== 'admin' && ($user->role !== 'delegue')) {
                 return response()->json(['error' => 'L\'utilisateur n\'est pas un délégué.'], 400);
             }
 
@@ -379,7 +379,7 @@ class UserController extends Controller
 
     public function getVilles(User $user)
     {
-        if ($user->role !== 'rbo') {
+        if ($user->role !== 'admin' && ($user->role !== 'rbo')) {
             return response()->json(['error' => 'Seuls les RBOs peuvent avoir des villes assignées.'], 400);
         }
 
@@ -397,7 +397,7 @@ class UserController extends Controller
 
     public function updateVilles(Request $request, User $user)
     {
-        if ($user->role !== 'rbo') {
+        if ($user->role !== 'admin' && ($user->role !== 'rbo')) {
             return response()->json(['error' => 'Seuls les RBOs peuvent avoir des villes assignées.'], 400);
         }
 
@@ -419,7 +419,7 @@ class UserController extends Controller
 
     public function getAssignedComptes(User $user)
     {
-        if ($user->role !== 'delegue') {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue')) {
             return response()->json(['error' => 'Invalid user type'], 400);
         }
         $comptes = $user->comptes()->with(['quartier.zone.ville'])->get();

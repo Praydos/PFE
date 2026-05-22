@@ -471,6 +471,7 @@ class DemandeSpecimenController extends Controller
     {
         $user = Auth::user();
         if ($user->role === 'admin') return;
+        if ($user->role === 'abo') return;
         if ($user->role === 'delegue' && $demande->delegue_id === $user->id) return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();

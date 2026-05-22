@@ -53,7 +53,7 @@ class ExamenController extends Controller
     // Create form
     public function create(Request $request)    {
         $user = Auth::user();
-        // if ($user->role !== 'delegue')
+        // if ($user->role !== 'admin' && ($user->role !== 'delegue'))
         //     abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
@@ -79,7 +79,7 @@ class ExamenController extends Controller
     // Store new examen
     public function store(Request $request)    {
         $user = Auth::user();
-        // if ($user->role !== 'delegue')
+        // if ($user->role !== 'admin' && ($user->role !== 'delegue'))
         //     abort(403);
 
         $validated = $request->validate([
@@ -292,6 +292,8 @@ class ExamenController extends Controller
         //     'is_owner' => $examen->delegue_id === $user->id,
         // ]);
         if ($user->role === 'admin')
+            return;
+        if ($user->role === 'abo')
             return;
         if ($user->role === 'delegue' && $examen->delegue_id === $user->id)
             return;

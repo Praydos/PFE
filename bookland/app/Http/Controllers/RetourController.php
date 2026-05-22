@@ -61,7 +61,7 @@ class RetourController extends Controller
     {
         $user = Auth::user();
         // Only delegate who created the BSS can return items, and only if BSS is 'livre'
-        if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre') {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre')) {
             abort(403);
         }
 
@@ -80,7 +80,7 @@ class RetourController extends Controller
     public function store(Request $request, Bss $bss)
 {
     $user = Auth::user();
-    if ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre') {
+    if ($user->role !== 'admin' && ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre')) {
         abort(403);
     }
 

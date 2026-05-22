@@ -76,7 +76,7 @@ class FormationController extends Controller
     public function create(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue')
+        if ($user->role !== 'admin' && ($user->role !== 'delegue'))
             abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->with('ville', 'zone')->get();
@@ -110,7 +110,7 @@ class FormationController extends Controller
 
     public function store(Request $request)    {
         $user = Auth::user();
-    if ($user->role !== 'delegue') abort(403);
+    if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
 
     // Filter empty dates
     if ($request->has('dates_ecole')) {
@@ -232,6 +232,8 @@ class FormationController extends Controller
     {
         $user = Auth::user();
         if ($user->role === 'admin')
+            return;
+        if ($user->role === 'abo')
             return;
         if ($user->role === 'delegue' && $formation->delegue_id === $user->id)
             return;

@@ -29,6 +29,7 @@ class NonConformiteController extends Controller
     {
         $user = Auth::user();
         if ($user->role === 'admin') return;
+        if ($user->role === 'abo') return;
         if ($user->role === 'delegue' && $nc->delegue_id === $user->id) return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
@@ -76,7 +77,7 @@ class NonConformiteController extends Controller
     public function create()
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->get();
         $categories = $this->getCategories();
@@ -90,7 +91,7 @@ class NonConformiteController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
 
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',

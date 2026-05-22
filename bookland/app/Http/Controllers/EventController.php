@@ -72,7 +72,7 @@ class EventController extends Controller
     // Create form
     public function create(Request $request)    {
         $user = Auth::user();
-        if ($user->role !== 'delegue')
+        if ($user->role !== 'admin' && ($user->role !== 'delegue'))
             abort(403);
 
         $villes = $this->getDelegateVilles();
@@ -100,7 +100,7 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        // if ($user->role !== 'delegue')
+        // if ($user->role !== 'admin' && ($user->role !== 'delegue'))
         //     abort(403);
 
         $validated = $request->validate([
@@ -131,7 +131,7 @@ class EventController extends Controller
     public function inviteForm(Event $event)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $event->delegue_id !== $user->id)
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $event->delegue_id !== $user->id))
             abort(403);
 
         $villes = $this->getDelegateVilles();
@@ -144,7 +144,7 @@ class EventController extends Controller
     // API: get contacts by city (for the "by city" method)
     public function getContactsByCity(Request $request)    {
         $user = Auth::user();
-        if ($user->role !== 'delegue') {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue')) {
             return response()->json([]);
         }
 
@@ -183,7 +183,7 @@ class EventController extends Controller
     public function getAllContacts()    {
         $user = Auth::user();
         // Only delegates can access this endpoint
-        if ($user->role !== 'delegue') {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue')) {
             return response()->json([]);
         }
 
@@ -209,7 +209,7 @@ class EventController extends Controller
     // Store invitations (sync contacts)
     public function storeInvitations(Request $request, Event $event)    {
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $event->delegue_id !== $user->id)
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $event->delegue_id !== $user->id))
             abort(403);
 
         $contactIdsRaw = $request->input('contact_ids');
@@ -249,7 +249,7 @@ class EventController extends Controller
     {
         YearLock::check($event);
         $user = Auth::user();
-        if ($user->role !== 'delegue' || $event->delegue_id !== $user->id)
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $event->delegue_id !== $user->id))
             abort(403);
 
         $validated = $request->validate([
@@ -329,6 +329,8 @@ class EventController extends Controller
     {
         $user = Auth::user();
         if ($user->role === 'admin')
+            return;
+        if ($user->role === 'abo')
             return;
         if ($user->role === 'delegue' && $event->delegue_id === $user->id)
             return;

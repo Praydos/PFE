@@ -70,7 +70,7 @@ class ReclamationController extends Controller
     public function create()
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->get();
         $produits = Product::orderBy('titre')->get();
@@ -91,7 +91,7 @@ class ReclamationController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue') abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
 
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',

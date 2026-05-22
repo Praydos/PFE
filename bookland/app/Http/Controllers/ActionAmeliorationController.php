@@ -157,6 +157,7 @@ class ActionAmeliorationController extends Controller
     {
         $user = Auth::user();
         if ($user->role === 'admin') return;
+        if ($user->role === 'abo') return;
         if ($user->role === 'delegue' && $action->compte->delegue_id === $user->id) return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
@@ -170,6 +171,10 @@ class ActionAmeliorationController extends Controller
         $user = Auth::user();
         if ($user->role === 'admin') return;
         if ($user->role === 'delegue' && $action->compte->delegue_id === $user->id) return;
+        if ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            if ($delegateIds->contains($action->compte->delegue_id)) return;
+        }
         abort(403);
     }
 }
