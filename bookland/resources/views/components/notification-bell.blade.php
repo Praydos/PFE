@@ -21,19 +21,19 @@
 @endpush
 @endonce
 
-<div x-data="notificationBell()" class="d-inline-flex align-items-center">
+<div x-data="notificationBell()" class="d-inline-flex align-items-center w-100 justify-content-center mb-3 mt-2">
     <a href="{{ route('notifications.index') }}" 
-       class="position-relative d-inline-flex align-items-center justify-content-center bell-link"
-       style="width: 36px; height: 36px; border-radius: var(--r-sm); background: var(--bg-subtle); border: 1px solid var(--border); color: var(--text-secondary); transition: all var(--t);"
+       class="position-relative d-inline-flex align-items-center justify-content-center bell-link w-100"
+       style="height: 42px; border-radius: var(--r-sm); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); color: var(--sb-text); transition: all var(--t); text-decoration: none; gap: 10px;"
        @mouseenter="hover = true"
        @mouseleave="hover = false"
-       :style="hover ? 'background: var(--blue-light); border-color: var(--blue-mid);' : ''"
+       :style="hover ? 'background: rgba(255,255,255,.12); color: #fff;' : ''"
        title="Notifications"
        aria-label="Notifications">
        
         <!-- Modern SVG Bell Icon -->
-        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" 
-             :class="unreadCount > 0 ? 'animate-bell' : ''"
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" 
+             :class="unreadCount > 0 ? 'animate-bell text-white' : ''"
              style="transition: color var(--t);">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>

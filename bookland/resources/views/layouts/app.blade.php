@@ -608,6 +608,11 @@
         {{-- Navigation --}}
         <nav class="sb-nav" aria-label="Navigation principale">
 
+            {{-- Notifications --}}
+            <div style="padding: 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--sb-border); margin-bottom: 0.5rem;">
+                <x-notification-bell />
+            </div>
+
             {{-- Collapse toggle --}}
             <div class="sb-collapse-btn">
                 <button class="sb-collapse-trigger" id="sbCollapseBtn" aria-label="Réduire le menu" title="Réduire">
@@ -1039,62 +1044,14 @@
     ══════════════════════════════════════════════════ --}}
     <div class="main-wrap" id="mainWrap">
 
-        {{-- ── Mobile topbar ── --}}
-        <header class="topbar" role="banner" aria-label="Barre de navigation mobile">
-
-            <button class="topbar-burger" id="sidebarToggle" aria-label="Ouvrir le menu">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
-                     stroke-linecap="round" viewBox="0 0 24 24" aria-hidden="true">
-                    <line x1="3" y1="6"  x2="21" y2="6"/>
-                    <line x1="3" y1="12" x2="21" y2="12"/>
-                    <line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-            </button>
-
-            <a href="{{ route('comptes.index') }}" class="topbar-brand" aria-label="Bookland CRM — accueil">
-                <span class="topbar-brand-mark" aria-hidden="true">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                    </svg>
-                </span>
-                <span class="topbar-brand-name">Bookland</span>
-                <span class="topbar-brand-suffix">CRM</span>
-            </a>
-
-            <div class="topbar-actions">
-                <x-notification-bell />
-            </div>
-
-        </header>
-
-        {{-- ── Desktop topbar ── --}}
-        <div class="desktop-topbar" role="banner" aria-label="Barre de navigation">
-
-            <div class="desktop-topbar-left">
-                <div class="desktop-topbar-brand">
-                    <span class="desktop-topbar-mark" aria-hidden="true">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </span>
-                    <span class="desktop-topbar-name">Bookland</span>
-                    <span class="desktop-topbar-suffix">CRM</span>
-                </div>
-            </div>
-
-            <div class="desktop-topbar-right">
-                <x-notification-bell />
-                <div class="desktop-topbar-divider" aria-hidden="true"></div>
-                <div class="desktop-topbar-avatar"
-                     aria-label="Profil : {{ auth()->user()->prenom ?? '' }} {{ auth()->user()->nom ?? '' }}"
-                     title="{{ trim((auth()->user()->prenom ?? '').' '.(auth()->user()->nom ?? '')) }}">
-                    {{ strtoupper(substr(auth()->user()->prenom ?? 'U', 0, 1).substr(auth()->user()->nom ?? '', 0, 1)) }}
-                </div>
-            </div>
-
-        </div>
+        <!-- Mobile toggle floating button (since topbar is removed) -->
+        <button id="sidebarToggle" class="d-lg-none" style="position: fixed; top: 1rem; left: 1rem; z-index: 99; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-sm); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); cursor: pointer; color: var(--text-primary);">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+        </button>
 
         {{-- ── Flash messages ── --}}
         @if($errors->any() || session('success') || session('error'))
