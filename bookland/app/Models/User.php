@@ -104,16 +104,16 @@ class User extends Authenticatable
         })->where('role', 'delegue');
     }
 
-    
+    // A user has many notifications
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
 
-
-
-
-
-
-
-
-
+    public function unreadNotificationsCount()
+    {
+        return $this->notifications()->unread()->count();
+    }
 
     /**
      * Get the attributes that should be cast.

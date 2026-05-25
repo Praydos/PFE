@@ -49,6 +49,7 @@ use App\Http\Controllers\ActionAmeliorationController;
 use App\Http\Controllers\MpDeliveryController;
 use App\Http\Controllers\MpProductController;
 use App\Http\Controllers\ReclamationController;
+use App\Http\Controllers\NotificationController;
 
 use App\Http\Controllers\NonConformiteController;
 use App\Http\Controllers\LogController;
@@ -61,6 +62,17 @@ require __DIR__ . '/auth.php';
 Route::middleware('auth')->group(function () {
 
     Route::get('/', fn() => redirect()->route('comptes.index'));
+
+    // Notification Center
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+    // Notification API
+    Route::prefix('api/notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'apiIndex']);
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+    });
 
 
     // ── Shared: all three authenticated roles ──────────────────────────────

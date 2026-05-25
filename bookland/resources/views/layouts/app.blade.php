@@ -13,18 +13,18 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-        --sidebar-w:     260px;
-        --sidebar-w-collapsed: 68px;
+        --sidebar-w:            260px;
+        --sidebar-w-collapsed:  68px;
 
         /* Page surfaces */
-        --bg-base:       #f5f6fa;
-        --bg-card:       #ffffff;
-        --bg-hover:      #f0f4ff;
-        --bg-subtle:     #f0f2f8;
+        --bg-base:      #f5f6fa;
+        --bg-card:      #ffffff;
+        --bg-hover:     #f0f4ff;
+        --bg-subtle:    #f0f2f8;
 
         /* Borders */
-        --border:        #e4e7f0;
-        --border-md:     #d0d5e8;
+        --border:       #e4e7f0;
+        --border-md:    #d0d5e8;
 
         /* Sidebar */
         --sb-bg:         #1a1f36;
@@ -38,20 +38,20 @@
         --sb-group:      rgba(255,255,255,.25);
 
         /* Brand */
-        --blue:          #5b8dee;
-        --blue-dark:     #3d6fd6;
-        --blue-light:    #eef3fd;
-        --blue-mid:      #dce8fb;
-        --teal:          #0cb8b6;
-        --teal-light:    #e6faf9;
-        --violet:        #7c6fcd;
-        --violet-light:  #f0eeff;
-        --amber:         #e8a020;
-        --amber-light:   #fff8ec;
-        --rose:          #e8506a;
-        --rose-light:    #fef0f2;
-        --green:         #28c76f;
-        --green-light:   #e8fbf0;
+        --blue:         #5b8dee;
+        --blue-dark:    #3d6fd6;
+        --blue-light:   #eef3fd;
+        --blue-mid:     #dce8fb;
+        --teal:         #0cb8b6;
+        --teal-light:   #e6faf9;
+        --violet:       #7c6fcd;
+        --violet-light: #f0eeff;
+        --amber:        #e8a020;
+        --amber-light:  #fff8ec;
+        --rose:         #e8506a;
+        --rose-light:   #fef0f2;
+        --green:        #28c76f;
+        --green-light:  #e8fbf0;
 
         /* Text */
         --text-primary:   #1a1f36;
@@ -63,29 +63,15 @@
         --r-xs: 6px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px;
 
         /* Shadows */
-        --shadow-xs: 0 1px 3px rgba(31,45,80,.06);
-        --shadow-sm: 0 2px 8px rgba(31,45,80,.08), 0 1px 3px rgba(31,45,80,.05);
-        --shadow-md: 0 8px 32px rgba(31,45,80,.14);
+        --shadow-xs:      0 1px 3px rgba(31,45,80,.06);
+        --shadow-sm:      0 2px 8px rgba(31,45,80,.08), 0 1px 3px rgba(31,45,80,.05);
+        --shadow-md:      0 8px 32px rgba(31,45,80,.14);
         --shadow-sidebar: 4px 0 24px rgba(26,31,54,.18);
 
-        --font: 'DM Sans', sans-serif;
+        --font:      'DM Sans', sans-serif;
         --font-mono: 'DM Mono', monospace;
         --ease: cubic-bezier(.4,0,.2,1);
         --t: .2s var(--ease);
-
-
-        /* new addition  */
-         --bg-base: #f5f6fa;
-        --bg-card: #ffffff;
-        --border: #e4e7f0;
-        --blue: #5b8dee;
-        --blue-mid: #dce8fb;
-        --rose: #e8506a;
-        --text-primary: #1a1f36;
-        --text-muted: #9ba8c5;
-        --font: 'DM Sans', sans-serif;
-        --r-sm: 8px;
-        --t: .18s ease;
     }
 
     html, body {
@@ -122,7 +108,6 @@
         box-shadow: var(--shadow-sidebar);
     }
 
-    /* thin scrollbar */
     .sidebar::-webkit-scrollbar { width: 3px; }
     .sidebar::-webkit-scrollbar-track { background: transparent; }
     .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 3px; }
@@ -150,97 +135,58 @@
     }
     .sb-logo-mark svg { color: #fff; }
 
-    .sb-logo-info {}
     .sb-logo-name {
-        font-size: .98rem;
-        font-weight: 800;
-        color: #fff;
-        letter-spacing: -.025em;
-        line-height: 1.1;
+        font-size: .98rem; font-weight: 800;
+        color: #fff; letter-spacing: -.025em; line-height: 1.1;
     }
     .sb-logo-tag {
-        font-size: .64rem;
-        font-weight: 600;
-        color: var(--sb-text);
-        text-transform: uppercase;
-        letter-spacing: .1em;
-        margin-top: .12rem;
+        font-size: .64rem; font-weight: 600;
+        color: var(--sb-text); text-transform: uppercase;
+        letter-spacing: .1em; margin-top: .12rem;
     }
 
     /* ── Nav ── */
-    .sb-nav {
-        flex: 1;
-        padding: .75rem 0 1rem;
-    }
-
-    .sb-section {
-        margin-top: .5rem;
-    }
-
+    .sb-nav { flex: 1; padding: .75rem 0 1rem; }
+    .sb-section { margin-top: .5rem; }
     .sb-section-label {
         padding: .9rem 1.35rem .3rem;
-        font-size: .6rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .12em;
-        color: var(--sb-group);
-        user-select: none;
+        font-size: .6rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .12em;
+        color: var(--sb-group); user-select: none;
     }
 
     .sb-item {
-        display: flex;
-        align-items: center;
-        gap: .7rem;
+        display: flex; align-items: center; gap: .7rem;
         padding: .58rem 1rem .58rem 1.35rem;
         margin: .1rem .65rem;
         border-radius: var(--r-sm);
-        text-decoration: none;
-        color: var(--sb-text);
-        font-size: .845rem;
-        font-weight: 500;
-        letter-spacing: -.01em;
-        white-space: nowrap;
+        text-decoration: none; color: var(--sb-text);
+        font-size: .845rem; font-weight: 500;
+        letter-spacing: -.01em; white-space: nowrap;
         transition: background var(--t), color var(--t);
         position: relative;
     }
-    .sb-item:hover {
-        background: var(--sb-hover);
-        color: var(--sb-text-hover);
-        text-decoration: none;
-    }
-    .sb-item.active {
-        background: var(--sb-active);
-        color: var(--sb-text-active);
-        font-weight: 600;
-    }
-    /* left accent bar on active */
+    .sb-item:hover { background: var(--sb-hover); color: var(--sb-text-hover); text-decoration: none; }
+    .sb-item.active { background: var(--sb-active); color: var(--sb-text-active); font-weight: 600; }
     .sb-item.active::before {
         content: '';
-        position: absolute;
-        left: calc(-.65rem);
-        top: 20%; bottom: 20%;
-        width: 3px;
-        border-radius: 0 3px 3px 0;
+        position: absolute; left: calc(-.65rem); top: 20%; bottom: 20%;
+        width: 3px; border-radius: 0 3px 3px 0;
         background: var(--sb-accent);
     }
-
     .sb-item-icon {
         width: 17px; height: 17px;
         display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
-        opacity: .65;
-        transition: opacity var(--t);
+        flex-shrink: 0; opacity: .65; transition: opacity var(--t);
     }
-    .sb-item:hover  .sb-item-icon,
+    .sb-item:hover .sb-item-icon,
     .sb-item.active .sb-item-icon { opacity: 1; }
 
-    /* ── Collapse toggle button ── */
+    /* ── Collapse toggle ── */
     .sb-collapse-btn {
-        display: flex;
-        align-items: center;
+        display: flex; align-items: center;
         justify-content: flex-end;
-        padding: .5rem .9rem .5rem 1.35rem;
-        margin-bottom: .25rem;
+        padding: .5rem .9rem .5rem 1.35rem; margin-bottom: .25rem;
     }
     .sb-collapse-trigger {
         width: 26px; height: 26px;
@@ -248,133 +194,140 @@
         background: rgba(255,255,255,.06);
         border: 1px solid rgba(255,255,255,.1);
         display: flex; align-items: center; justify-content: center;
-        color: var(--sb-text);
-        cursor: pointer;
-        transition: all var(--t);
-        flex-shrink: 0;
+        color: var(--sb-text); cursor: pointer;
+        transition: all var(--t); flex-shrink: 0;
     }
     .sb-collapse-trigger:hover { background: rgba(255,255,255,.12); color: #fff; }
     .sb-collapse-trigger svg { transition: transform var(--t); }
 
     /* ── Collapsed state ── */
-    .sidebar.collapsed {
-        width: var(--sidebar-w-collapsed);
-    }
-
-    /* hide text labels when collapsed */
+    .sidebar.collapsed { width: var(--sidebar-w-collapsed); }
     .sidebar.collapsed .sb-logo-info,
     .sidebar.collapsed .sb-section-label,
     .sidebar.collapsed .sb-item-label,
     .sidebar.collapsed .sb-user-info,
     .sidebar.collapsed .sb-user-chevron,
     .sidebar.collapsed .sb-dd-panel { display: none !important; }
-
-    /* center icons when collapsed */
-    .sidebar.collapsed .sb-logo {
-        justify-content: center;
-        padding: 1.5rem .75rem 1.3rem;
-    }
-    .sidebar.collapsed .sb-item {
-        justify-content: center;
-        padding: .6rem 0;
-        margin: .1rem .55rem;
-    }
+    .sidebar.collapsed .sb-logo { justify-content: center; padding: 1.5rem .75rem 1.3rem; }
+    .sidebar.collapsed .sb-item { justify-content: center; padding: .6rem 0; margin: .1rem .55rem; }
     .sidebar.collapsed .sb-item-icon { opacity: .75; width: 19px; height: 19px; }
     .sidebar.collapsed .sb-item:hover .sb-item-icon,
     .sidebar.collapsed .sb-item.active .sb-item-icon { opacity: 1; }
     .sidebar.collapsed .sb-item.active::before { display: none; }
     .sidebar.collapsed .sb-collapse-btn { justify-content: center; padding: .5rem; }
     .sidebar.collapsed .sb-footer { padding: .85rem .55rem; }
-    .sidebar.collapsed .sb-user-btn {
-        justify-content: center;
-        padding: .65rem .35rem;
-    }
-
-    /* rotate arrow when collapsed */
+    .sidebar.collapsed .sb-user-btn { justify-content: center; padding: .65rem .35rem; }
     .sidebar.collapsed .sb-collapse-trigger svg { transform: rotate(180deg); }
-
-    /* tooltip on hover when collapsed */
     .sidebar.collapsed .sb-item { position: relative; }
     .sidebar.collapsed .sb-item::after {
         content: attr(data-label);
-        position: absolute;
-        left: calc(100% + .75rem);
+        position: absolute; left: calc(100% + .75rem);
         top: 50%; transform: translateY(-50%);
-        background: #2d3352;
-        color: #fff;
-        font-size: .78rem;
-        font-weight: 600;
-        padding: .3rem .75rem;
-        border-radius: var(--r-sm);
-        white-space: nowrap;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity .15s ease;
+        background: #2d3352; color: #fff;
+        font-size: .78rem; font-weight: 600;
+        padding: .3rem .75rem; border-radius: var(--r-sm);
+        white-space: nowrap; pointer-events: none;
+        opacity: 0; transition: opacity .15s ease;
         box-shadow: 0 4px 12px rgba(0,0,0,.3);
-        z-index: 300;
-        border: 1px solid rgba(255,255,255,.1);
+        z-index: 300; border: 1px solid rgba(255,255,255,.1);
     }
     .sidebar.collapsed .sb-item:hover::after { opacity: 1; }
-
-    /* main wrap adjusts */
     .main-wrap.expanded { margin-left: var(--sidebar-w-collapsed); }
 
-    /* ── Sidebar footer (user) ── */
+    /* ── Sidebar footer ── */
     .sb-footer {
         flex-shrink: 0;
         padding: .85rem 1rem;
         border-top: 1px solid var(--sb-border);
     }
-
-    .sb-user {
-        display: flex;
-        align-items: center;
-        gap: .75rem;
+    .sb-user-dropdown { position: relative; }
+    .sb-user-btn {
+        width: 100%;
+        display: flex; align-items: center; gap: .7rem;
         padding: .65rem .75rem;
         border-radius: var(--r-sm);
-        cursor: default;
-        transition: background var(--t);
+        background: transparent; border: none;
+        cursor: pointer; font-family: var(--font);
+        transition: background var(--t); text-align: left;
     }
-    .sb-user:hover { background: var(--sb-hover); }
-
+    .sb-user-btn:hover { background: var(--sb-hover); }
+    .sb-user-btn[aria-expanded="true"] { background: var(--sb-hover); }
     .sb-user-av {
-        width: 32px; height: 32px;
-        border-radius: 50%;
+        width: 32px; height: 32px; border-radius: 50%;
         background: linear-gradient(135deg, #5b8dee, #6c63ff);
         display: flex; align-items: center; justify-content: center;
-        font-size: .68rem; font-weight: 800; color: #fff;
-        flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(91,141,238,.4);
+        font-size: .7rem; font-weight: 700; color: #fff; flex-shrink: 0;
     }
     .sb-user-info { flex: 1; min-width: 0; }
-    .sb-user-name {
-        font-size: .8rem; font-weight: 600; color: #fff;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    .sb-user-name { font-size: .8rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-user-role { font-size: .68rem; color: var(--sb-text); margin-top: .06rem; text-transform: capitalize; }
+    .sb-user-chevron { flex-shrink: 0; transition: transform var(--t); }
+    .sb-user-btn[aria-expanded="true"] .sb-user-chevron { transform: rotate(180deg); }
+
+    .sb-dd-panel {
+        position: absolute; bottom: calc(100% + .5rem);
+        left: 0; right: 0;
+        background: #242840;
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: var(--r-md);
+        box-shadow: 0 -8px 32px rgba(0,0,0,.4), 0 -2px 8px rgba(0,0,0,.2);
+        overflow: hidden;
+        opacity: 0; transform: translateY(8px);
+        pointer-events: none;
+        transition: opacity .18s var(--ease), transform .18s var(--ease);
+        z-index: 200;
     }
-    .sb-user-role {
-        font-size: .67rem; color: var(--sb-text);
-        margin-top: .06rem; text-transform: capitalize;
+    .sb-dd-panel.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .sb-dd-header { display: flex; align-items: center; gap: .75rem; padding: 1rem 1.1rem .75rem; }
+    .sb-dd-av {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: linear-gradient(135deg, #5b8dee, #6c63ff);
+        display: flex; align-items: center; justify-content: center;
+        font-size: .75rem; font-weight: 700; color: #fff; flex-shrink: 0;
     }
+    .sb-dd-name  { font-size: .83rem; font-weight: 600; color: #fff; }
+    .sb-dd-email { font-size: .72rem; color: var(--sb-text); margin-top: .1rem; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
+    .sb-dd-role-row { padding: 0 1.1rem .75rem; }
+    .sb-dd-role-chip {
+        display: inline-flex; align-items: center;
+        padding: .18rem .65rem; border-radius: 20px;
+        font-size: .68rem; font-weight: 700;
+        border: 1px solid transparent; letter-spacing: .06em;
+    }
+    .sb-dd-divider { height: 1px; background: rgba(255,255,255,.07); }
+    .sb-dd-item {
+        display: flex; align-items: center; gap: .65rem;
+        width: 100%; padding: .75rem 1.1rem;
+        background: transparent; border: none;
+        font-family: var(--font); font-size: .83rem; font-weight: 500;
+        color: var(--sb-text); cursor: pointer;
+        transition: background var(--t), color var(--t); text-align: left;
+    }
+    .sb-dd-item:hover { background: var(--sb-hover); }
+    .sb-dd-item-danger { color: #fca5a5; }
+    .sb-dd-item-danger:hover { background: rgba(232,80,106,.15); color: #fca5a5; }
 
     /* ════════════════════════════════════════════════════
        MAIN AREA
     ════════════════════════════════════════════════════ */
     .main-wrap {
         margin-left: var(--sidebar-w);
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
+        flex: 1; min-width: 0;
+        display: flex; flex-direction: column;
         min-height: 100vh;
         transition: margin-left var(--t);
     }
+    .main-content { flex: 1; }
 
-    /* ── Topbar (mobile only) ── */
+    /* ════════════════════════════════════════════════════
+       MOBILE TOPBAR
+    ════════════════════════════════════════════════════ */
     .topbar {
         display: none;
         align-items: center;
-        gap: 1rem;
-        padding: .8rem 1.25rem;
+        gap: 10px;
+        padding: 0 14px;
+        height: 54px;
         background: var(--bg-card);
         border-bottom: 1px solid var(--border);
         position: sticky; top: 0; z-index: 100;
@@ -388,173 +341,211 @@
         border: 1px solid var(--border);
         display: flex; align-items: center; justify-content: center;
         color: var(--text-secondary);
-        cursor: pointer;
-        transition: all var(--t);
-        flex-shrink: 0;
+        cursor: pointer; flex-shrink: 0;
+        transition: background var(--t), color var(--t), border-color var(--t);
     }
-    .topbar-burger:hover { background: var(--blue-light); color: var(--blue); border-color: var(--blue-mid); }
+    .topbar-burger:hover {
+        background: var(--blue-light);
+        color: var(--blue);
+        border-color: var(--blue-mid);
+    }
 
-    .topbar-logo {
-        display: flex; align-items: center; gap: .6rem;
-        text-decoration: none;
+    .topbar-brand {
+        display: flex; align-items: center; gap: 8px;
+        text-decoration: none; flex: 1; min-width: 0;
     }
-    .topbar-logo-mark {
-        width: 28px; height: 28px; border-radius: var(--r-sm);
+    .topbar-brand-mark {
+        width: 30px; height: 30px;
+        border-radius: var(--r-sm);
         background: linear-gradient(135deg, #5b8dee, #6c63ff);
         display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 3px 10px rgba(91,141,238,.35);
     }
-    .topbar-logo-mark svg { color: #fff; }
-    .topbar-name {
-        font-size: .9rem; font-weight: 800;
+    .topbar-brand-mark svg { color: #fff; }
+    .topbar-brand-name {
+        font-size: 14px; font-weight: 700;
         color: var(--text-primary); letter-spacing: -.025em;
     }
-
-    /* ── Content area ── */
-    .main-content { flex: 1; }
+    .topbar-brand-suffix {
+        font-size: 10px; font-weight: 600;
+        letter-spacing: .7px; text-transform: uppercase;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        border: 1px solid var(--border-md);
+        border-radius: 4px;
+        padding: 1px 5px; line-height: 1.6;
+    }
+    .topbar-actions {
+        display: flex; align-items: center;
+        gap: 6px; margin-left: auto;
+    }
 
     /* ════════════════════════════════════════════════════
-       FLASH ALERTS
+       DESKTOP TOPBAR
     ════════════════════════════════════════════════════ */
-    .flash-wrap {
-        padding: 1.5rem 2.5rem 0;
+    .desktop-topbar {
+        display: none; /* shown via media query */
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        height: 56px;
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border);
+        position: sticky; top: 0; z-index: 99;
+        box-shadow: var(--shadow-xs);
+    }
+
+    .desktop-topbar-left {
+        display: flex; align-items: center; gap: 12px;
+    }
+    .desktop-topbar-brand {
+        display: flex; align-items: center; gap: 8px;
+    }
+    .desktop-topbar-mark {
+        width: 30px; height: 30px;
+        border-radius: var(--r-sm);
+        background: linear-gradient(135deg, #5b8dee, #6c63ff);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 3px 10px rgba(91,141,238,.3);
+    }
+    .desktop-topbar-mark svg { color: #fff; }
+    .desktop-topbar-name {
+        font-size: 14.5px; font-weight: 700;
+        color: var(--text-primary); letter-spacing: -.025em;
+    }
+    .desktop-topbar-suffix {
+        font-size: 10px; font-weight: 600;
+        letter-spacing: .7px; text-transform: uppercase;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        border: 1px solid var(--border-md);
+        border-radius: 4px;
+        padding: 1px 5px; line-height: 1.6;
+    }
+
+    .desktop-topbar-right {
+        display: flex; align-items: center; gap: 10px;
+    }
+    .desktop-topbar-avatar {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: var(--blue-light);
+        border: 1px solid var(--blue-mid);
+        color: var(--blue);
+        font-size: 12px; font-weight: 700;
+        font-family: var(--font);
+        display: flex; align-items: center; justify-content: center;
+        cursor: default; flex-shrink: 0; user-select: none;
+        box-shadow: 0 2px 6px rgba(91,141,238,.18);
+    }
+    .desktop-topbar-divider {
+        width: 1px; height: 20px;
+        background: var(--border); flex-shrink: 0;
+    }
+
+    /* ════════════════════════════════════════════════════
+       FLASH MESSAGES
+    ════════════════════════════════════════════════════ */
+    .flash-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 16px 24px 0;
     }
 
     .flash {
         display: flex;
         align-items: flex-start;
-        gap: .75rem;
-        padding: .9rem 1.1rem;
+        gap: 11px;
+        padding: 12px 14px;
         border-radius: var(--r-md);
         border: 1px solid transparent;
-        font-size: .84rem;
-        font-weight: 500;
-        margin-bottom: .6rem;
-        animation: flashIn .3s var(--ease) both;
-        line-height: 1.45;
+        animation: flashIn .22s var(--ease) both;
+        position: relative;
+        overflow: hidden;
     }
+    .flash::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+    }
+
     @keyframes flashIn {
-        from { opacity: 0; transform: translateY(-6px); }
+        from { opacity: 0; transform: translateY(-7px); }
         to   { opacity: 1; transform: translateY(0); }
     }
 
-    .flash-icon { flex-shrink: 0; margin-top: .08rem; }
-
-    .flash-success {
-        background: var(--green-light);
-        color: #14532d;
+    /* Success */
+    .flash--success {
+        background: #f0fdf4;
         border-color: rgba(40,199,111,.22);
     }
-    .flash-error {
+    .flash--success::before { background: #28c76f; }
+    .flash--success .flash-icon { color: #16a34a; background: rgba(40,199,111,.12); }
+    .flash--success .flash-label { color: #15803d; }
+    .flash--success .flash-msg  { color: #166534; }
+
+    /* Error */
+    .flash--error {
         background: var(--rose-light);
-        color: #881337;
         border-color: rgba(232,80,106,.2);
     }
-    .flash-error ul { padding-left: 1.15rem; margin: .3rem 0 0; }
-    .flash-error li { margin-top: .2rem; font-size: .82rem; }
+    .flash--error::before { background: var(--rose); }
+    .flash--error .flash-icon { color: var(--rose); background: rgba(232,80,106,.1); }
+    .flash--error .flash-label { color: #be1851; }
+    .flash--error .flash-msg,
+    .flash--error .flash-list li { color: #9f1239; }
 
-    .flash-dismiss {
-        margin-left: auto;
-        width: 22px; height: 22px; flex-shrink: 0;
+    .flash-icon {
+        width: 30px; height: 30px;
+        border-radius: var(--r-sm);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; margin-top: 1px;
+    }
+
+    .flash-body {
+        flex: 1; min-width: 0;
+        display: flex; flex-direction: column; gap: 2px;
+    }
+
+    .flash-label {
+        font-size: 10.5px; font-weight: 700;
+        letter-spacing: .55px; text-transform: uppercase;
+        font-family: var(--font-mono); line-height: 1;
+    }
+
+    .flash-msg {
+        font-size: 13px; line-height: 1.5; margin-top: 2px;
+    }
+
+    .flash-list {
+        list-style: none; padding: 0; margin: 3px 0 0;
+        display: flex; flex-direction: column; gap: 2px;
+    }
+    .flash-list li {
+        font-size: 12.5px; line-height: 1.45;
+        padding-left: 12px; position: relative;
+    }
+    .flash-list li::before {
+        content: '–';
+        position: absolute; left: 0;
+        color: var(--rose); font-weight: 500;
+    }
+
+    .flash-close {
+        width: 24px; height: 24px;
         border-radius: var(--r-xs);
         border: none; background: transparent;
-        cursor: pointer; color: inherit;
+        cursor: pointer; color: var(--text-muted);
         display: flex; align-items: center; justify-content: center;
-        opacity: .45; transition: opacity var(--t), background var(--t);
-    }
-    .flash-dismiss:hover { opacity: 1; background: rgba(0,0,0,.07); }
-
-    /* ════════════════════════════════════════════════════
-       USER DROPDOWN
-    ════════════════════════════════════════════════════ */
-    .sb-user-dropdown {
-        position: relative;
-    }
-
-    .sb-user-btn {
-        width: 100%;
-        display: flex; align-items: center; gap: .7rem;
-        padding: .65rem .75rem;
-        border-radius: var(--r-sm);
-        background: transparent;
-        border: none; cursor: pointer;
-        font-family: var(--font);
-        transition: background var(--t);
-        text-align: left;
-    }
-    .sb-user-btn:hover { background: var(--sb-hover); }
-    .sb-user-btn[aria-expanded="true"] { background: var(--sb-hover); }
-
-    .sb-user-av {
-        width: 32px; height: 32px; border-radius: 50%;
-        background: linear-gradient(135deg, #5b8dee, #6c63ff);
-        display: flex; align-items: center; justify-content: center;
-        font-size: .7rem; font-weight: 700; color: #fff; flex-shrink: 0;
-    }
-    .sb-user-info { flex: 1; min-width: 0; }
-    .sb-user-name { font-size: .8rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sb-user-role { font-size: .68rem; color: var(--sb-text); margin-top: .06rem; text-transform: capitalize; }
-    .sb-user-chevron { flex-shrink: 0; transition: transform var(--t); }
-    .sb-user-btn[aria-expanded="true"] .sb-user-chevron { transform: rotate(180deg); }
-
-    /* Dropdown panel — pops upward */
-    .sb-dd-panel {
-        position: absolute;
-        bottom: calc(100% + .5rem);
-        left: 0; right: 0;
-        background: #242840;
-        border: 1px solid rgba(255,255,255,.1);
-        border-radius: var(--r-md);
-        box-shadow: 0 -8px 32px rgba(0,0,0,.4), 0 -2px 8px rgba(0,0,0,.2);
-        overflow: hidden;
-        /* hidden by default */
-        opacity: 0;
-        transform: translateY(8px);
-        pointer-events: none;
-        transition: opacity .18s var(--ease), transform .18s var(--ease);
-        z-index: 200;
-    }
-    .sb-dd-panel.open {
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-    }
-
-    .sb-dd-header {
-        display: flex; align-items: center; gap: .75rem;
-        padding: 1rem 1.1rem .75rem;
-    }
-    .sb-dd-av {
-        width: 36px; height: 36px; border-radius: 50%;
-        background: linear-gradient(135deg, #5b8dee, #6c63ff);
-        display: flex; align-items: center; justify-content: center;
-        font-size: .75rem; font-weight: 700; color: #fff; flex-shrink: 0;
-    }
-    .sb-dd-name  { font-size: .83rem; font-weight: 600; color: #fff; }
-    .sb-dd-email { font-size: .72rem; color: var(--sb-text); margin-top: .1rem; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
-
-    .sb-dd-role-row { padding: 0 1.1rem .75rem; }
-    .sb-dd-role-chip {
-        display: inline-flex; align-items: center;
-        padding: .18rem .65rem; border-radius: 20px;
-        font-size: .68rem; font-weight: 700;
-        border: 1px solid transparent;
-        letter-spacing: .06em;
-    }
-
-    .sb-dd-divider { height: 1px; background: rgba(255,255,255,.07); margin: 0; }
-
-    .sb-dd-item {
-        display: flex; align-items: center; gap: .65rem;
-        width: 100%; padding: .75rem 1.1rem;
-        background: transparent; border: none;
-        font-family: var(--font); font-size: .83rem; font-weight: 500;
-        color: var(--sb-text); cursor: pointer;
+        flex-shrink: 0; margin-top: 1px;
         transition: background var(--t), color var(--t);
-        text-align: left;
+        opacity: .6;
     }
-    .sb-dd-item:hover { background: var(--sb-hover); }
-    .sb-dd-item-danger { color: #fca5a5; }
-    .sb-dd-item-danger:hover { background: rgba(232,80,106,.15); color: #fca5a5; }
+    .flash-close:hover { background: rgba(0,0,0,.06); color: var(--text-primary); opacity: 1; }
 
     /* ════════════════════════════════════════════════════
        MOBILE OVERLAY
@@ -571,20 +562,26 @@
     @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
     /* ════════════════════════════════════════════════════
-       RESPONSIVE — ≤ 1024px
+       RESPONSIVE
     ════════════════════════════════════════════════════ */
     @media (max-width: 1024px) {
         .sidebar { transform: translateX(-100%); }
         .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-md); }
         .main-wrap { margin-left: 0; }
         .topbar { display: flex; }
-        .flash-wrap { padding: 1rem 1.25rem 0; }
+        .flash-stack { padding: 12px 14px 0; }
     }
+
+    @media (min-width: 1025px) {
+        .desktop-topbar { display: flex; }
+    }
+
     @media (max-width: 600px) {
-        .flash-wrap { padding: .75rem .75rem 0; }
+        .flash-stack { padding: 10px 10px 0; }
     }
     </style>
     @stack('styles')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
 <div class="layout">
@@ -597,7 +594,10 @@
         {{-- Logo --}}
         <a href="{{ route('comptes.index') }}" class="sb-logo">
             <div class="sb-logo-mark">
-                <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
             </div>
             <div class="sb-logo-info">
                 <div class="sb-logo-name">Bookland</div>
@@ -611,15 +611,15 @@
             {{-- Collapse toggle --}}
             <div class="sb-collapse-btn">
                 <button class="sb-collapse-trigger" id="sbCollapseBtn" aria-label="Réduire le menu" title="Réduire">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
                 </button>
             </div>
 
-            {{-- ── Commercial ───────────────────────────── --}}
+            {{-- ── Commercial ── --}}
             <div class="sb-section">
                 <div class="sb-section-label">Commercial</div>
-
-                
 
                 <a href="{{ route('products.index') }}"
                    class="sb-item {{ request()->routeIs('products.*') ? 'active' : '' }}"
@@ -627,8 +627,7 @@
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4.03a2 2 0 0 0 2 0l7-4.03A2 2 0 0 0 21 16z"/>
-                            <path d="M3.3 7L12 12l8.7-5"/>
-                            <path d="M12 22V12"/>
+                            <path d="M3.3 7L12 12l8.7-5"/><path d="M12 22V12"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Produits</span>
@@ -640,37 +639,36 @@
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M3 7l9-4 9 4-9 4-9-4z"/>
-                            <path d="M3 7v10l9 4 9-4V7"/>
-                            <path d="M12 11v10"/>
+                            <path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Consignations</span>
                 </a>
+
                 <a href="{{ route('bss.index') }}"
                    class="sb-item {{ request()->routeIs('bss.*') ? 'active' : '' }}"
                    data-label="Specimens & BSS">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M21 12h-8"/>
-                            <path d="M17 8l4 4-4 4"/>
+                            <path d="M21 12h-8"/><path d="M17 8l4 4-4 4"/>
                             <path d="M3 7l9-4 9 4-9 4-9-4z"/>
                             <path d="M3 7v10l9 4 9-4v-3"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Specimens & BSS</span>
                 </a>
-                 <a href="{{ route('reclamations.index') }}"
+
+                <a href="{{ route('reclamations.index') }}"
                    class="sb-item {{ request()->routeIs('reclamations.*') ? 'active' : '' }}"
-                   data-label="Reclamations">
+                   data-label="Réclamations">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M21 12h-8"/>
-                            <path d="M17 8l4 4-4 4"/>
-                            <path d="M3 7l9-4 9 4-9 4-9-4z"/>
-                            <path d="M3 7v10l9 4 9-4v-3"/>
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
                         </svg>
                     </span>
-                    <span class="sb-item-label">Reclamations</span>
+                    <span class="sb-item-label">Réclamations</span>
                 </a>
 
                 @if(in_array(auth()->user()->role, ['admin', 'rbo', 'delegue', 'abo']))
@@ -692,7 +690,8 @@
                    data-label="Catalogue MP">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                            <path d="M12 20h9"/>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Catalogue MP (admin)</span>
@@ -700,16 +699,15 @@
                 @endif
                 @endif
 
-
                 <a href="{{ route('demandes-specimens.index') }}"
                    class="sb-item {{ request()->routeIs('demandes_specimens.*') ? 'active' : '' }}"
-                   data-label="Specimens & BSS">
+                   data-label="Demandes Spéciales">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M21 12h-8"/>
-                            <path d="M17 8l4 4-4 4"/>
-                            <path d="M3 7l9-4 9 4-9 4-9-4z"/>
-                            <path d="M3 7v10l9 4 9-4v-3"/>
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="12" y1="18" x2="12" y2="12"/>
+                            <line x1="9" y1="15" x2="15" y2="15"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Demandes Spéciales</span>
@@ -717,18 +715,15 @@
 
                 <a href="{{ route('actions-amelioration.index') }}"
                    class="sb-item {{ request()->routeIs('actions_amelioration.*') ? 'active' : '' }}"
-                   data-label="Specimens & BSS">
+                   data-label="Action Amélioration">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M21 12h-8"/>
-                            <path d="M17 8l4 4-4 4"/>
-                            <path d="M3 7l9-4 9 4-9 4-9-4z"/>
-                            <path d="M3 7v10l9 4 9-4v-3"/>
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                            <polyline points="17 6 23 6 23 12"/>
                         </svg>
                     </span>
-                    <span class="sb-item-label">Action Amelioration</span>
+                    <span class="sb-item-label">Action Amélioration</span>
                 </a>
-
 
                 <a href="{{ route('retours.index') }}"
                    class="sb-item {{ request()->routeIs('retours.*') ? 'active' : '' }}"
@@ -747,8 +742,7 @@
                    data-label="Adoptions">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M9 14L4 9l5-5"/>
-                            <path d="M4 9h11a5 5 0 0 1 5 5v1"/>
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Adoptions</span>
@@ -759,21 +753,22 @@
                    data-label="Effectifs">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M9 14L4 9l5-5"/>
-                            <path d="M4 9h11a5 5 0 0 1 5 5v1"/>
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Effectifs</span>
                 </a>
-
 
                 <a href="{{ route('examens.index') }}"
                    class="sb-item {{ request()->routeIs('examens.*') ? 'active' : '' }}"
                    data-label="Examens">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M9 14L4 9l5-5"/>
-                            <path d="M4 9h11a5 5 0 0 1 5 5v1"/>
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Examens</span>
@@ -784,8 +779,8 @@
                    data-label="Formations">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M9 14L4 9l5-5"/>
-                            <path d="M4 9h11a5 5 0 0 1 5 5v1"/>
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Formations</span>
@@ -796,8 +791,10 @@
                    data-label="Événements">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M9 14L4 9l5-5"/>
-                            <path d="M4 9h11a5 5 0 0 1 5 5v1"/>
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8"  y1="2" x2="8"  y2="6"/>
+                            <line x1="3"  y1="10" x2="21" y2="10"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Événements</span>
@@ -808,8 +805,7 @@
                    data-label="Actions">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M9 14L4 9l5-5"/>
-                            <path d="M4 9h11a5 5 0 0 1 5 5v1"/>
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Actions</span>
@@ -820,8 +816,11 @@
                    data-label="Agenda">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M9 14L4 9l5-5"/>
-                            <path d="M4 9h11a5 5 0 0 1 5 5v1"/>
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8"  y1="2" x2="8"  y2="6"/>
+                            <line x1="3"  y1="10" x2="21" y2="10"/>
+                            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Agenda</span>
@@ -832,28 +831,33 @@
                    data-label="Tâches">
                     <span class="sb-item-icon">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M9 14L4 9l5-5"/>
-                            <path d="M4 9h11a5 5 0 0 1 5 5v1"/>
+                            <line x1="8" y1="6"  x2="21" y2="6"/>
+                            <line x1="8" y1="12" x2="21" y2="12"/>
+                            <line x1="8" y1="18" x2="21" y2="18"/>
+                            <line x1="3" y1="6"  x2="3.01" y2="6"/>
+                            <line x1="3" y1="12" x2="3.01" y2="12"/>
+                            <line x1="3" y1="18" x2="3.01" y2="18"/>
                         </svg>
                     </span>
                     <span class="sb-item-label">Tâches</span>
                 </a>
 
-                @if (auth()->user()->role == 'admin')
-                    <a href="{{ route('annees-scolaires.index') }}"
-                    class="sb-item {{ request()->routeIs('annees-scolaires.*') ? 'active' : '' }}"
-                    data-label="Années scolaires">
-                        <span class="sb-item-icon">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        </span>
-                        <span class="sb-item-label">Années scolaires</span>
-                    </a>
+                @if(auth()->user()->role == 'admin')
+                <a href="{{ route('annees-scolaires.index') }}"
+                   class="sb-item {{ request()->routeIs('annees-scolaires.*') ? 'active' : '' }}"
+                   data-label="Années scolaires">
+                    <span class="sb-item-icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </span>
+                    <span class="sb-item-label">Années scolaires</span>
+                </a>
                 @endif
-
-                
             </div>
 
-            {{-- ── Équipe ───────────────────────────────── --}}
+            {{-- ── Équipe ── --}}
             @if(in_array(auth()->user()->role, ['admin', 'rbo', 'delegue']))
             <div class="sb-section">
                 <div class="sb-section-label">Équipe</div>
@@ -862,7 +866,12 @@
                    class="sb-item {{ request()->routeIs('users.roles') ? 'active' : '' }}"
                    data-label="Rôles">
                     <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 3.5a4 4 0 0 1 0 7"/><path d="M20 20c0-3-2-5-4-6"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                            <path d="M16 3.5a4 4 0 0 1 0 7"/>
+                            <path d="M20 20c0-3-2-5-4-6"/>
+                        </svg>
                     </span>
                     <span class="sb-item-label">Rôles</span>
                 </a>
@@ -871,7 +880,10 @@
                    class="sb-item {{ request()->routeIs('comptes.*') ? 'active' : '' }}"
                    data-label="Comptes">
                     <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
                     </span>
                     <span class="sb-item-label">Comptes</span>
                 </a>
@@ -880,19 +892,25 @@
                    class="sb-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}"
                    data-label="Contacts">
                     <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
                     </span>
                     <span class="sb-item-label">Contacts</span>
                 </a>
-
-                
 
                 @if(auth()->user()->role === 'admin')
                 <a href="{{ route('users.index') }}"
                    class="sb-item {{ request()->routeIs('users.index', 'users.create', 'users.edit') ? 'active' : '' }}"
                    data-label="Utilisateurs">
                     <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
                     </span>
                     <span class="sb-item-label">Utilisateurs</span>
                 </a>
@@ -900,7 +918,7 @@
             </div>
             @endif
 
-            {{-- ── Géographie: admin only ───────────────── --}}
+            {{-- ── Géographie: admin only ── --}}
             @if(auth()->user()->role === 'admin')
             <div class="sb-section">
                 <div class="sb-section-label">Géographie</div>
@@ -909,7 +927,10 @@
                    class="sb-item {{ request()->routeIs('villes.*') ? 'active' : '' }}"
                    data-label="Villes">
                     <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
                     </span>
                     <span class="sb-item-label">Villes</span>
                 </a>
@@ -918,7 +939,10 @@
                    class="sb-item {{ request()->routeIs('zones.*') ? 'active' : '' }}"
                    data-label="Zones">
                     <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <path d="M3 9h18M9 21V9"/>
+                        </svg>
                     </span>
                     <span class="sb-item-label">Zones</span>
                 </a>
@@ -927,7 +951,12 @@
                    class="sb-item {{ request()->routeIs('quartiers.*') ? 'active' : '' }}"
                    data-label="Quartiers">
                     <span class="sb-item-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="9" y1="22" x2="9" y2="12"/><line x1="15" y1="12" x2="15" y2="22"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <line x1="9"  y1="22" x2="9"  y2="12"/>
+                            <line x1="15" y1="12" x2="15" y2="22"/>
+                            <line x1="3"  y1="12" x2="21" y2="12"/>
+                        </svg>
                     </span>
                     <span class="sb-item-label">Quartiers</span>
                 </a>
@@ -936,11 +965,10 @@
 
         </nav>
 
-        {{-- ── User footer with dropdown ───────────────── --}}
+        {{-- ── User footer with dropdown ── --}}
         <div class="sb-footer">
             <div class="sb-user-dropdown" id="sbUserDropdown">
 
-                {{-- Trigger --}}
                 <button class="sb-user-btn" id="sbUserBtn" aria-expanded="false" aria-haspopup="true">
                     <div class="sb-user-av">
                         {{ strtoupper(substr(auth()->user()->prenom ?? 'U', 0, 1).substr(auth()->user()->nom ?? '', 0, 1)) }}
@@ -951,12 +979,12 @@
                         </div>
                         <div class="sb-user-role">{{ ucfirst(auth()->user()->role ?? 'admin') }}</div>
                     </div>
-                    <svg class="sb-user-chevron" width="13" height="13" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                    <svg class="sb-user-chevron" width="13" height="13" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2.5" viewBox="0 0 24 24">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
                 </button>
 
-                {{-- Dropdown panel (pops upward) --}}
                 <div class="sb-dd-panel" id="sbDdPanel" aria-hidden="true">
-                    {{-- User info header --}}
                     <div class="sb-dd-header">
                         <div class="sb-dd-av">
                             {{ strtoupper(substr(auth()->user()->prenom ?? 'U', 0, 1).substr(auth()->user()->nom ?? '', 0, 1)) }}
@@ -967,7 +995,6 @@
                         </div>
                     </div>
 
-                    {{-- Role chip --}}
                     <div class="sb-dd-role-row">
                         @php
                             $roleColors = [
@@ -978,18 +1005,22 @@
                             ];
                             $rc = $roleColors[auth()->user()->role ?? 'admin'] ?? $roleColors['admin'];
                         @endphp
-                        <span class="sb-dd-role-chip" style="background:{{ $rc['bg'] }};color:{{ $rc['color'] }};border-color:{{ $rc['border'] }};">
+                        <span class="sb-dd-role-chip"
+                              style="background:{{ $rc['bg'] }};color:{{ $rc['color'] }};border-color:{{ $rc['border'] }};">
                             {{ strtoupper(auth()->user()->role ?? 'admin') }}
                         </span>
                     </div>
 
                     <div class="sb-dd-divider"></div>
 
-                    {{-- Logout --}}
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="sb-dd-item sb-dd-item-danger">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
                             Déconnexion
                         </button>
                     </form>
@@ -1006,63 +1037,140 @@
     {{-- ══════════════════════════════════════════════════
          MAIN
     ══════════════════════════════════════════════════ --}}
-    <div class="main-wrap">
+    <div class="main-wrap" id="mainWrap">
 
-        {{-- Mobile topbar --}}
-        <header class="topbar">
-            <button class="topbar-burger" id="sidebarToggle" aria-label="Menu">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        {{-- ── Mobile topbar ── --}}
+        <header class="topbar" role="banner" aria-label="Barre de navigation mobile">
+
+            <button class="topbar-burger" id="sidebarToggle" aria-label="Ouvrir le menu">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" viewBox="0 0 24 24" aria-hidden="true">
+                    <line x1="3" y1="6"  x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
             </button>
-            <a href="{{ route('comptes.index') }}" class="topbar-logo">
-                <div class="topbar-logo-mark">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                </div>
-                <span class="topbar-name">Bookland CRM</span>
+
+            <a href="{{ route('comptes.index') }}" class="topbar-brand" aria-label="Bookland CRM — accueil">
+                <span class="topbar-brand-mark" aria-hidden="true">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                </span>
+                <span class="topbar-brand-name">Bookland</span>
+                <span class="topbar-brand-suffix">CRM</span>
             </a>
+
+            <div class="topbar-actions">
+                <x-notification-bell />
+            </div>
+
         </header>
 
-        {{-- Flash messages --}}
+        {{-- ── Desktop topbar ── --}}
+        <div class="desktop-topbar" role="banner" aria-label="Barre de navigation">
+
+            <div class="desktop-topbar-left">
+                <div class="desktop-topbar-brand">
+                    <span class="desktop-topbar-mark" aria-hidden="true">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                    </span>
+                    <span class="desktop-topbar-name">Bookland</span>
+                    <span class="desktop-topbar-suffix">CRM</span>
+                </div>
+            </div>
+
+            <div class="desktop-topbar-right">
+                <x-notification-bell />
+                <div class="desktop-topbar-divider" aria-hidden="true"></div>
+                <div class="desktop-topbar-avatar"
+                     aria-label="Profil : {{ auth()->user()->prenom ?? '' }} {{ auth()->user()->nom ?? '' }}"
+                     title="{{ trim((auth()->user()->prenom ?? '').' '.(auth()->user()->nom ?? '')) }}">
+                    {{ strtoupper(substr(auth()->user()->prenom ?? 'U', 0, 1).substr(auth()->user()->nom ?? '', 0, 1)) }}
+                </div>
+            </div>
+
+        </div>
+
+        {{-- ── Flash messages ── --}}
         @if($errors->any() || session('success') || session('error'))
-        <div class="flash-wrap">
+        <div class="flash-stack" role="region" aria-label="Messages système" aria-live="polite">
 
             @if($errors->any())
-            <div class="flash flash-error" role="alert">
-                <span class="flash-icon">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div class="flash flash--error" role="alert">
+                <span class="flash-icon" aria-hidden="true">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8"  x2="12"   y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
                 </span>
-                <div>
-                    <ul>
+                <div class="flash-body">
+                    <span class="flash-label">Erreurs de validation</span>
+                    <ul class="flash-list">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
-                <button class="flash-dismiss" onclick="this.closest('.flash').remove()" aria-label="Fermer">
-                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <button class="flash-close" onclick="dismissFlash(this)" aria-label="Fermer">
+                    <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="18" y1="6"  x2="6"  y2="18"/>
+                        <line x1="6"  y1="6"  x2="18" y2="18"/>
+                    </svg>
                 </button>
             </div>
             @endif
 
             @if(session('success'))
-            <div class="flash flash-success" role="alert">
-                <span class="flash-icon">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div class="flash flash--success" role="alert">
+                <span class="flash-icon" aria-hidden="true">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" viewBox="0 0 24 24">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
                 </span>
-                <span>{{ session('success') }}</span>
-                <button class="flash-dismiss" onclick="this.closest('.flash').remove()" aria-label="Fermer">
-                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <div class="flash-body">
+                    <span class="flash-label">Succès</span>
+                    <span class="flash-msg">{{ session('success') }}</span>
+                </div>
+                <button class="flash-close" onclick="dismissFlash(this)" aria-label="Fermer">
+                    <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="18" y1="6"  x2="6"  y2="18"/>
+                        <line x1="6"  y1="6"  x2="18" y2="18"/>
+                    </svg>
                 </button>
             </div>
             @endif
 
             @if(session('error'))
-            <div class="flash flash-error" role="alert">
-                <span class="flash-icon">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div class="flash flash--error" role="alert">
+                <span class="flash-icon" aria-hidden="true">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8"  x2="12"   y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
                 </span>
-                <span>{{ session('error') }}</span>
-                <button class="flash-dismiss" onclick="this.closest('.flash').remove()" aria-label="Fermer">
-                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <div class="flash-body">
+                    <span class="flash-label">Erreur</span>
+                    <span class="flash-msg">{{ session('error') }}</span>
+                </div>
+                <button class="flash-close" onclick="dismissFlash(this)" aria-label="Fermer">
+                    <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="18" y1="6"  x2="6"  y2="18"/>
+                        <line x1="6"  y1="6"  x2="18" y2="18"/>
+                    </svg>
                 </button>
             </div>
             @endif
@@ -1070,26 +1178,28 @@
         </div>
         @endif
 
-        {{-- Page content --}}
+        {{-- ── Page content ── --}}
         <main class="main-content">
             @yield('content')
         </main>
 
-    </div>
-</div>
+    </div>{{-- /.main-wrap --}}
+</div>{{-- /.layout --}}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @stack('scripts')
 <script>
 (function () {
-    const sidebar   = document.getElementById('sidebar');
-    const mainWrap  = document.querySelector('.main-wrap');
-    const overlay   = document.getElementById('sbOverlay');
-    const toggle    = document.getElementById('sidebarToggle');
+    const sidebar     = document.getElementById('sidebar');
+    const mainWrap    = document.getElementById('mainWrap');
+    const overlay     = document.getElementById('sbOverlay');
+    const toggle      = document.getElementById('sidebarToggle');
     const collapseBtn = document.getElementById('sbCollapseBtn');
+    const userBtn     = document.getElementById('sbUserBtn');
+    const ddPanel     = document.getElementById('sbDdPanel');
 
-    /* ── Mobile open/close ───────────────── */
-    function openMobile()  {
+    /* ── Mobile open / close ──────────────────────── */
+    function openMobile() {
         sidebar.classList.add('open');
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
@@ -1103,63 +1213,74 @@
     if (toggle)  toggle.addEventListener('click', openMobile);
     if (overlay) overlay.addEventListener('click', closeMobile);
 
-    /* ── Desktop collapse ────────────────── */
+    /* ── Desktop collapse ─────────────────────────── */
     const STORAGE_KEY = 'crm_sidebar_collapsed';
 
-    function setCollapsed(collapsed) {
-        if (collapsed) {
-            sidebar.classList.add('collapsed');
-            mainWrap.classList.add('expanded');
-        } else {
-            sidebar.classList.remove('collapsed');
-            mainWrap.classList.remove('expanded');
-        }
-        try { localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0'); } catch(e) {}
+    function setCollapsed(on) {
+        sidebar.classList.toggle('collapsed', on);
+        mainWrap.classList.toggle('expanded', on);
+        try { localStorage.setItem(STORAGE_KEY, on ? '1' : '0'); } catch(e) {}
     }
 
-    // Restore state on load
-    try {
-        if (localStorage.getItem(STORAGE_KEY) === '1') setCollapsed(true);
-    } catch(e) {}
+    try { if (localStorage.getItem(STORAGE_KEY) === '1') setCollapsed(true); } catch(e) {}
 
     if (collapseBtn) {
-        collapseBtn.addEventListener('click', () => {
-            setCollapsed(!sidebar.classList.contains('collapsed'));
-        });
+        collapseBtn.addEventListener('click', () => setCollapsed(!sidebar.classList.contains('collapsed')));
     }
 
-    /* ── Shared Escape ───────────────────── */
+    /* ── User dropdown ────────────────────────────── */
+    function openDropdown()  {
+        ddPanel.classList.add('open');
+        userBtn.setAttribute('aria-expanded', 'true');
+        ddPanel.setAttribute('aria-hidden', 'false');
+    }
+    function closeDropdown() {
+        ddPanel.classList.remove('open');
+        userBtn.setAttribute('aria-expanded', 'false');
+        ddPanel.setAttribute('aria-hidden', 'true');
+    }
+
+    if (userBtn) {
+        userBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            ddPanel.classList.contains('open') ? closeDropdown() : openDropdown();
+        });
+    }
+    document.addEventListener('click', e => {
+        if (ddPanel && !ddPanel.contains(e.target) && e.target !== userBtn) closeDropdown();
+    });
+
+    /* ── Escape key ───────────────────────────────── */
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') { closeMobile(); closeDropdown(); }
     });
 
-    /* ── User dropdown ───────────────────── */
-    const userBtn = document.getElementById('sbUserBtn');
-    const ddPanel = document.getElementById('sbDdPanel');
-
-    function openDropdown()  { ddPanel.classList.add('open');    userBtn.setAttribute('aria-expanded', 'true'); }
-    function closeDropdown() {
-        if (ddPanel) { ddPanel.classList.remove('open'); }
-        if (userBtn) userBtn.setAttribute('aria-expanded', 'false');
-    }
-
-    if (userBtn) userBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        ddPanel.classList.contains('open') ? closeDropdown() : openDropdown();
-    });
-    document.addEventListener('click', e => {
-        if (ddPanel && !ddPanel.contains(e.target) && userBtn && e.target !== userBtn) closeDropdown();
-    });
-
-    /* ── Auto-dismiss flash after 5 s ────── */
-    document.querySelectorAll('.flash').forEach(el => {
+    /* ── Flash dismiss (animated) ─────────────────── */
+    window.dismissFlash = function(btn) {
+        const flash = btn.closest('.flash');
+        if (!flash) return;
+        flash.style.transition = 'opacity .2s ease, transform .2s ease, max-height .25s ease, padding .25s ease, margin .25s ease';
+        flash.style.opacity   = '0';
+        flash.style.transform = 'translateY(-5px)';
+        flash.style.overflow  = 'hidden';
+        flash.style.maxHeight = flash.offsetHeight + 'px';
         setTimeout(() => {
-            el.style.transition = 'opacity .35s ease, transform .35s ease';
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(-5px)';
-            setTimeout(() => el.remove(), 380);
+            flash.style.maxHeight = '0';
+            flash.style.padding   = '0';
+            flash.style.margin    = '0';
+            flash.style.border    = 'none';
+        }, 180);
+        setTimeout(() => flash.remove(), 430);
+    };
+
+    /* ── Auto-dismiss success after 5 s ──────────── */
+    document.querySelectorAll('.flash--success').forEach(el => {
+        setTimeout(() => {
+            const btn = el.querySelector('.flash-close');
+            if (btn) window.dismissFlash(btn);
         }, 5000);
     });
+
 })();
 </script>
 </body>
