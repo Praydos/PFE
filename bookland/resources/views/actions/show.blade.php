@@ -527,6 +527,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
                     <button type="submit" class="btn-zn btn-zn-warning" onclick="return confirm('Dévalider cette action ? Le délégué pourra la modifier et soumettre un nouveau rapport.')">Dévalider</button>
                 </form>
             @endif
+            @if(auth()->user()->role === 'admin')
+                <form method="POST" action="{{ route('actions.destroy', $action) }}" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn-zn btn-zn-danger" onclick="return confirm('Supprimer cette action ?')">Supprimer</button>
+                </form>
+            @endif
         </div>
     </div>
 

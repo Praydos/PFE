@@ -488,7 +488,9 @@ class ActionController extends Controller
     public function destroy(Action $action)
     {
         YearLock::check($action);
-        $this->authorizeEdit($action);
+        if (Auth::user()->role !== 'admin') {
+            $this->authorizeEdit($action);
+        }
         $action->delete();
         return redirect()->route('actions.index')->with('success', 'Action supprimée.');
     }

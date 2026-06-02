@@ -315,6 +315,15 @@
                                         Modifier
                                     </a>
                                 @endif
+                                @if(auth()->user()->role === 'admin')
+                                    <form method="POST" action="{{ route('events.destroy', $e) }}" style="display:inline;" onsubmit="return confirm('Supprimer cet événement ?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-zn btn-zn-sm btn-zn-danger-ghost" title="Supprimer">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </td>
                     </tr>
