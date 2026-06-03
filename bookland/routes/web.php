@@ -42,6 +42,7 @@ use App\Http\Controllers\FormationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ActionController;
 use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DemandeSpecimenController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\TacheController;
@@ -61,7 +62,10 @@ require __DIR__ . '/auth.php';
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/', fn() => redirect()->route('comptes.index'));
+    Route::get('/', fn() => redirect()->route('dashboard.index'));
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/api/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
 
     // Notification Center
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

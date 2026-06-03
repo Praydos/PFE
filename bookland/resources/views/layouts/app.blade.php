@@ -592,7 +592,7 @@
     <aside class="sidebar" id="sidebar">
 
         {{-- Logo --}}
-        <a href="{{ route('comptes.index') }}" class="sb-logo">
+        <a href="{{ route('dashboard.index') }}" class="sb-logo">
             <div class="sb-logo-mark">
                 <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -620,6 +620,25 @@
                         <polyline points="15 18 9 12 15 6"/>
                     </svg>
                 </button>
+            </div>
+
+            {{-- ── Tableau de bord ── --}}
+            <div class="sb-section">
+                <div class="sb-section-label">Vue d'ensemble</div>
+
+                <a href="{{ route('dashboard.index') }}"
+                   class="sb-item {{ request()->routeIs('dashboard.*') ? 'active' : '' }}"
+                   data-label="Tableau de bord">
+                    <span class="sb-item-icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="7" height="9" rx="1"/>
+                            <rect x="14" y="3" width="7" height="5" rx="1"/>
+                            <rect x="14" y="12" width="7" height="9" rx="1"/>
+                            <rect x="3" y="16" width="7" height="5" rx="1"/>
+                        </svg>
+                    </span>
+                    <span class="sb-item-label">Tableau de bord</span>
+                </a>
             </div>
 
             {{-- ── Commercial ── --}}
