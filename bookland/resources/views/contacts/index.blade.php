@@ -703,7 +703,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     </div>
 
     {{-- Stat Cards --}}
-    <div class="dr-stats">
+    {{-- <div class="dr-stats">
         <div class="dr-stat-card">
             <div class="dr-stat-icon si-blue">
                 <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -712,7 +712,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <div class="dr-stat-label">Total contacts</div>
                 <div class="dr-stat-value">{{ $contacts->total() }}</div>
             </div>
-        </div>
+        </div> --}}
         {{-- <div class="dr-stat-card">
             <div class="dr-stat-icon si-teal">
                 <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -722,7 +722,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 <div class="dr-stat-value">{{ $contacts->currentPage() }}/{{ $contacts->lastPage() }}</div>
             </div>
         </div> --}}
-    </div>
+    {{-- </div> --}}
 
     {{-- Search bar --}}
     <div class="dr-search-bar">

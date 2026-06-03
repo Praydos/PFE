@@ -152,7 +152,7 @@ class DemandeSpecimenController extends Controller
                     ->whereHas('bss', function ($q) use ($compteId, $yearIds) {
                         $q->where('compte_id', $compteId)
                           ->whereIn('annee_scolaire_id', $yearIds)
-                          ->whereIn('statut', ['valide', 'livre']);
+                          ->whereIn('statut', ['valide', 'livre','retour','adopte']);
                     })
                     ->exists();
 
