@@ -347,6 +347,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--t1); -webki
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         Retour à la liste
     </a>
+    <a href="{{ route('actions-amelioration.pdf', $actions_amelioration) }}" target="_blank" class="btn-aa btn-aa-ghost">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        Exporter PDF
+    </a>
     @if(auth()->user()->role !== 'rbo')
         @if(!$actions_amelioration->responsable_suivi_id)
         <a href="{{ route('actions-amelioration.edit-suivi', $actions_amelioration) }}" class="btn-aa btn-aa-primary">

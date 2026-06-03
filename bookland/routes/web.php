@@ -352,6 +352,7 @@ Route::get('/api/action-types-by-categorie', [ActionController::class, 'getActio
 Route::get('/api/moyens-by-action-type', [ActionController::class, 'getMoyensByActionType'])->name('api.moyens');
 
 
+
 // Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
 
 //=========================================================================================================
@@ -418,6 +419,7 @@ Route::post('taches/{tache}/cancel-recurrence', [TacheController::class , 'cance
 //=========================================================================================================
 
 //actions amelioration routes
+Route::get('/actions-amelioration/{actions_amelioration}/pdf', [ActionAmeliorationController::class, 'exportPdf'])->name('actions-amelioration.pdf');
 Route::resource('actions-amelioration', ActionAmeliorationController::class);
 Route::get('/actions-amelioration/{actions_amelioration}/edit-suivi', [ActionAmeliorationController::class , 'editSuivi'])->name('actions-amelioration.edit-suivi');
 Route::put('/actions-amelioration/{actions_amelioration}/suivi', [ActionAmeliorationController::class , 'updateSuivi'])->name('actions-amelioration.update-suivi');
@@ -426,10 +428,12 @@ Route::put('/actions-amelioration/{actions_amelioration}/efficacite', [ActionAme
 
 //=========================================================================================================
 //reclamations routes
+Route::get('/reclamations/{reclamation}/pdf', [ReclamationController::class, 'exportPdf'])->name('reclamations.pdf');
 Route::resource('reclamations', ReclamationController::class);
 
 //=========================================================================================================
 //non conformites routes
+Route::get('/non-conformites/{non_conformite}/pdf', [NonConformiteController::class, 'exportPdf'])->name('non-conformites.pdf');
 Route::resource('non-conformites', NonConformiteController::class);
 Route::get('/non-conformites/{non_conformite}/edit-efficacite', [NonConformiteController::class, 'editEfficacite'])->name('non-conformites.edit-efficacite');
 Route::put('/non-conformites/{non_conformite}/efficacite', [NonConformiteController::class, 'updateEfficacite'])->name('non-conformites.update-efficacite');

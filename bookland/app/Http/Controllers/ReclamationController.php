@@ -13,6 +13,7 @@ use App\Models\Bss;
 use App\Models\MpProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReclamationController extends Controller
 {
@@ -220,6 +221,30 @@ class ReclamationController extends Controller
         if (Auth::user()->role !== 'admin') abort(403);
         $reclamation->delete();
         return redirect()->route('reclamations.index')->with('success', 'Réclamation supprimée.');
+    }
+
+    public function exportPdf(Reclamation $reclamation)
+    {
+        $this->authorizeView($reclamation);
+        $reclamation->load(['compte', 'contact', 'delegate', 'responsable', 'createdBy', 'updatedBy']);
+
+        $linkedModule = null;
+        if ($reclamation->module_lie && $reclamation->module_id) {
+            $modelMap = [
+                'examen'   => Examen::class,
+                'event'    => Event::class,
+                'product'  => Product::class,
+                'specimen' => Bss::class,
+                'mp'       => MpProduct::class,
+            ];
+            $class = $modelMap[$reclamation->module_lie] ?? null;
+            if ($class) {
+                $linkedModule = $class::find($reclamation->module_id);
+            }
+        }
+
+        $pdf = Pdf::loadView('reclamations.pdf', compact('reclamation', 'linkedModule'));
+        return $pdf->stream('reclamation-' . $reclamation->reference . '.pdf');
     }
 
     private function getCategories()

@@ -15,6 +15,7 @@ use App\Models\MpDelivery;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class NonConformiteController extends Controller
 {
@@ -127,6 +128,14 @@ class NonConformiteController extends Controller
         $this->authorizeView($non_conformite);
         $non_conformite->load(['compte', 'contact', 'delegate', 'responsableEfficacite', 'reclamation']);
         return view('non_conformites.show', compact('non_conformite'));
+    }
+
+    public function exportPdf(NonConformite $non_conformite)
+    {
+        $this->authorizeView($non_conformite);
+        $non_conformite->load(['compte', 'contact', 'delegate', 'responsableEfficacite', 'reclamation']);
+        $pdf = Pdf::loadView('non_conformites.pdf', compact('non_conformite'));
+        return $pdf->stream('non-conformite-' . $non_conformite->numero . '.pdf');
     }
 
     public function edit(NonConformite $non_conformite)

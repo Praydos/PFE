@@ -8,6 +8,7 @@ use App\Models\Contact;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ActionAmeliorationController extends Controller
 {
@@ -83,6 +84,14 @@ class ActionAmeliorationController extends Controller
     {
         $this->authorizeView($actions_amelioration);
         return view('actions_amelioration.show', compact('actions_amelioration'));
+    }
+
+    public function exportPdf(ActionAmelioration $actions_amelioration)
+    {
+        $this->authorizeView($actions_amelioration);
+        $actions_amelioration->load(['compte', 'emetteur', 'responsableSuivi', 'responsableEfficacite']);
+        $pdf = Pdf::loadView('actions_amelioration.pdf', compact('actions_amelioration'));
+        return $pdf->stream('action-amelioration-' . $actions_amelioration->numero . '.pdf');
     }
 
     // Stage 2: suivi
