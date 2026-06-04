@@ -1,240 +1,210 @@
 @extends('layouts.app')
 
 @push('styles')
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+{{-- The full CSS from previous tasks should be included here or in your main layout --}}
 <style>
-    /* ===== FULL CSS FROM ZONES EXAMPLE ===== */
-    /* Paste the same CSS as in bss/show.blade.php */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-        --bg-base:       #f5f6fa;
-        --bg-card:       #ffffff;
-        --bg-hover:      #f8f9fd;
-        --bg-subtle:     #f0f2f8;
-        --border:        #e4e7f0;
-        --border-md:     #d0d5e8;
-        --blue:          #5b8dee;
-        --blue-dark:     #3d6fd6;
-        --blue-light:    #eef3fd;
-        --blue-mid:      #dce8fb;
-        --teal:          #0cb8b6;
-        --teal-light:    #e6faf9;
-        --violet:        #7c6fcd;
-        --violet-light:  #f0eeff;
-        --amber:         #e8a020;
-        --amber-light:   #fff8ec;
-        --rose:          #e8506a;
-        --rose-light:    #fef0f2;
-        --green:         #28c76f;
-        --green-light:   #e8fbf0;
-        --text-primary:   #1a1f36;
-        --text-secondary: #525f7f;
-        --text-muted:     #9ba8c5;
-        --text-hint:      #bcc5dc;
-        --r-xs: 6px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px;
-        --shadow-xs: 0 1px 3px rgba(31,45,80,.06), 0 1px 2px rgba(31,45,80,.04);
-        --shadow-sm: 0 2px 8px rgba(31,45,80,.08), 0 1px 3px rgba(31,45,80,.05);
-        --shadow-md: 0 8px 24px rgba(31,45,80,.10), 0 2px 8px rgba(31,45,80,.06);
-        --shadow-blue: 0 4px 14px rgba(91,141,238,.35);
-        --font: 'DM Sans', sans-serif;
-        --font-mono: 'DM Mono', monospace;
-        --ease: cubic-bezier(.4,0,.2,1);
-        --t: .18s var(--ease);
-    }
+/* ── Reset & base ── */
+.tch-pg *  { box-sizing: border-box; margin: 0; padding: 0; }
+.tch-pg    {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg, #f5f6fa);
+    min-height: 100vh;
+    padding: 2rem 1.75rem;
+    color: var(--text, #1a1d23);
+}
 
-    body { font-family: var(--font); background: var(--bg-base); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+/* ── Breadcrumb ── */
+.tch-bc               { display: flex; align-items: center; gap: .4rem; font-size: .78rem; color: #6b7280; margin-bottom: 2rem; }
+.tch-bc a             { color: #6b7280; text-decoration: none; display: flex; align-items: center; gap: .3rem; transition: color .15s; }
+.tch-bc a:hover       { color: #111827; }
+.tch-bc-sep           { opacity: .35; }
+.tch-bc-cur           { font-family: 'Sora', sans-serif; font-weight: 600; font-size: .78rem; color: #111827; }
 
-    .zn-page { padding: 2rem 2.5rem 3rem; animation: pageIn .4s var(--ease) both; max-width: 1000px; margin: 0 auto; }
-    @keyframes pageIn {
-        from { opacity: 0; transform: translateY(12px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
+/* ── Page header ── */
+.tch-hdr              { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
+.tch-hdr-l h1         { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.55rem; letter-spacing: -.02em; line-height: 1.2; color: #111827; }
+.tch-hdr-l p          { font-size: .82rem; color: #6b7280; margin-top: .3rem; }
+.tch-hdr-actions      { display: flex; gap: .5rem; flex-wrap: wrap; }
 
-    .zn-bc { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1.4rem; }
-    .zn-bc a { color: var(--text-muted); text-decoration: none; transition: color var(--t); }
-    .zn-bc a:hover { color: var(--blue); }
-    .zn-bc-sep { color: var(--text-hint); }
-    .zn-bc-cur { color: var(--text-secondary); }
+/* ── Buttons ── */
+.btn-tch              { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 1rem; border-radius: 8px; font-size: .8rem; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; transition: all .15s; text-decoration: none; }
+.btn-tch-ghost        { background: #fff; border: 1px solid #e5e7eb; color: #374151; }
+.btn-tch-ghost:hover  { background: #f9fafb; }
+.btn-tch-primary      { background: #185FA5; color: #fff; }
+.btn-tch-primary:hover{ background: #0c447c; }
+.btn-tch-success      { background: #3B6D11; color: #fff; }
+.btn-tch-success:hover{ background: #27500A; }
+.btn-tch-danger       { background: #A32D2D; color: #fff; font-size: .78rem; padding: .42rem .9rem; }
+.btn-tch-danger:hover { background: #791F1F; }
 
-    .zn-header { margin-bottom: 2rem; }
-    .zn-header h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -.03em; color: var(--text-primary); line-height: 1.15; margin: 0; }
-    .zn-header p { font-size: .83rem; color: var(--text-muted); margin-top: .3rem; }
+/* ── Main card ── */
+.tch-card             { background: #fff; border: 1px solid #e9eaee; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
 
-    .zn-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--shadow-sm); overflow: hidden; }
-    .zn-card-header { padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .55rem; background: linear-gradient(to bottom, #fafbff, #fff); }
-    .zn-card-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 3px rgba(232,160,32,.2); }
-    .zn-card-title { font-size: .88rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.01em; }
-    .zn-card-body { padding: 1.75rem 1.6rem; }
+/* ── Card header ── */
+.tch-card-hd          { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f0f1f5; display: flex; align-items: center; justify-content: space-between; }
+.tch-card-title       { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 600; font-size: .88rem; color: #111827; }
+.tch-pip              { width: 6px; height: 6px; border-radius: 50%; background: #185FA5; flex-shrink: 0; }
 
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    .info-item {
-        font-size: 0.84rem;
-        color: var(--text-secondary);
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 0.5rem;
-    }
-    .info-label {
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-right: 0.5rem;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-    }
-    .info-value {
-        color: var(--text-secondary);
-        font-weight: 500;
-    }
-    hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+/* ── Info grid (used in show views) ── */
+.tch-info-grid        { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.tch-info-row         { padding: 1rem 1.5rem; border-bottom: 1px solid #f0f1f5; display: flex; flex-direction: column; gap: .3rem; }
+.tch-info-row:nth-child(even) { background: #fafbfc; }
+.tch-info-row.full    { grid-column: 1 / -1; }
+.tch-info-lbl         { font-size: .72rem; font-weight: 500; text-transform: uppercase; letter-spacing: .07em; color: #9ca3af; }
+.tch-info-val         { font-size: .9rem; color: #111827; font-weight: 400; display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; word-break: break-word; overflow-wrap: break-word; }
+.tch-info-val.muted   { color: #9ca3af; font-style: italic; }
+.tch-info-val a       { color: #185FA5; text-decoration: none; }
+.tch-info-val a:hover { text-decoration: underline; }
 
-    .card-footer {
-        padding: 1.1rem 1.6rem;
-        border-top: 1px solid var(--border);
-        background: var(--bg-base);
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: .6rem;
-        margin-top: 1.5rem;
-    }
+/* ── Badges (optional, kept for consistency) ── */
+.tch-badge            { display: inline-flex; align-items: center; gap: .3rem; padding: .25rem .65rem; border-radius: 999px; font-size: .75rem; font-weight: 500; }
+.tch-badge-green      { background: #EAF3DE; color: #3B6D11; }
+.tch-badge-amber      { background: #FAEEDA; color: #854F0B; }
 
-    .btn-zn {
-        display: inline-flex; align-items: center; gap: .4rem;
-        padding: .56rem 1.1rem; border-radius: var(--r-sm);
-        font-family: var(--font); font-size: .82rem; font-weight: 600;
-        cursor: pointer; border: 1px solid transparent;
-        transition: all var(--t); text-decoration: none;
-        white-space: nowrap; letter-spacing: -.01em; line-height: 1;
-    }
-    .btn-zn-primary { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: var(--shadow-blue); }
-    .btn-zn-primary:hover { background: var(--blue-dark); color: #fff; transform: translateY(-1px); }
-    .btn-zn-ghost { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border); box-shadow: var(--shadow-xs); }
-    .btn-zn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-md); }
+/* ── Card footer ── */
+.tch-card-ft          { padding: .9rem 1.5rem; border-top: 1px solid #f0f1f5; background: #fafbfc; display: flex; justify-content: flex-end; gap: .5rem; align-items: center; flex-wrap: wrap; }
 
-    @media (max-width: 768px) {
-        .zn-page { padding: 1.25rem 1rem 2rem; }
-        .info-grid { grid-template-columns: 1fr; }
-        .card-footer { flex-direction: column-reverse; }
-        .btn-zn { width: 100%; justify-content: center; }
-    }
+/* ── SVG icons (inline helpers) ── */
+.tch-icon             { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+
+/* ── Responsive adjustments ── */
+@media (max-width: 480px) {
+    .tch-pg { padding: 1rem; }
+    .tch-info-row { padding-inline: 1rem; }
+}
+
+/* ── Focus styles for accessibility ── */
+.btn-tch:focus-visible,
+.tch-bc a:focus-visible,
+.tch-info-val a:focus-visible {
+    outline: 2px solid #185FA5;
+    outline-offset: 2px;
+}
 </style>
 @endpush
 
-
-
-
 @section('content')
-<div class="zn-page">
+<div class="tch-pg">
 
     {{-- Breadcrumb --}}
-    <div class="zn-bc">
+    <nav class="tch-bc" aria-label="Fil d'Ariane">
         <a href="{{ route('adoptions.index') }}">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <svg class="tch-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
         </a>
-        <span class="zn-bc-sep">›</span>
+        <span class="tch-bc-sep">›</span>
         <a href="{{ route('adoptions.index') }}">Adoptions</a>
-        <span class="zn-bc-sep">›</span>
-        <span class="zn-bc-cur">Détail</span>
-    </div>
+        <span class="tch-bc-sep">›</span>
+        <span class="tch-bc-cur">Détail #{{ $adoption->id }}</span>
+    </nav>
 
-    <div class="zn-header">
-        <h1>Adoption #{{ $adoption->id }}</h1>
-        <p>Détail de l'adoption</p>
-    </div>
-
-    <div class="zn-card">
-        <div class="zn-card-header">
-            <span class="zn-card-pip"></span>
-            <span class="zn-card-title">Informations générales</span>
+    {{-- Page header --}}
+    <div class="tch-hdr">
+        <div class="tch-hdr-l">
+            <h1>Adoption #{{ $adoption->id }}</h1>
+            <p>Détail de l'adoption</p>
         </div>
-        <div class="zn-card-body">
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Compte</span>
-                    <span class="info-value">{{ $adoption->compte->etablissement }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Contact</span>
-                    <span class="info-value">{{ $adoption->contact->prenom }} {{ $adoption->contact->nom }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Produit</span>
-                    <span class="info-value">{{ $adoption->product->titre }} ({{ $adoption->product->isbn_13 ?? $adoption->product->isbn_10 }})</span>
-                </div>
-                {{-- New fields --}}
-                <div class="info-item">
-                    <span class="info-label">Type adoption</span>
-                    <span class="info-value">
-                        @php
-                            $typeMap = [
-                                'BOOKLAND' => 'Bookland',
-                                'ESPRIT_DU_LIVRE' => 'Esprit du livre',
-                                'CONCURRENT' => 'Concurrent'
-                            ];
-                        @endphp
-                        {{ $typeMap[$adoption->type_adoption] ?? $adoption->type_adoption }}
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">ISBN</span>
-                    <span class="info-value">{{ $adoption->isbn ?? '-' }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Sous-catégorie</span>
-                    <span class="info-value">{{ $adoption->sous_categorie ?? '-' }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Méthode</span>
-                    <span class="info-value">{{ $adoption->methode }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Année scolaire</span>
-                    <span class="info-value">{{ $adoption->anneeScolaire->libelle }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Quantité</span>
-                    <span class="info-value">{{ $adoption->quantity }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Date adoption</span>
-                    <span class="info-value">{{ $adoption->date_adoption->format('d/m/Y') }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Délégué</span>
-                    <span class="info-value">{{ $adoption->delegate->prenom }} {{ $adoption->delegate->nom }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Niveau scolaire</span>
-                    <span class="info-value">{{ $adoption->niveau ?? '-' }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Cycle</span>
-                    <span class="info-value">{{ $adoption->cycle ?? '-' }}</span>
-                </div>
-                @if($adoption->bssLigne)
-                <div class="info-item">
-                    <span class="info-label">BSS source</span>
-                    <span class="info-value">
-                        <a href="{{ route('bss.show', $adoption->bssLigne->bss) }}" class="text-decoration-none">
-                            {{ $adoption->bssLigne->bss->numero }}
-                        </a>
-                    </span>
-                </div>
-                @endif
+        <div class="tch-hdr-actions">
+            <a href="{{ route('adoptions.index') }}" class="btn-tch btn-tch-ghost">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Retour
+            </a>
+        </div>
+    </div>
+
+    {{-- Main card --}}
+    <div class="tch-card">
+        <div class="tch-card-hd">
+            <div class="tch-card-title">
+                <span class="tch-pip"></span>
+                Informations générales
             </div>
         </div>
 
-        <div class="card-footer">
-            <a href="{{ route('adoptions.index') }}" class="btn-zn btn-zn-ghost">
+        {{-- Info grid (two columns with alternating rows) --}}
+        <div class="tch-info-grid">
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Compte</span>
+                <span class="tch-info-val">{{ $adoption->compte->etablissement }}</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Contact</span>
+                <span class="tch-info-val">{{ $adoption->contact->prenom }} {{ $adoption->contact->nom }}</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Produit</span>
+                <span class="tch-info-val">{{ $adoption->product->titre }} ({{ $adoption->product->isbn_13 ?? $adoption->product->isbn_10 }})</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Type adoption</span>
+                <span class="tch-info-val">
+                    @php
+                        $typeMap = [
+                            'BOOKLAND' => 'Bookland',
+                            'ESPRIT_DU_LIVRE' => 'Esprit du livre',
+                            'CONCURRENT' => 'Concurrent'
+                        ];
+                    @endphp
+                    {{ $typeMap[$adoption->type_adoption] ?? $adoption->type_adoption }}
+                </span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">ISBN</span>
+                <span class="tch-info-val">{{ $adoption->isbn ?? '-' }}</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Sous-catégorie</span>
+                <span class="tch-info-val">{{ $adoption->sous_categorie ?? '-' }}</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Méthode</span>
+                <span class="tch-info-val">{{ $adoption->methode }}</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Année scolaire</span>
+                <span class="tch-info-val">{{ $adoption->anneeScolaire->libelle }}</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Quantité</span>
+                <span class="tch-info-val">{{ $adoption->quantity }}</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Date adoption</span>
+                <span class="tch-info-val">{{ $adoption->date_adoption->format('d/m/Y') }}</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Délégué</span>
+                <span class="tch-info-val">{{ $adoption->delegate->prenom }} {{ $adoption->delegate->nom }}</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Niveau scolaire</span>
+                <span class="tch-info-val">{{ $adoption->niveau ?? '-' }}</span>
+            </div>
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">Cycle</span>
+                <span class="tch-info-val">{{ $adoption->cycle ?? '-' }}</span>
+            </div>
+            @if($adoption->bssLigne)
+            <div class="tch-info-row">
+                <span class="tch-info-lbl">BSS source</span>
+                <span class="tch-info-val">
+                    <a href="{{ route('bss.show', $adoption->bssLigne->bss) }}" style="color: #185FA5; text-decoration: none;">
+                        {{ $adoption->bssLigne->bss->numero }}
+                    </a>
+                </span>
+            </div>
+            @endif
+        </div>{{-- /.tch-info-grid --}}
+
+        {{-- Card footer (actions) --}}
+        <div class="tch-card-ft">
+            <a href="{{ route('adoptions.index') }}" class="btn-tch btn-tch-ghost">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="19" y1="12" x2="5" y2="12"/>
                     <polyline points="12 19 5 12 12 5"/>
@@ -242,7 +212,7 @@
                 Retour
             </a>
             @if(auth()->user()->role === 'delegue' && $adoption->delegate_id === auth()->id())
-                <a href="{{ route('adoptions.edit', $adoption) }}" class="btn-zn btn-zn-primary">
+                <a href="{{ route('adoptions.edit', $adoption) }}" class="btn-tch btn-tch-primary">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
@@ -251,6 +221,7 @@
                 </a>
             @endif
         </div>
-    </div>
-</div>
+    </div>{{-- /.tch-card --}}
+
+</div>{{-- /.tch-pg --}}
 @endsection
