@@ -35,6 +35,22 @@ class BssController extends Controller
             ->orderBy('date_debut', 'desc')
             ->first();
     }
+    private function generateNumero()
+    {
+        $year = now()->year;
+        $prefix = 'BSS-' . $year . '-';
+        $last = Bss::where('numero', 'like', $prefix . '%')
+            ->orderBy('numero', 'desc')
+            ->first();
+        if ($last) {
+            $num = intval(substr($last->numero, -4));
+            $increment = $num + 1;
+        } else {
+            $increment = 1;
+        }
+        return $prefix . str_pad($increment, 4, '0', STR_PAD_LEFT);
+    }
+
 
     // List BSS (role‑based)
     public function index(Request $request)
@@ -95,9 +111,7 @@ class BssController extends Controller
             ->with('product')
             ->get();
 
-        $lastBss = Bss::whereYear('created_at', now()->year)->orderBy('id', 'desc')->first();
-        $increment = $lastBss ? intval(substr($lastBss->numero, -4)) + 1 : 1;
-        $numero = 'BSS-' . now()->year . '-' . str_pad($increment, 4, '0', STR_PAD_LEFT);
+        $numero = $this->generateNumero();
         $defaultDate = $request->get('date_livraison_prevue', now()->toDateString());
 
         return view('bss.create', compact('comptes', 'contacts', 'consignations', 'numero', 'currentYear', 'selectedCompteId', 'defaultDate'));    }
@@ -109,7 +123,7 @@ class BssController extends Controller
             abort(403);
 
         $rules = [
-            'numero' => 'required|unique:bsses,numero',
+            // 'numero' => 'required|unique:bsses,numero', // removed to auto-generate
             'compte_id' => 'required|exists:comptes,id',
             'contact_id' => 'required|exists:contacts,id',
             'date_livraison_prevue' => 'nullable|date',
@@ -123,12 +137,13 @@ class BssController extends Controller
 
         if ($request->recupere_par_type === 'contact') {
             $rules['recupere_par_nom_contact'] = 'required|string|max:255';
-        }
-        else {
+        } else {
             $rules['numero_expedition'] = 'required|string|max:255';
         }
 
         $validated = $request->validate($rules);
+        // Auto‑generate a unique numero for the BSS
+        $validated['numero'] = $this->generateNumero();
 
         $compte = Compte::with(['zone', 'ville'])->findOrFail($validated['compte_id']);
         $delegateId = (int) $compte->delegue_id;
@@ -378,9 +393,7 @@ class BssController extends Controller
             ->where('annee_scolaire_id', $currentYear->id)
             ->with('product')->get();
 
-        $lastBss = Bss::whereYear('created_at', now()->year)->orderBy('id', 'desc')->first();
-        $increment = $lastBss ? intval(substr($lastBss->numero, -4)) + 1 : 1;
-        $numero = 'BSS-' . now()->year . '-' . str_pad($increment, 4, '0', STR_PAD_LEFT);
+        $numero = $this->generateNumero();
         $defaultDate = $request->get('date_livraison_prevue', now()->toDateString());
         $selectedCompteId = $request->get('compte_id');
         $targetDelegate = $delegate;
@@ -395,8 +408,8 @@ class BssController extends Controller
     {
         $this->authorizeForDelegate($delegate);
 
-        $rules = [
-            'numero' => 'required|unique:bsses,numero',
+                $rules = [
+            // 'numero' => 'required|unique:bsses,numero', // removed to auto-generate
             'compte_id' => 'required|exists:comptes,id',
             'contact_id' => 'required|exists:contacts,id',
             'date_livraison_prevue' => 'nullable|date',
@@ -407,6 +420,16 @@ class BssController extends Controller
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',
         ];
+
+        if ($request->recupere_par_type === 'contact') {
+            $rules['recupere_par_nom_contact'] = 'required|string|max:255';
+        } else {
+            $rules['numero_expedition'] = 'required|string|max:255';
+        }
+
+        $validated = $request->validate($rules);
+        // Auto‑generate a unique numero for the BSS
+        $validated['numero'] = $this->generateNumero();
         if ($request->recupere_par_type === 'contact') {
             $rules['recupere_par_nom_contact'] = 'required|string|max:255';
         }

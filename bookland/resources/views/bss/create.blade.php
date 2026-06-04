@@ -500,12 +500,12 @@
     const transportInput = document.getElementById('numero_expedition');
 
     function toggleRecuperePar() {
-        if (radioContact.checked) {
+        if (radioContact?.checked) {
             contactField.style.display = 'block';
             transportField.style.display = 'none';
             contactInput.required = true;
             transportInput.required = false;
-        } else if (radioTransport.checked) {
+        } else if (radioTransport?.checked) {
             contactField.style.display = 'none';
             transportField.style.display = 'block';
             contactInput.required = false;
@@ -517,43 +517,63 @@
             transportInput.required = false;
         }
     }
-
     radioContact?.addEventListener('change', toggleRecuperePar);
     radioTransport?.addEventListener('change', toggleRecuperePar);
     toggleRecuperePar();
 
-    // ── Dynamic product rows ───────────────────
-    let productIndex = {{ count($products) }};
-    const container = document.getElementById('products-container');
-    const addBtn = document.getElementById('add-product');
+    // Add product row functionality
+    const productsContainer = document.getElementById('products-container');
+    const addProductBtn = document.getElementById('add-product');
 
-    function attachRemoveEvent(row) {
-        const removeBtn = row.querySelector('.remove-product');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', () => row.remove());
-        }
-    }
-
-    addBtn.addEventListener('click', () => {
-        const firstRow = container.children[0];
-        const newRow = firstRow.cloneNode(true);
-        // Reset values
-        newRow.querySelectorAll('select, input').forEach(el => {
-            if (el.name) {
-                el.name = el.name.replace(/\[\d+\]/, `[${productIndex}]`);
-                if (el.tagName === 'SELECT') el.value = '';
-                else if (el.type === 'number') el.value = 1;
-                else el.value = '';
+    function updateProductIndices() {
+        const rows = productsContainer.querySelectorAll('.product-row');
+        rows.forEach((row, i) => {
+            row.querySelectorAll('select, input').forEach(el => {
+                const name = el.getAttribute('name');
+                if (name) {
+                    const newName = name.replace(/products\[\d+\]/, `products[${i}]`);
+                    el.setAttribute('name', newName);
+                }
+            });
+            const removeBtn = row.querySelector('.remove-product');
+            if (removeBtn) {
+                removeBtn.style.display = i === 0 ? 'none' : 'inline-block';
             }
         });
-        const removeBtn = newRow.querySelector('.remove-product');
-        if (removeBtn) removeBtn.style.display = 'inline-block';
-        container.appendChild(newRow);
-        attachRemoveEvent(newRow);
-        productIndex++;
+    }
+
+    addProductBtn.addEventListener('click', () => {
+        const index = productsContainer.querySelectorAll('.product-row').length;
+        const row = document.createElement('div');
+        row.className = 'product-row';
+        row.innerHTML = `
+            <div class="frm-select-wrap">
+                <select name="products[${index}][product_id]" class="frm-select product-select" required>
+                    <option value="">— Produit —</option>
+                    @foreach($consignations as $cons)
+                        <option value="{{ $cons->product_id }}" data-stock="{{ $cons->quantity }}">
+                            {{ $cons->product->titre }} (stock: {{ $cons->quantity }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <input type="number" name="products[${index}][quantity]" class="frm-input" placeholder="Quantité" value="1" min="1" required>
+            <button type="button" class="remove-product btn-zn-danger">X</button>
+        `;
+        productsContainer.appendChild(row);
+        updateProductIndices();
     });
 
-    document.querySelectorAll('.product-row').forEach(row => attachRemoveEvent(row));
+    productsContainer.addEventListener('click', function (e) {
+        if (e.target && e.target.classList.contains('remove-product')) {
+            e.target.closest('.product-row').remove();
+            updateProductIndices();
+        }
+    });
+
+    // Ensure indices are correct on page load
+    updateProductIndices();
 })();
+
 </script>
 @endpush
