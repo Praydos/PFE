@@ -1,245 +1,359 @@
 @extends('layouts.app')
 
 @push('styles')
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─────────────────────────────────────────────────────────────
+   Google Fonts (Sora + DM Sans)
+   Add this once in your layout <head> if not already present:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+──────────────────────────────────────────────────────────────── */
 
-:root {
-    --bg-base:       #f5f6fa;
-    --bg-card:       #ffffff;
-    --bg-hover:      #f8f9fd;
-    --bg-subtle:     #f0f2f8;
-    --border:        #e4e7f0;
-    --border-md:     #d0d5e8;
-    --blue:          #5b8dee;
-    --blue-dark:     #3d6fd6;
-    --blue-light:    #eef3fd;
-    --blue-mid:      #dce8fb;
-    --teal:          #0cb8b6;
-    --teal-light:    #e6faf9;
-    --violet:        #7c6fcd;
-    --violet-light:  #f0eeff;
-    --amber:         #e8a020;
-    --amber-light:   #fff8ec;
-    --rose:          #e8506a;
-    --rose-light:    #fef0f2;
-    --text-primary:   #1a1f36;
-    --text-secondary: #525f7f;
-    --text-muted:     #9ba8c5;
-    --text-hint:      #bcc5dc;
-    --r-xs: 6px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px;
-    --shadow-xs: 0 1px 3px rgba(31,45,80,.06), 0 1px 2px rgba(31,45,80,.04);
-    --shadow-sm: 0 2px 8px rgba(31,45,80,.08), 0 1px 3px rgba(31,45,80,.05);
-    --shadow-blue: 0 4px 14px rgba(91,141,238,.35);
-    --font: 'DM Sans', sans-serif;
-    --font-mono: 'DM Mono', monospace;
-    --ease: cubic-bezier(.4,0,.2,1);
-    --t: .18s var(--ease);
+/* ── Reset & base ── */
+.tch-pg *  { box-sizing: border-box; margin: 0; padding: 0; }
+.tch-pg    {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg, #f5f6fa);
+    min-height: 100vh;
+    padding: 2rem 1.75rem;
+    color: var(--text, #1a1d23);
 }
 
-body { font-family: var(--font); background: var(--bg-base); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+/* ── Breadcrumb ── */
+.tch-bc               { display: flex; align-items: center; gap: .4rem; font-size: .78rem; color: #6b7280; margin-bottom: 2rem; }
+.tch-bc a             { color: #6b7280; text-decoration: none; display: flex; align-items: center; gap: .3rem; transition: color .15s; }
+.tch-bc a:hover       { color: #111827; }
+.tch-bc-sep           { opacity: .35; }
+.tch-bc-cur           { font-family: 'Sora', sans-serif; font-weight: 600; font-size: .78rem; color: #111827; }
 
-/* ── Page ──────────────────────────────────────────── */
-.form-page {
-    padding: 2rem 2.5rem 3rem;
-    max-width: 720px;
-    animation: pageIn .4s var(--ease) both;
+/* ── Page header ── */
+.tch-hdr              { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
+.tch-hdr-l h1         { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.55rem; letter-spacing: -.02em; line-height: 1.2; color: #111827; }
+.tch-hdr-l p          { font-size: .82rem; color: #6b7280; margin-top: .3rem; }
+.tch-hdr-actions      { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* ── Buttons ── */
+.btn-tch              { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 1rem; border-radius: 8px; font-size: .8rem; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; transition: all .15s; text-decoration: none; }
+.btn-tch-ghost        { background: #fff; border: 1px solid #e5e7eb; color: #374151; }
+.btn-tch-ghost:hover  { background: #f9fafb; }
+.btn-tch-primary      { background: #185FA5; color: #fff; }
+.btn-tch-primary:hover{ background: #0c447c; }
+.btn-tch-success      { background: #3B6D11; color: #fff; }
+.btn-tch-success:hover{ background: #27500A; }
+.btn-tch-danger       { background: #A32D2D; color: #fff; font-size: .78rem; padding: .42rem .9rem; }
+.btn-tch-danger:hover { background: #791F1F; }
+
+/* ── Main card ── */
+.tch-card             { background: #fff; border: 1px solid #e9eaee; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+
+/* ── Card header ── */
+.tch-card-hd          { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f0f1f5; display: flex; align-items: center; justify-content: space-between; }
+.tch-card-title       { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 600; font-size: .88rem; color: #111827; }
+.tch-pip              { width: 6px; height: 6px; border-radius: 50%; background: #185FA5; flex-shrink: 0; }
+
+/* ── Card body (form container) ── */
+.tch-card-body {
+    padding: 1.5rem;
 }
-@keyframes pageIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
 
-/* ── Breadcrumb ────────────────────────────────────── */
-.fp-bc { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1.4rem; }
-.fp-bc a { color: var(--text-muted); text-decoration: none; transition: color var(--t); }
-.fp-bc a:hover { color: var(--blue); }
-.fp-bc-sep { color: var(--text-hint); }
-.fp-bc-cur { color: var(--text-secondary); }
-
-/* ── Header ────────────────────────────────────────── */
-.fp-header { margin-bottom: 2rem; }
-.fp-header h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -.03em; color: var(--text-primary); line-height: 1.2; }
-.fp-header p  { font-size: .83rem; color: var(--text-muted); margin-top: .35rem; }
-
-/* ── Card ──────────────────────────────────────────── */
-.fp-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--r-xl);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-}
-
-.fp-card-header {
-    padding: 1.1rem 1.6rem;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: .55rem;
-    background: linear-gradient(to bottom, #fafbff, #fff);
-}
-.fp-card-pip {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--amber); box-shadow: 0 0 0 3px rgba(232,160,32,.2);
-}
-.fp-card-title { font-size: .88rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.01em; }
-
-.fp-card-body { padding: 1.75rem 1.6rem; }
-
-/* ── Form Fields ───────────────────────────────────── */
+/* ── Form elements (extended for the zone form) ── */
 .frm-group {
-    display: flex; flex-direction: column; gap: .45rem;
     margin-bottom: 1.25rem;
 }
-.frm-group:last-of-type { margin-bottom: 0; }
 
 .frm-label {
-    font-size: .8rem; font-weight: 600;
-    color: var(--text-secondary); letter-spacing: -.01em;
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    color: #1f2937;
 }
-.frm-label .req { color: var(--rose); margin-left: .2rem; }
+
+.frm-label .req {
+    color: #dc2626;
+    margin-left: 0.2rem;
+}
+
+.frm-input-wrap,
+.frm-select-wrap {
+    position: relative;
+}
+
+.frm-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
 
 .frm-input,
 .frm-select {
-    width: 100%; padding: .62rem .9rem;
-    border: 1px solid var(--border); border-radius: var(--r-sm);
-    background: var(--bg-card); font-family: var(--font);
-    font-size: .84rem; color: var(--text-primary);
-    box-shadow: var(--shadow-xs);
-    transition: border-color var(--t), box-shadow var(--t);
-    outline: none; appearance: none; -webkit-appearance: none;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    font-family: 'DM Sans', sans-serif;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    transition: all 0.15s;
+    color: #1a1d23;
 }
-.frm-input::placeholder { color: var(--text-hint); }
+
 .frm-input:focus,
-.frm-select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-mid); }
+.frm-select:focus {
+    outline: none;
+    border-color: #185FA5;
+    box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1);
+}
+
 .frm-input.is-invalid,
-.frm-select.is-invalid { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(232,80,106,.12); }
+.frm-select.is-invalid {
+    border-color: #dc2626;
+    background-color: #fef2f2;
+}
+
+.frm-input {
+    padding-left: 2rem;
+}
+
+.frm-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%236b7280' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+}
+
+select[multiple] {
+    background-image: none;
+    padding: 0.5rem;
+}
 
 .frm-error {
-    font-size: .76rem; color: var(--rose); font-weight: 500;
-    display: flex; align-items: center; gap: .3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    color: #dc2626;
+    margin-top: 0.3rem;
 }
 
-/* Select wrapper with custom arrow */
-.frm-select-wrap { position: relative; }
-.frm-select-wrap::after {
-    content: '';
-    position: absolute; right: .9rem; top: 50%; transform: translateY(-50%);
-    width: 0; height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid var(--text-muted);
-    pointer-events: none;
-}
-.frm-select { padding-right: 2.2rem; cursor: pointer; }
-
-/* Input with left icon */
-.frm-input-wrap { position: relative; }
-.frm-input-wrap .frm-icon {
-    position: absolute; left: .85rem; top: 50%; transform: translateY(-50%);
-    color: var(--text-muted); pointer-events: none;
-}
-.frm-input-wrap .frm-input { padding-left: 2.35rem; }
-
-/* ── Divider ────────────────────────────────────────── */
-.fp-divider {
-    height: 1px; background: var(--border);
-    margin: 1.5rem 0;
+.frm-hint {
+    display: block;
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin-top: 0.3rem;
 }
 
-/* ── Footer actions ─────────────────────────────────── */
-.fp-footer {
-    padding: 1.1rem 1.6rem;
-    border-top: 1px solid var(--border);
-    background: var(--bg-base);
-    display: flex; align-items: center; justify-content: flex-end;
-    gap: .6rem;
+/* Two‑column grid for form fields */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
 }
 
-/* ── Buttons ─────────────────────────────────────────── */
-.btn-fp {
-    display: inline-flex; align-items: center; gap: .4rem;
-    padding: .58rem 1.2rem; border-radius: var(--r-sm);
-    font-family: var(--font); font-size: .83rem; font-weight: 600;
-    cursor: pointer; border: 1px solid transparent;
-    transition: all var(--t); text-decoration: none;
-    white-space: nowrap; letter-spacing: -.01em; line-height: 1;
-}
-.btn-fp svg { flex-shrink: 0; }
-
-.btn-fp-primary {
-    background: var(--blue); color: #fff;
-    border-color: var(--blue); box-shadow: var(--shadow-blue);
-}
-.btn-fp-primary:hover {
-    background: var(--blue-dark); color: #fff; text-decoration: none;
-    transform: translateY(-1px); box-shadow: 0 6px 20px rgba(91,141,238,.4);
+/* Better styling for multiple select */
+select[multiple] option {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #f0f1f5;
 }
 
-.btn-fp-ghost {
-    background: var(--bg-card); color: var(--text-secondary);
-    border-color: var(--border); box-shadow: var(--shadow-xs);
-}
-.btn-fp-ghost:hover {
-    background: var(--bg-hover); color: var(--text-primary);
-    border-color: var(--border-md); text-decoration: none;
+/* ── Card footer ── */
+.tch-card-ft          { padding: .9rem 1.5rem; border-top: 1px solid #f0f1f5; background: #fafbfc; display: flex; justify-content: flex-end; gap: .5rem; align-items: center; flex-wrap: wrap; }
+
+/* ── SVG icons (inline helpers) ── */
+.tch-icon             { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+
+/* ── Responsive adjustments ── */
+@media (max-width: 480px) {
+    .tch-pg { padding: 1rem; }
+    .tch-info-row { padding-inline: 1rem; }
+    .tch-card-body { padding: 1rem; }
 }
 
-/* ── Responsive ─────────────────────────────────────── */
-@media (max-width: 768px) {
-    .form-page { padding: 1.25rem 1rem 2rem; }
-    .fp-footer { flex-direction: column-reverse; }
-    .btn-fp { width: 100%; justify-content: center; }
+/* ── Focus styles for accessibility ── */
+.btn-tch:focus-visible,
+.tch-bc a:focus-visible,
+.frm-input:focus-visible,
+.frm-select:focus-visible {
+    outline: 2px solid #185FA5;
+    outline-offset: 2px;
 }
 </style>
 @endpush
 
 @section('content')
-<div class="form-page">
+<div class="tch-pg">
 
     {{-- Breadcrumb --}}
-    <div class="fp-bc">
+    <nav class="tch-bc" aria-label="Fil d'Ariane">
         <a href="{{ route('zones.index') }}">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <svg class="tch-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
         </a>
-        <span class="fp-bc-sep">›</span>
+        <span class="tch-bc-sep">›</span>
         <a href="{{ route('zones.index') }}">Zones</a>
-        <span class="fp-bc-sep">›</span>
-        <span class="fp-bc-cur">Nouvelle zone</span>
-    </div>
+        <span class="tch-bc-sep">›</span>
+        <span class="tch-bc-cur">Nouvelle zone</span>
+    </nav>
 
     {{-- Page header --}}
-    <div class="fp-header">
-        <h1>Créer une zone</h1>
-        <p>Remplissez les informations ci‑dessous pour ajouter une nouvelle zone.</p>
+    <div class="tch-hdr">
+        <div class="tch-hdr-l">
+            <h1>Créer une zone</h1>
+            <p>Remplissez les informations ci‑dessous pour ajouter une nouvelle zone.</p>
+        </div>
+        <div class="tch-hdr-actions">
+            <a href="{{ route('zones.index') }}" class="btn-tch btn-tch-ghost">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Annuler
+            </a>
+        </div>
     </div>
 
     {{-- Form card --}}
-    <div class="fp-card">
-        <div class="fp-card-header">
-            <span class="fp-card-pip"></span>
-            <span class="fp-card-title">Informations de la zone</span>
+    <div class="tch-card">
+        <div class="tch-card-hd">
+            <div class="tch-card-title">
+                <span class="tch-pip"></span>
+                Informations de la zone
+            </div>
         </div>
 
         <form method="POST" action="{{ route('zones.store') }}" novalidate>
             @csrf
 
-            <div class="fp-card-body">
-                @include('zones._form', ['selectedVilleId' => $selectedVilleId ?? null])
-            </div>
+            <div class="tch-card-body">
+                {{-- Optional: two‑column grid for better use of space --}}
+                <div class="form-grid">
+                    {{-- Nom de la zone --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="name">
+                            Nom de la zone <span class="req">*</span>
+                        </label>
+                        <div class="frm-input-wrap">
+                            <span class="frm-icon">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M12 2a7 7 0 0 0-7 7c0 4 7 13 7 13s7-9 7-13a7 7 0 0 0-7-7z"/>
+                                    <circle cx="12" cy="9" r="3"/>
+                                </svg>
+                            </span>
+                            <input type="text" id="name" name="name"
+                                   class="frm-input {{ $errors->has('name') ? 'is-invalid' : '' }}"
+                                   value="{{ old('name', $zone->name ?? '') }}"
+                                   placeholder="Ex : Centre-ville, Zone industrielle…"
+                                   required autocomplete="off">
+                        </div>
+                        @error('name')
+                            <span class="frm-error">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="12"/>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                                {{ $message }}
+                            </span>
+                        @enderror
+                    </div>
 
-            <div class="fp-footer">
-                <a href="{{ route('zones.index') }}" class="btn-fp btn-fp-ghost">
+                    {{-- Ville --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="ville_id">
+                            Ville <span class="req">*</span>
+                        </label>
+                        <div class="frm-select-wrap">
+                            <select id="ville_id" name="ville_id"
+                                    class="frm-select {{ $errors->has('ville_id') ? 'is-invalid' : '' }}"
+                                    required>
+                                <option value="">— Sélectionnez une ville —</option>
+                                @foreach($villes as $ville)
+                                    <option value="{{ $ville->id }}" {{ (old('ville_id', $selectedVilleId ?? '') == $ville->id) ? 'selected' : '' }}>
+                                        {{ $ville->nom }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('ville_id')
+                            <span class="frm-error">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="12"/>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                                {{ $message }}
+                            </span>
+                        @enderror
+                    </div>
+
+                    {{-- RBO (dynamique) --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="rbo_id">
+                            RBO <span class="req">*</span>
+                        </label>
+                        <div class="frm-select-wrap">
+                            <select id="rbo_id" name="rbo_id"
+                                    class="frm-select {{ $errors->has('rbo_id') ? 'is-invalid' : '' }}"
+                                    required>
+                                <option value="">— Sélectionnez un RBO —</option>
+                                @foreach($rbos as $rbo)
+                                    <option value="{{ $rbo->id }}" {{ (old('rbo_id', $selectedRboId ?? '') == $rbo->id) ? 'selected' : '' }}>
+                                        {{ $rbo->prenom }} {{ $rbo->nom }} ({{ $rbo->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('rbo_id')
+                            <span class="frm-error">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="12"/>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                                {{ $message }}
+                            </span>
+                        @enderror
+                    </div>
+
+                    {{-- Délégués (multiple) --}}
+                    <div class="frm-group">
+                        <label class="frm-label" for="delegues">
+                            Délégués
+                        </label>
+                        <div class="frm-select-wrap">
+                            <select id="delegues" name="delegues[]"
+                                    class="frm-select" multiple size="4"
+                                    style="height: auto; min-height: 100px;">
+                                @foreach($delegues as $delegue)
+                                    <option value="{{ $delegue->id }}"
+                                        {{ (isset($zone) && $zone->delegates->contains($delegue->id)) ? 'selected' : '' }}>
+                                        {{ $delegue->prenom }} {{ $delegue->nom }} ({{ $delegue->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <small class="frm-hint">Sélectionnez un ou plusieurs délégués (maintenez Ctrl ou Cmd).</small>
+                    </div>
+                </div>{{-- /.form-grid --}}
+            </div>{{-- /.tch-card-body --}}
+
+            <div class="tch-card-ft">
+                <a href="{{ route('zones.index') }}" class="btn-tch btn-tch-ghost">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <line x1="19" y1="12" x2="5" y2="12"/>
                         <polyline points="12 19 5 12 12 5"/>
                     </svg>
                     Annuler
                 </a>
-                <button type="submit" class="btn-fp btn-fp-primary">
+                <button type="submit" class="btn-tch btn-tch-primary">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
@@ -247,9 +361,9 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                 </button>
             </div>
         </form>
-    </div>
+    </div>{{-- /.tch-card --}}
 
-</div>
+</div>{{-- /.tch-pg --}}
 @endsection
 
 @push('scripts')
