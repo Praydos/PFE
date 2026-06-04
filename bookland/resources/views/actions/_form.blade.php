@@ -8,9 +8,6 @@
     $defaultLieu             = old('lieu',                   $isEdit ? $action->lieu                                     : '');
     $defaultRappel           = old('rappel',                 $isEdit ? $action->rappel                                   : false);
     $defaultRappelAvant      = old('rappel_avant',           $isEdit ? $action->rappel_avant                             : '');
-    $defaultRecurrenceFreq   = old('recurrence_frequence',   $isEdit ? $action->recurrence_frequence                     : '');
-    $defaultRecurrenceInt    = old('recurrence_intervalle',  $isEdit ? $action->recurrence_intervalle                    : '');
-    $defaultRecurrenceFin    = old('recurrence_fin',         $isEdit && $action->recurrence_fin ? $action->recurrence_fin->format('Y-m-d') : '');
     $defaultDate = old(
     'date_planification',
     $isEdit
@@ -135,43 +132,6 @@
     </div>
 
 </div>
-
-{{-- ── Récurrence ──────────────────────────────────── --}}
-<div class="ac-sec">Récurrence <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:.72rem;color:var(--t4);">(optionnel)</span></div>
-<div class="ac-row ac-row-3">
-
-    <div class="ac-group">
-        <label class="ac-label" for="recurrence_frequence">Fréquence</label>
-        <div class="ac-sel-wrap">
-            <select name="recurrence_frequence" id="recurrence_frequence" class="ac-select">
-                <option value="">Aucune</option>
-                <option value="daily"   {{ $defaultRecurrenceFreq == 'daily'   ? 'selected' : '' }}>Journalière</option>
-                <option value="weekly"  {{ $defaultRecurrenceFreq == 'weekly'  ? 'selected' : '' }}>Hebdomadaire</option>
-                <option value="monthly" {{ $defaultRecurrenceFreq == 'monthly' ? 'selected' : '' }}>Mensuelle</option>
-                <option value="yearly"  {{ $defaultRecurrenceFreq == 'yearly'  ? 'selected' : '' }}>Annuelle</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="ac-group">
-        <label class="ac-label" for="recurrence_intervalle">
-            Intervalle <span class="opt">(tous les N)</span>
-        </label>
-        <input type="number" name="recurrence_intervalle" id="recurrence_intervalle"
-               class="ac-input"
-               value="{{ $defaultRecurrenceInt }}"
-               min="1" placeholder="1">
-    </div>
-
-    <div class="ac-group">
-        <label class="ac-label" for="recurrence_fin">Date de fin</label>
-        <input type="date" name="recurrence_fin" id="recurrence_fin"
-               class="ac-input"
-               value="{{ $defaultRecurrenceFin }}">
-    </div>
-
-</div>
-
 
 
 

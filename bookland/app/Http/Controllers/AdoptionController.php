@@ -46,8 +46,12 @@ class AdoptionController extends Controller
         if ($request->filled('annee_scolaire_id')) $query->where('annee_scolaire_id', $request->annee_scolaire_id);
 
         $adoptions = $query->orderBy('date_adoption', 'desc')->paginate(15);
-        $comptes = Compte::orderBy('etablissement')->get();
-        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+if ($user->role === 'delegue') {
+    $comptes = Compte::where('delegue_id', $user->id)->orderBy('etablissement')->get();
+} else {
+    $comptes = Compte::orderBy('etablissement')->get();
+}
+$years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
 
         return view('adoptions.index', compact('adoptions', 'comptes', 'years'));
     }

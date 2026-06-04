@@ -16,7 +16,6 @@ use App\Models\User;
 use App\Models\MpDelivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ActionController extends Controller
@@ -159,9 +158,6 @@ class ActionController extends Controller
             'lieu'                   => 'nullable|string|max:255',
             'rappel'                 => 'nullable|boolean',
             'rappel_avant'           => 'nullable|integer|min:1',
-            'recurrence_frequence'   => 'nullable|in:daily,weekly,monthly,yearly',
-            'recurrence_intervalle'  => 'nullable|integer|min:1',
-            'recurrence_fin'         => 'nullable|date|after_or_equal:date_planification',
             'lines'                  => 'nullable|array',
             'lines.*.categorie'      => 'required_with:lines|string',
             'lines.*.action_type'    => 'required_with:lines|string',
@@ -193,33 +189,10 @@ class ActionController extends Controller
         $validated['rappel']     = $request->has('rappel');
         $validated['statut']     = 'planifie';
 
-        $actionsToCreate = $this->generateRecurrence($validated);
-        $createdIds = [];
-
-        DB::transaction(function () use ($actionsToCreate, &$createdIds) {
-            foreach ($actionsToCreate as $actionData) {
-                $action = Action::create($actionData);
-                $createdIds[] = $action->id;
-                if (!empty($actionData['lines'])) {
-                    foreach ($actionData['lines'] as $lineData) {
-                        $line = $action->lignes()->create([
-                            'categorie'   => $lineData['categorie'],
-                            'action_type' => $lineData['action_type'],
-                            'moyen'       => $lineData['moyen'],
-                            'description' => $lineData['description'],
-                            'bss_id'      => $lineData['bss_id'] ?? null,
-                            'retour_id'   => $lineData['retour_id'] ?? null,
-                        ]);
-                        if (!empty($lineData['contact_ids'])) $line->contacts()->sync($lineData['contact_ids']);
-                        if (!empty($lineData['product_ids'])) $line->products()->sync($lineData['product_ids']);
-                        if (!empty($lineData['examen_ids']))  $line->examens()->sync($lineData['examen_ids']);
-                    }
-                }
-            }
-        });
+        $this->createActionWithLines($validated);
 
         return redirect()->route('actions.index')
-            ->with('success', count($createdIds) . ' action(s) créée(s) pour ' . $delegate->prenom . ' ' . $delegate->nom . '.');
+            ->with('success', 'Action créée pour ' . $delegate->prenom . ' ' . $delegate->nom . '.');
     }
 
     /**
@@ -252,9 +225,6 @@ class ActionController extends Controller
             'lieu' => 'nullable|string|max:255',
             'rappel' => 'nullable|boolean',
             'rappel_avant' => 'nullable|integer|min:1',
-            'recurrence_frequence' => 'nullable|in:daily,weekly,monthly,yearly',
-            'recurrence_intervalle' => 'nullable|integer|min:1',
-            'recurrence_fin' => 'nullable|date|after_or_equal:date_planification',
             'lines' => 'nullable|array',
             'lines.*.categorie' => 'required_with:lines|string',
             'lines.*.action_type' => 'required_with:lines|string',
@@ -295,77 +265,14 @@ class ActionController extends Controller
         $validated['rappel'] = $request->has('rappel');
         $validated['statut'] = 'planifie';
 
-        // Handle recurrence
-        $actionsToCreate = $this->generateRecurrence($validated);
-        $createdIds = [];
+        $this->createActionWithLines($validated);
 
-        DB::transaction(function () use ($actionsToCreate, &$createdIds) {
-            foreach ($actionsToCreate as $actionData) {
-                $action = Action::create($actionData);
-                $createdIds[] = $action->id;
-                if (!empty($actionData['lines'])) {
-                    foreach ($actionData['lines'] as $lineData) {
-                        $line = $action->lignes()->create([
-                            'categorie' => $lineData['categorie'],
-                            'action_type' => $lineData['action_type'],
-                            'moyen' => $lineData['moyen'],
-                            'description' => $lineData['description'],
-                            'bss_id' => $lineData['bss_id'] ?? null,
-                            'retour_id' => $lineData['retour_id'] ?? null,
-                        ]);
-                        if (!empty($lineData['contact_ids'])) {
-                            $line->contacts()->sync($lineData['contact_ids']);
-                        }
-                        if (!empty($lineData['product_ids'])) {
-                            $line->products()->sync($lineData['product_ids']);
-                        }
-                        if (!empty($lineData['examen_ids'])) {
-                            $line->examens()->sync($lineData['examen_ids']);
-                        }
-                    }
-                }
-            }
-        });
+        return redirect()->route('actions.index')->with('success', 'Action créée.');
+    }
 
-        return redirect()->route('actions.index')->with('success', count($createdIds) . ' action(s) créée(s).');    }
-
-    private function generateRecurrence($data)    {
-        $actions = [];
-        $start = Carbon::parse($data['date_planification']);
-        $end = $data['recurrence_fin'] ?Carbon::parse($data['recurrence_fin']) : $start;
-        $freq = $data['recurrence_frequence'] ?? null;
-        $interval = $data['recurrence_intervalle'] ?? 1;
-
-        if (!$freq) {
-            // Single occurrence
-            $actions[] = $this->buildActionData($data);
-            return $actions;
-        }
-
-        // Map frequency to Carbon unit
-        $unitMap = [
-            'daily' => 'days',
-            'weekly' => 'weeks',
-            'monthly' => 'months',
-            'yearly' => 'years',
-        ];
-        $unit = $unitMap[$freq] ?? 'days';
-
-        // Generate occurrences
-        $current = $start->copy();
-        while ($current <= $end) {
-            $actionData = $this->buildActionData($data);
-            $actionData['date_planification'] = $current->toDateString();
-            $actions[] = $actionData;
-
-            $current->add($interval, $unit);
-        }
-
-        return $actions;    }
-
-    private function buildActionData($data)
+    private function createActionWithLines(array $data): Action
     {
-        return [
+        $actionData = [
             'objet' => $data['objet'],
             'compte_id' => $data['compte_id'],
             'delegue_id' => $data['delegue_id'],
@@ -375,16 +282,36 @@ class ActionController extends Controller
             'lieu' => $data['lieu'] ?? null,
             'rappel' => $data['rappel'] ?? false,
             'rappel_avant' => $data['rappel_avant'] ?? null,
-            'recurrence_frequence' => $data['recurrence_frequence'] ?? null,
-            'recurrence_intervalle' => $data['recurrence_intervalle'] ?? null,
-            'recurrence_fin' => $data['recurrence_fin'] ?? null,
-            'parent_action_id' => null,
-            'statut' => 'planifie',
+            'statut' => $data['statut'] ?? 'planifie',
             'type' => $data['type'] ?? 'commercial',
             'module_lie' => $data['module_lie'] ?? null,
             'module_id' => $data['module_id'] ?? null,
-            'lines' => $data['lines'] ?? [],
         ];
+        $lines = $data['lines'] ?? [];
+
+        return DB::transaction(function () use ($actionData, $lines) {
+            $action = Action::create($actionData);
+            foreach ($lines as $lineData) {
+                $line = $action->lignes()->create([
+                    'categorie' => $lineData['categorie'],
+                    'action_type' => $lineData['action_type'],
+                    'moyen' => $lineData['moyen'],
+                    'description' => $lineData['description'],
+                    'bss_id' => $lineData['bss_id'] ?? null,
+                    'retour_id' => $lineData['retour_id'] ?? null,
+                ]);
+                if (!empty($lineData['contact_ids'])) {
+                    $line->contacts()->sync($lineData['contact_ids']);
+                }
+                if (!empty($lineData['product_ids'])) {
+                    $line->products()->sync($lineData['product_ids']);
+                }
+                if (!empty($lineData['examen_ids'])) {
+                    $line->examens()->sync($lineData['examen_ids']);
+                }
+            }
+            return $action;
+        });
     }
 
     public function show(Action $action)
@@ -444,8 +371,7 @@ class ActionController extends Controller
     {
         YearLock::check($action);
         $this->authorizeEdit($action);
-        // Similar validation as store, but without recurrence generation.
-        // We'll update the action header and lines (replace lines).
+        // Update the action header and lines (replace lines).
         $validated = $request->validate([
             'objet' => 'required|string|max:255',
             'compte_id' => 'required|exists:comptes,id',
