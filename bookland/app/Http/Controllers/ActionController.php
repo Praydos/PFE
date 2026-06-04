@@ -182,11 +182,10 @@ class ActionController extends Controller
             elseif (in_array($actionType, $this->requiresExamen)) $rules["lines.{$idx}.examen_ids"]  = 'required|array|min:1';
         }
 
-        $validated = $request->validate($rules);
+        $validated = $this->validateActionRequest($request, $rules);
 
         $validated['delegue_id'] = $delegate->id;
         $validated['type']       = $request->type ?? 'commercial';
-        $validated['rappel']     = $request->has('rappel');
         $validated['statut']     = 'planifie';
 
         $this->createActionWithLines($validated);
@@ -258,16 +257,30 @@ class ActionController extends Controller
             }
         }
 
-        $validated = $request->validate($rules);
+        $validated = $this->validateActionRequest($request, $rules);
 
         $validated['delegue_id'] = $user->id;
         $validated['type'] = $request->type ?? 'commercial';
-        $validated['rappel'] = $request->has('rappel');
         $validated['statut'] = 'planifie';
 
         $this->createActionWithLines($validated);
 
         return redirect()->route('actions.index')->with('success', 'Action créée.');
+    }
+
+    private function validateActionRequest(Request $request, array $rules): array
+    {
+        if ($request->has('rappel')) {
+            $rules['rappel_avant'] = 'required|integer|min:1';
+        }
+
+        $validated = $request->validate($rules);
+        $validated['rappel'] = $request->has('rappel');
+        if (!$validated['rappel']) {
+            $validated['rappel_avant'] = null;
+        }
+
+        return $validated;
     }
 
     private function createActionWithLines(array $data): Action
@@ -372,7 +385,7 @@ class ActionController extends Controller
         YearLock::check($action);
         $this->authorizeEdit($action);
         // Update the action header and lines (replace lines).
-        $validated = $request->validate([
+        $validated = $this->validateActionRequest($request, [
             'objet' => 'required|string|max:255',
             'compte_id' => 'required|exists:comptes,id',
             'date_planification' => 'required|date',
@@ -382,7 +395,6 @@ class ActionController extends Controller
             'rappel' => 'nullable|boolean',
             'rappel_avant' => 'nullable|integer|min:1',
             'lines' => 'nullable|array',
-            // ... same line validation
         ]);
 
         $action->update($validated);

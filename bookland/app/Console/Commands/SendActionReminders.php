@@ -2,34 +2,22 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Action;
-use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Mail;
 
+/**
+ * @deprecated Action reminders are handled via NotificationObserver + notifications:send-scheduled.
+ */
 class SendActionReminders extends Command
 {
     protected $signature = 'reminders:send';
-    protected $description = 'Send email reminders for upcoming actions';
+    protected $description = 'Deprecated — use notifications:send-scheduled instead';
 
-    public function handle()
+    public function handle(): int
     {
-        $now = now();
-        $reminders = Action::where('rappel', true)
-            ->where('date_planification', '>', $now)
-            ->whereRaw("strftime('%s', date_planification) - strftime('%s', '{$now}') <= (rappel_avant * 60)")
-            ->where('rappel_sent', false) // we need a `rappel_sent` boolean column
-            ->with('delegate')
-            ->get();
+        $this->warn('This command is deprecated. Action reminders use the in-app notification system.');
+        $this->info('Run: php artisan notifications:send-scheduled');
+        $this->info('Ensure the scheduler is running: php artisan schedule:work');
 
-        foreach ($reminders as $action) {
-            Mail::raw("Rappel: Vous avez une action '{$action->objet}' prévue pour le {$action->date_planification->format('d/m/Y')} à {$action->heure}.\n\nLieu: {$action->lieu}\nCompte: {$action->compte->etablissement}", function ($message) use ($action) {
-                $message->to($action->delegate->email)
-                        ->subject('Rappel action CRM');
-            });
-            $action->update(['rappel_sent' => true]);
-        }
-
-        $this->info('Reminders sent.');
+        return self::SUCCESS;
     }
 }

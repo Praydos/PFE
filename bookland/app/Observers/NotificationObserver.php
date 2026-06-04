@@ -57,16 +57,8 @@ class NotificationObserver
         $message = "Votre {$info['category']} a été mis(e) à jour avec succès.";
         $this->notificationService->createSuccess($targetUser, $info['category'], $title, $message, $model);
 
-        // If the date field has changed, update the reminder
-        if ($model->wasChanged($info['dateField']) || $model->wasChanged('heure')) {
-            // Delete existing pending reminders for this model
-            Notification::where('notifiable_type', get_class($model))
-                ->where('notifiable_id', $model->id)
-                ->where('type', 'reminder')
-                ->whereNull('sent_at')
-                ->delete();
-
-            // Schedule a new one (to the original delegate/user)
+        if ($this->shouldRefreshReminder($model, $info)) {
+            $this->deletePendingReminders($model);
             $this->scheduleReminder($model, $info);
         }
     }
@@ -92,6 +84,10 @@ class NotificationObserver
 
     protected function scheduleReminder(Model $model, array $info): void
     {
+        if ($model instanceof Action && !$model->rappel) {
+            return;
+        }
+
         if (!$info['dateValue']) {
             return;
         }
@@ -102,21 +98,64 @@ class NotificationObserver
             return;
         }
 
-        $reminderDate = Carbon::parse($dateValue)->startOfDay();
-        
+        $eventDate = Carbon::parse($dateValue)->startOfDay();
+
         if (!empty($info['timeValue'])) {
             $timeParts = explode(':', $info['timeValue']);
-            $reminderDate->setTime((int)$timeParts[0], (int)($timeParts[1] ?? 0));
+            $eventDate->setTime((int) $timeParts[0], (int) ($timeParts[1] ?? 0));
         } else {
-            $reminderDate->setHour(9); // Default to 9 AM on the scheduled day
+            $eventDate->setHour(9);
         }
 
-        if ($reminderDate->isFuture()) {
-            $title = "Rappel: {$info['category']} prévu(e)";
-            $timeStr = !empty($info['timeValue']) ? " à " . substr($info['timeValue'], 0, 5) : "";
-            $message = "Vous avez un(e) {$info['category']} prévu(e) pour le " . $reminderDate->format('d/m/Y') . $timeStr . ".";
-            $this->notificationService->scheduleReminder($info['user'], $info['category'], $title, $message, $reminderDate, $model);
+        $reminderDate = $eventDate->copy();
+        if ($model instanceof Action) {
+            $minutesBefore = (int) ($model->rappel_avant ?? 0);
+            if ($minutesBefore < 1) {
+                return;
+            }
+            $reminderDate->subMinutes($minutesBefore);
         }
+
+        if (!$reminderDate->isFuture()) {
+            return;
+        }
+
+        $title = "Rappel: {$info['category']} prévu(e)";
+        $timeStr = !empty($info['timeValue']) ? ' à ' . substr($info['timeValue'], 0, 5) : '';
+        $eventLabel = $eventDate->format('d/m/Y') . $timeStr;
+        if ($model instanceof Action) {
+            $message = "Votre action « {$model->objet} » est prévue le {$eventLabel}.";
+        } else {
+            $message = "Vous avez un(e) {$info['category']} prévu(e) pour le {$eventLabel}.";
+        }
+
+        $this->notificationService->scheduleReminder(
+            $info['user'],
+            $info['category'],
+            $title,
+            $message,
+            $reminderDate,
+            $model
+        );
+    }
+
+    protected function shouldRefreshReminder(Model $model, array $info): bool
+    {
+        if ($model->wasChanged($info['dateField']) || $model->wasChanged('heure')) {
+            return true;
+        }
+
+        return $model instanceof Action
+            && ($model->wasChanged('rappel') || $model->wasChanged('rappel_avant'));
+    }
+
+    protected function deletePendingReminders(Model $model): void
+    {
+        Notification::where('notifiable_type', get_class($model))
+            ->where('notifiable_id', $model->id)
+            ->where('type', 'reminder')
+            ->whereNull('sent_at')
+            ->delete();
     }
 
     protected function getModelInfo(Model $model): ?array
