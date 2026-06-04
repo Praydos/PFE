@@ -416,6 +416,8 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
 .bd-teal   { background: var(--teal-light);   color: #0a9997;       border-color: rgba(12,184,182,.2); }
 .bd-violet { background: var(--violet-light); color: var(--violet); border-color: rgba(124,111,205,.2); }
 .bd-none   { background: var(--bg-subtle);    color: var(--text-muted); border-color: var(--border); }
+.bd-green  { background: var(--green-light); color: #1a9d55;       border-color: rgba(40,199,111,.25); }
+.bd-rose   { background: var(--rose-light);   color: var(--rose);   border-color: rgba(232,80,106,.2); }
 
 .actions-cell { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
 
@@ -742,6 +744,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                         <thead>
                             <tr>
                                 <th>Collaborateur</th>
+                                <th>Statut</th>
                                 <th>Comptes assignés</th>
                                 @if (auth()->user()->role !== 'admin')
                                     <th>Zones assignées</th>
@@ -768,6 +771,14 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                             <div class="user-email">{{ $delegue->email }}</div>
                                         </div>
                                     </div>
+                                </td>
+                                {{-- statut --}}
+                                <td>
+                                    @if($delegue->is_active)
+                                        <span class="dr-badge bd-green">Actif</span>
+                                    @else
+                                        <span class="dr-badge bd-rose">Inactif</span>
+                                    @endif
                                 </td>
                                 {{-- compte assignes --}}
                                 <td>
