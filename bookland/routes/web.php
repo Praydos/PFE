@@ -257,7 +257,7 @@ Route::get('/api/comptes/{compte}/contacts', function (App\Models\Compte $compte
 
 Route::get('/api/comptes/{compte}/bss', function (App\Models\Compte $compte) {
     $bss = App\Models\Bss::where('compte_id', $compte->id)
-        ->whereIn('statut', ['valide', 'livre'])
+        ->whereIn('statut', ['valide', 'livre', 'retour'])
         ->get(['id', 'numero', 'statut']);
     return response()->json($bss);
 })->name('api.compte.bss');
