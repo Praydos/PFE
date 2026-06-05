@@ -1,292 +1,521 @@
 @extends('layouts.app')
 
 @push('styles')
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+{{-- Include the full tch CSS (provided in previous answers) --}}
 <style>
-    /* ===== FULL DESIGN SYSTEM CSS ===== */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─────────────────────────────────────────────────────────────
+   Google Fonts (Sora + DM Sans)
+   Add this once in your layout <head> if not already present:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+──────────────────────────────────────────────────────────────── */
 
-    :root {
-        --bg-base:       #f5f6fa;
-        --bg-card:       #ffffff;
-        --bg-hover:      #f8f9fd;
-        --bg-subtle:     #f0f2f8;
-        --border:        #e4e7f0;
-        --border-md:     #d0d5e8;
-        --blue:          #5b8dee;
-        --blue-dark:     #3d6fd6;
-        --blue-light:    #eef3fd;
-        --blue-mid:      #dce8fb;
-        --teal:          #0cb8b6;
-        --teal-light:    #e6faf9;
-        --violet:        #7c6fcd;
-        --violet-light:  #f0eeff;
-        --amber:         #e8a020;
-        --amber-light:   #fff8ec;
-        --rose:          #e8506a;
-        --rose-light:    #fef0f2;
-        --green:         #28c76f;
-        --green-light:   #e8fbf0;
-        --text-primary:   #1a1f36;
-        --text-secondary: #525f7f;
-        --text-muted:     #9ba8c5;
-        --text-hint:      #bcc5dc;
-        --r-xs: 6px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px;
-        --shadow-xs: 0 1px 3px rgba(31,45,80,.06), 0 1px 2px rgba(31,45,80,.04);
-        --shadow-sm: 0 2px 8px rgba(31,45,80,.08), 0 1px 3px rgba(31,45,80,.05);
-        --shadow-md: 0 8px 24px rgba(31,45,80,.10), 0 2px 8px rgba(31,45,80,.06);
-        --shadow-blue: 0 4px 14px rgba(91,141,238,.35);
-        --font: 'DM Sans', sans-serif;
-        --font-mono: 'DM Mono', monospace;
-        --ease: cubic-bezier(.4,0,.2,1);
-        --t: .18s var(--ease);
-    }
+/* ── Reset & base ── */
+.tch-pg *  { box-sizing: border-box; margin: 0; padding: 0; }
+.tch-pg    {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg, #f5f6fa);
+    min-height: 100vh;
+    padding: 2rem 1.75rem;
+    color: var(--text, #1a1d23);
+}
 
-    body { font-family: var(--font); background: var(--bg-base); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+/* ── Breadcrumb ── */
+.tch-bc               { display: flex; align-items: center; gap: .4rem; font-size: .78rem; color: #6b7280; margin-bottom: 2rem; }
+.tch-bc a             { color: #6b7280; text-decoration: none; display: flex; align-items: center; gap: .3rem; transition: color .15s; }
+.tch-bc a:hover       { color: #111827; }
+.tch-bc-sep           { opacity: .35; }
+.tch-bc-cur           { font-family: 'Sora', sans-serif; font-weight: 600; font-size: .78rem; color: #111827; }
 
-    .zn-page { padding: 2rem 2.5rem 3rem; animation: pageIn .4s var(--ease) both; max-width: 1400px; margin: 0 auto; }
-    @keyframes pageIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+/* ── Page header ── */
+.tch-hdr              { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
+.tch-hdr-l h1         { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.55rem; letter-spacing: -.02em; line-height: 1.2; color: #111827; }
+.tch-hdr-l p          { font-size: .82rem; color: #6b7280; margin-top: .3rem; }
+.tch-hdr-actions      { display: flex; gap: .5rem; flex-wrap: wrap; }
 
-    .zn-bc { display: flex; align-items: center; gap: .4rem; font-size: .76rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1.4rem; }
-    .zn-bc a { color: var(--text-muted); text-decoration: none; transition: color var(--t); }
-    .zn-bc a:hover { color: var(--blue); }
-    .zn-bc-sep { color: var(--text-hint); }
-    .zn-bc-cur { color: var(--text-secondary); }
+/* ── Buttons ── */
+.btn-tch              { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 1rem; border-radius: 8px; font-size: .8rem; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; transition: all .15s; text-decoration: none; }
+.btn-tch-ghost        { background: #fff; border: 1px solid #e5e7eb; color: #374151; }
+.btn-tch-ghost:hover  { background: #f9fafb; }
+.btn-tch-primary      { background: #185FA5; color: #fff; }
+.btn-tch-primary:hover{ background: #0c447c; }
+.btn-tch-success      { background: #3B6D11; color: #fff; }
+.btn-tch-success:hover{ background: #27500A; }
+.btn-tch-danger       { background: #A32D2D; color: #fff; font-size: .78rem; padding: .42rem .9rem; }
+.btn-tch-danger:hover { background: #791F1F; }
+.btn-tch-warning      { background: #F59E0B; color: #fff; }
+.btn-tch-warning:hover{ background: #D97706; }
 
-    .zn-header { margin-bottom: 2rem; }
-    .zn-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.03em; color: var(--text-primary); line-height: 1.15; }
-    .zn-header p { font-size: .82rem; color: var(--text-muted); margin-top: .3rem; }
+/* ── Main card ── */
+.tch-card             { background: #fff; border: 1px solid #e9eaee; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
 
-    .btn-zn {
-        display: inline-flex; align-items: center; gap: .4rem;
-        padding: .56rem 1.1rem; border-radius: var(--r-sm);
-        font-family: var(--font); font-size: .82rem; font-weight: 600;
-        cursor: pointer; border: 1px solid transparent;
-        transition: all var(--t); text-decoration: none;
-        white-space: nowrap; letter-spacing: -.01em; line-height: 1;
-    }
-    .btn-zn svg { flex-shrink: 0; }
-    .btn-zn-primary { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: var(--shadow-blue); }
-    .btn-zn-primary:hover { background: var(--blue-dark); color: #fff; transform: translateY(-1px); }
-    .btn-zn-ghost { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border); box-shadow: var(--shadow-xs); }
-    .btn-zn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-md); text-decoration: none; }
-    .btn-zn-danger { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.18); }
-    .btn-zn-danger:hover { background: #fddde2; color: var(--rose); text-decoration: none; }
+/* ── Card header ── */
+.tch-card-hd          { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f0f1f5; display: flex; align-items: center; justify-content: space-between; }
+.tch-card-title       { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 600; font-size: .88rem; color: #111827; }
+.tch-pip              { width: 6px; height: 6px; border-radius: 50%; background: #185FA5; flex-shrink: 0; }
 
-    .fp-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--r-xl);
-        box-shadow: var(--shadow-sm);
-        overflow: hidden;
-    }
+/* ── Card body (used in forms and show views) ── */
+.tch-card-body {
+    padding: 1.5rem;
+}
 
-    .fp-section {
-        padding: 2rem 2rem 1.5rem;
-        border-bottom: 1px solid var(--border);
-    }
-    .fp-section:last-of-type { border-bottom: none; }
-    .fp-section-head {
-        display: flex; align-items: center; gap: .75rem;
-        margin-bottom: 1.6rem;
-    }
-    .fp-section-icon {
-        width: 34px; height: 34px; flex-shrink: 0;
-        border-radius: var(--r-md);
-        display: flex; align-items: center; justify-content: center;
-        background: var(--blue-light); color: var(--blue);
-    }
-    .fp-section-meta { flex: 1; }
-    .fp-section-title { font-size: .9rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
-    .fp-section-sub   { font-size: .74rem; color: var(--text-muted); margin-top: .1rem; }
+/* ── Info grid (show views: two columns, alternating rows) ── */
+.tch-info-grid        { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.tch-info-row         { padding: 1rem 1.5rem; border-bottom: 1px solid #f0f1f5; display: flex; flex-direction: column; gap: .3rem; }
+.tch-info-row:nth-child(even) { background: #fafbfc; }
+.tch-info-row.full    { grid-column: 1 / -1; }
+.tch-info-lbl         { font-size: .72rem; font-weight: 500; text-transform: uppercase; letter-spacing: .07em; color: #9ca3af; }
+.tch-info-val         { font-size: .9rem; color: #111827; font-weight: 400; display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; word-break: break-word; overflow-wrap: break-word; }
+.tch-info-val.muted   { color: #9ca3af; font-style: italic; }
+.tch-info-val a       { color: #185FA5; text-decoration: none; }
+.tch-info-val a:hover { text-decoration: underline; }
 
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 1rem;
-    }
-    .info-item {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        gap: 0.5rem;
-        padding: 0.6rem 0;
-        border-bottom: 1px solid var(--border);
-    }
-    .info-item.full {
-        grid-column: 1 / -1;
-    }
-    .info-label {
-        font-size: .68rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .06em;
-        color: var(--text-muted);
-        min-width: 130px;
-    }
-    .info-value {
-        font-size: .85rem;
-        color: var(--text-primary);
-        font-weight: 500;
-    }
-    .info-value a {
-        color: var(--blue);
-        text-decoration: none;
-    }
-    .info-value a:hover {
-        text-decoration: underline;
-    }
+/* ── Form elements ── */
+.frm-group {
+    margin-bottom: 1.25rem;
+}
+.frm-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    color: #1f2937;
+}
+.frm-label .req {
+    color: #dc2626;
+    margin-left: 0.2rem;
+}
+.frm-input-wrap,
+.frm-select-wrap {
+    position: relative;
+}
+.frm-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+.frm-input,
+.frm-select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    font-family: 'DM Sans', sans-serif;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    transition: all 0.15s;
+    color: #1a1d23;
+}
+.frm-input:focus,
+.frm-select:focus {
+    outline: none;
+    border-color: #185FA5;
+    box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1);
+}
+.frm-input.is-invalid,
+.frm-select.is-invalid {
+    border-color: #dc2626;
+    background-color: #fef2f2;
+}
+.frm-input {
+    padding-left: 2rem;
+}
+.frm-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%236b7280' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+}
+select[multiple] {
+    background-image: none;
+    padding: 0.5rem;
+}
+select[multiple] option {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #f0f1f5;
+}
+textarea.frm-input {
+    padding-left: 0.75rem;
+    resize: vertical;
+}
+.frm-error {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    color: #dc2626;
+    margin-top: 0.3rem;
+}
+.frm-hint {
+    display: block;
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin-top: 0.3rem;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
 
-    .fp-footer {
-        padding: 1.25rem 2rem;
-        background: linear-gradient(to bottom, #fafbff, #fff);
-        border-top: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        gap: .75rem;
-        flex-wrap: wrap;
-    }
-    .fp-footer-spacer { flex: 1; }
+/* ── Table styles ── */
+.tch-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.tch-table th,
+.tch-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f1f5;
+}
+.tch-table th {
+    font-weight: 600;
+    color: #374151;
+    background: #fafbfc;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.8rem;
+}
+.tch-table tbody tr:hover {
+    background: #f9fafb;
+}
+.tch-table td:first-child,
+.tch-table th:first-child {
+    padding-left: 1rem;
+}
+.tch-table td:last-child,
+.tch-table th:last-child {
+    padding-right: 1rem;
+}
+.table-responsive {
+    overflow-x: auto;
+    margin: 1rem 0;
+}
 
-    @media (max-width: 680px) {
-        .zn-page { padding: 1.25rem 1rem 2rem; }
-        .info-grid { grid-template-columns: 1fr; }
-        .fp-footer { flex-direction: column; align-items: stretch; }
-        .fp-footer-spacer { display: none; }
-        .btn-zn { width: 100%; justify-content: center; }
-    }
+/* ── Badges (base + product + status variants) ── */
+.tch-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .25rem .65rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 500;
+}
+.tch-badge-green      { background: #EAF3DE; color: #3B6D11; }
+.tch-badge-amber      { background: #FAEEDA; color: #854F0B; }
+.tch-badge-blue       { background: #E0F2FE; color: #0369A1; }
+.tch-badge-teal       { background: #CCFBF1; color: #0F766E; }
+.tch-badge-violet     { background: #EDE9FE; color: #6D28D9; }
+/* Action status badges */
+.tch-badge-planifie   { background: #FEF3C7; color: #92400E; }
+.tch-badge-realise    { background: #E0F2FE; color: #0369A1; }
+.tch-badge-valide     { background: #DCFCE7; color: #166534; }
+.tch-badge-annule     { background: #FEE2E2; color: #991B1B; }
+/* Réclamation status badges */
+.tch-badge-brouillon  { background: #F3F4F6; color: #374151; }
+.tch-badge-en_cours   { background: #FEF3C7; color: #92400E; }
+.tch-badge-traite     { background: #E0F2FE; color: #0369A1; }
+.tch-badge-cloture    { background: #DCFCE7; color: #166534; }
+
+/* ── Chips (for tags / metadata) ── */
+.tch-chips            { display: flex; gap: .4rem; flex-wrap: wrap; margin: .5rem 0 .25rem; }
+.tch-chip             { display: inline-flex; align-items: center; gap: .3rem; background: #f3f4f6; border: 1px solid #e9eaee; border-radius: 999px; padding: .2rem .55rem .2rem .3rem; font-size: .78rem; color: #374151; }
+
+/* ── Card footer ── */
+.tch-card-ft          { padding: .9rem 1.5rem; border-top: 1px solid #f0f1f5; background: #fafbfc; display: flex; justify-content: flex-end; gap: .5rem; align-items: center; flex-wrap: wrap; }
+
+/* ── Divider, subtitle, help text, alert, line card (action view) ── */
+.tch-divider {
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+}
+.tch-subtitle {
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #111827;
+}
+.tch-help-text {
+    font-size: 0.82rem;
+    color: #6b7280;
+    margin-top: 0.75rem;
+}
+.tch-alert {
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    margin: 1rem 0;
+}
+.tch-alert-error {
+    background: #FEF2F2;
+    border: 1px solid #FEE2E2;
+    color: #991B1B;
+}
+.tch-alert-error ul {
+    margin: 0.5rem 0 0 1rem;
+}
+.tch-line-card {
+    background: #fafbfc;
+    border: 1px solid #f0f1f5;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+.tch-line-card .tch-info-grid {
+    margin-bottom: 0;
+}
+
+/* ── Modal styles ── */
+.tch-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+}
+.tch-modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+.tch-modal {
+    background: #fff;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 35px -10px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+.tch-modal.tch-modal-lg {
+    max-width: 650px;
+}
+.tch-modal-hd {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid #f0f1f5;
+}
+.tch-modal-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #f3f4f6;
+    border-radius: 999px;
+    color: #185FA5;
+}
+.tch-modal-titles {
+    flex: 1;
+}
+.tch-modal-titles h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: #111827;
+}
+.tch-modal-titles p {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0.2rem 0 0;
+}
+.tch-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+}
+.tch-modal-close:hover {
+    color: #111827;
+}
+.tch-modal-body {
+    padding: 1.5rem;
+}
+.tch-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+}
+
+/* ── SVG icons (inline helpers) ── */
+.tch-icon             { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+
+/* ── Responsive adjustments ── */
+@media (max-width: 480px) {
+    .tch-pg { padding: 1rem; }
+    .tch-info-row { padding-inline: 1rem; }
+    .tch-card-body { padding: 1rem; }
+    .tch-table th,
+    .tch-table td { padding: 0.5rem; }
+    .tch-modal { width: 95%; }
+}
+
+/* ── Focus styles for accessibility ── */
+.btn-tch:focus-visible,
+.tch-bc a:focus-visible,
+.frm-input:focus-visible,
+.frm-select:focus-visible,
+.tch-modal-close:focus-visible,
+.tch-info-val a:focus-visible {
+    outline: 2px solid #185FA5;
+    outline-offset: 2px;
+}
 </style>
 @endpush
 
 @section('content')
-<div class="zn-page">
+<div class="tch-pg">
 
     {{-- Breadcrumb --}}
-    <div class="zn-bc">
+    <nav class="tch-bc" aria-label="Fil d'Ariane">
         <a href="{{ route('reclamations.index') }}">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <svg class="tch-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
         </a>
-        <span class="zn-bc-sep">›</span>
+        <span class="tch-bc-sep">›</span>
         <a href="{{ route('reclamations.index') }}">Réclamations</a>
-        <span class="zn-bc-sep">›</span>
-        <span class="zn-bc-cur">{{ $reclamation->reference }}</span>
-    </div>
+        <span class="tch-bc-sep">›</span>
+        <span class="tch-bc-cur">{{ $reclamation->reference }}</span>
+    </nav>
 
-    <div class="zn-header">
-        <h1>Réclamation {{ $reclamation->reference }}</h1>
-        <p>{{ $reclamation->categorie }} – {{ ucfirst($reclamation->statut) }}</p>
-    </div>
-
-    <div class="fp-card">
-        <div class="fp-section">
-            <div class="fp-section-head">
-                <div class="fp-section-icon">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="8" x2="12" y2="12"/>
-                        <line x1="12" y1="16" x2="12.01" y2="16"/>
-                    </svg>
-                </div>
-                <div class="fp-section-meta">
-                    <div class="fp-section-title">Détails de la réclamation</div>
-                    <div class="fp-section-sub">Informations client et traitement</div>
-                </div>
-            </div>
-
-            <div class="info-grid">
-                <div class="info-item"><span class="info-label">Compte</span><span class="info-value">{{ $reclamation->compte->etablissement }}</span></div>
-                <div class="info-item"><span class="info-label">Contact</span><span class="info-value">{{ $reclamation->contact->prenom }} {{ $reclamation->contact->nom }}</span></div>
-                <div class="info-item"><span class="info-label">Date réclamation</span><span class="info-value">{{ $reclamation->date_reclamation->format('d/m/Y') }}</span></div>
-                <div class="info-item"><span class="info-label">Type</span><span class="info-value">{{ str_replace('_', ' ', $reclamation->type ?? '-') }}</span></div>
-                <div class="info-item"><span class="info-label">Priorité</span><span class="info-value">{{ ucfirst($reclamation->priorite) }}</span></div>
-                <div class="info-item"><span class="info-label">Catégorie</span><span class="info-value">{{ $reclamation->categorie }} @if($reclamation->sous_categorie) / {{ $reclamation->sous_categorie }} @endif</span></div>
-
-
-    @if(($reclamation->module_lie && $reclamation->module_id) ||$reclamation->produit_id
-    ||$reclamation->specimen_id||$reclamation->mp_id)
-    @php
-        $linked = $reclamation->linked_module;
-    //      dd([
-    //     'module_lie' => $reclamation->module_lie,
-    //     'module_id'  => $reclamation->module_id,
-    //     'linked'     => $reclamation->linked_module,
-    // ]);
-
-    @endphp
-    @if($linked || $reclamation->produit_id || $reclamation->specimen_id || $reclamation->mp_id)
-        <div class="info-item">
-            <span class="info-label">
-                @switch($reclamation->module_lie)
-                    @case('examen') Examen lié @break
-                    @case('event') Événement lié   @break
-                    @case('product') Produit lié @break
-                    @case('specimen') Spécimen lié @break
-                    @case('mp') Matériel pédagogique lié @break
-                @endswitch
-            </span>
-            <span class="info-value">
-                @if($reclamation->module_lie === 'examen')
-                    <a href="{{ route('examens.show', $reclamation->module_id) }}">{{ $linked->titre }}</a>
-                @elseif($reclamation->module_lie === 'event')
-                    <a href="{{ route('events.show', $reclamation->module_id) }}">Go to Événement lié </a>
-                @elseif($reclamation->module_lie === 'product')
-                    <a href="{{ route('products.show', $reclamation->produit_id) }}">Go to Produit lié </a>
-                @elseif($reclamation->module_lie === 'specimen')
-                    <a href="{{ route('bss.show', $reclamation->specimen_id) }}">Go to Spécimen lié </a>
-                @elseif($reclamation->module_lie === 'mp')
-                    <a href="{{ route('mp-products.index', $reclamation->mp_id) }}">Go to Matériel pédagogique lié </a>
-                @endif
-            </span>
+    {{-- Page header --}}
+    <div class="tch-hdr">
+        <div class="tch-hdr-l">
+            <h1>Réclamation {{ $reclamation->reference }}</h1>
+            <p>{{ $reclamation->categorie }} – 
+                <span class="tch-badge tch-badge-{{ $reclamation->statut }}">
+                    {{ ucfirst($reclamation->statut) }}
+                </span>
+            </p>
         </div>
-    @endif
-@endif
+        <div class="tch-hdr-actions">
+            <a href="{{ route('reclamations.pdf', $reclamation) }}" target="_blank" class="btn-tch btn-tch-ghost">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                Exporter PDF
+            </a>
+        </div>
+    </div>
 
-                <div class="info-item full"><span class="info-label">Description</span><span class="info-value">{{ $reclamation->description }}</span></div>
+    {{-- Main card --}}
+    <div class="tch-card">
+        <div class="tch-card-hd">
+            <div class="tch-card-title">
+                <span class="tch-pip"></span>
+                Détails de la réclamation
+            </div>
+        </div>
+
+        <div class="tch-card-body">
+            {{-- Info grid --}}
+            <div class="tch-info-grid">
+                <div class="tch-info-row"><span class="tch-info-lbl">Compte</span><span class="tch-info-val">{{ $reclamation->compte->etablissement }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Contact</span><span class="tch-info-val">{{ $reclamation->contact->prenom }} {{ $reclamation->contact->nom }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Date réclamation</span><span class="tch-info-val">{{ $reclamation->date_reclamation->format('d/m/Y') }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Type</span><span class="tch-info-val">{{ str_replace('_', ' ', $reclamation->type ?? '-') }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Priorité</span><span class="tch-info-val">{{ ucfirst($reclamation->priorite) }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Catégorie</span><span class="tch-info-val">{{ $reclamation->categorie }} @if($reclamation->sous_categorie) / {{ $reclamation->sous_categorie }} @endif</span></div>
+
+                {{-- Linked module (if any) --}}
+                @if(($reclamation->module_lie && $reclamation->module_id) || $reclamation->produit_id || $reclamation->specimen_id || $reclamation->mp_id)
+                    @php $linked = $reclamation->linked_module; @endphp
+                    @if($linked || $reclamation->produit_id || $reclamation->specimen_id || $reclamation->mp_id)
+                        <div class="tch-info-row">
+                            <span class="tch-info-lbl">
+                                @switch($reclamation->module_lie)
+                                    @case('examen') Examen lié @break
+                                    @case('event') Événement lié @break
+                                    @case('product') Produit lié @break
+                                    @case('specimen') Spécimen lié @break
+                                    @case('mp') Matériel pédagogique lié @break
+                                    @default Élément lié
+                                @endswitch
+                            </span>
+                            <span class="tch-info-val">
+                                @if($reclamation->module_lie === 'examen')
+                                    <a href="{{ route('examens.show', $reclamation->module_id) }}">{{ $linked->titre ?? 'Voir' }}</a>
+                                @elseif($reclamation->module_lie === 'event')
+                                    <a href="{{ route('events.show', $reclamation->module_id) }}">Voir l'événement</a>
+                                @elseif($reclamation->module_lie === 'product')
+                                    <a href="{{ route('products.show', $reclamation->produit_id) }}">Voir le produit</a>
+                                @elseif($reclamation->module_lie === 'specimen')
+                                    <a href="{{ route('bss.show', $reclamation->specimen_id) }}">Voir le spécimen</a>
+                                @elseif($reclamation->module_lie === 'mp')
+                                    <a href="{{ route('mp-products.index', $reclamation->mp_id) }}">Voir le matériel pédagogique</a>
+                                @endif
+                            </span>
+                        </div>
+                    @endif
+                @endif
+
+                {{-- Description --}}
+                <div class="tch-info-row full"><span class="tch-info-lbl">Description</span><span class="tch-info-val">{{ $reclamation->description }}</span></div>
 
                 @if($reclamation->analyse)
-                <div class="info-item full"><span class="info-label">Analyse</span><span class="info-value">{{ $reclamation->analyse }}</span></div>
+                <div class="tch-info-row full"><span class="tch-info-lbl">Analyse</span><span class="tch-info-val">{{ $reclamation->analyse }}</span></div>
                 @endif
                 @if($reclamation->reponse)
-                <div class="info-item full"><span class="info-label">Réponse</span><span class="info-value">{{ $reclamation->reponse }}</span></div>
+                <div class="tch-info-row full"><span class="tch-info-lbl">Réponse</span><span class="tch-info-val">{{ $reclamation->reponse }}</span></div>
                 @endif
                 @if($reclamation->date_reponse)
-                <div class="info-item"><span class="info-label">Date réponse</span><span class="info-value">{{ $reclamation->date_reponse->format('d/m/Y') }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Date réponse</span><span class="tch-info-val">{{ $reclamation->date_reponse->format('d/m/Y') }}</span></div>
                 @endif
                 @if($reclamation->responsable)
-                <div class="info-item"><span class="info-label">Responsable</span><span class="info-value">{{ $reclamation->responsable->prenom }} {{ $reclamation->responsable->nom }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Responsable</span><span class="tch-info-val">{{ $reclamation->responsable->prenom }} {{ $reclamation->responsable->nom }}</span></div>
                 @endif
-                <div class="info-item"><span class="info-label">Statut</span><span class="info-value">{{ ucfirst($reclamation->statut) }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Statut</span><span class="tch-info-val">
+                    <span class="tch-badge tch-badge-{{ $reclamation->statut }}">{{ ucfirst($reclamation->statut) }}</span>
+                </span></div>
                 @if($reclamation->date_cloture)
-                <div class="info-item"><span class="info-label">Date clôture</span><span class="info-value">{{ $reclamation->date_cloture->format('d/m/Y') }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Date clôture</span><span class="tch-info-val">{{ $reclamation->date_cloture->format('d/m/Y') }}</span></div>
                 @endif
-                <div class="info-item"><span class="info-label">Est une non‑conformité ?</span><span class="info-value">{{ $reclamation->est_non_conformite ? 'Oui' : 'Non' }}</span></div>
-                <div class="info-item"><span class="info-label">Besoin d'action d'amélioration ?</span><span class="info-value">{{ $reclamation->besoin_action_amelioration ? 'Oui' : 'Non' }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Est une non‑conformité ?</span><span class="tch-info-val">{{ $reclamation->est_non_conformite ? 'Oui' : 'Non' }}</span></div>
+                <div class="tch-info-row"><span class="tch-info-lbl">Besoin d'action d'amélioration ?</span><span class="tch-info-val">{{ $reclamation->besoin_action_amelioration ? 'Oui' : 'Non' }}</span></div>
             </div>
         </div>
 
-        <div class="fp-footer">
-            <div class="fp-footer-spacer"></div>
-            <a href="{{ route('reclamations.index') }}" class="btn-zn btn-zn-ghost">
+        {{-- Card footer (actions) --}}
+        <div class="tch-card-ft">
+            <a href="{{ route('reclamations.index') }}" class="btn-tch btn-tch-ghost">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
                 </svg>
                 Retour
             </a>
-            <a href="{{ route('reclamations.pdf', $reclamation) }}" target="_blank" class="btn-zn btn-zn-ghost">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
-                Exporter PDF
-            </a>
+
             @if($reclamation->statut === 'brouillon' && auth()->user()->role === 'delegue' && $reclamation->delegue_id === auth()->id())
-                <a href="{{ route('reclamations.edit', $reclamation) }}" class="btn-zn btn-zn-primary">
+                <a href="{{ route('reclamations.edit', $reclamation) }}" class="btn-tch btn-tch-primary">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
@@ -294,8 +523,9 @@
                     Modifier
                 </a>
             @endif
+
             @if(in_array(auth()->user()->role, ['admin','rbo']))
-                <a href="{{ route('reclamations.edit', $reclamation) }}" class="btn-zn btn-zn-primary">
+                <a href="{{ route('reclamations.edit', $reclamation) }}" class="btn-tch btn-tch-primary">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
@@ -303,10 +533,11 @@
                     Traiter
                 </a>
             @endif
+
             @if(auth()->user()->role === 'admin')
                 <form method="POST" action="{{ route('reclamations.destroy', $reclamation) }}" style="display:inline;">
                     @csrf @method('DELETE')
-                    <button type="submit" class="btn-zn btn-zn-danger" onclick="return confirm('Supprimer définitivement ?')">
+                    <button type="submit" class="btn-tch btn-tch-danger" onclick="return confirm('Supprimer définitivement ?')">
                         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6l-1 14H6L5 6"/>
