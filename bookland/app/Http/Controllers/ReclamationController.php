@@ -27,11 +27,14 @@ class ReclamationController extends Controller
     private function authorizeView(Reclamation $reclamation)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'delegue' && $reclamation->delegue_id === $user->id) return;
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'delegue' && $reclamation->delegue_id === $user->id)
+            return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($reclamation->delegue_id)) return;
+            if ($delegateIds->contains($reclamation->delegue_id))
+                return;
         }
         abort(403);
     }
@@ -39,8 +42,10 @@ class ReclamationController extends Controller
     private function authorizeEdit(Reclamation $reclamation)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'delegue' && $reclamation->delegue_id === $user->id && $reclamation->statut === 'brouillon') return;
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'delegue' && $reclamation->delegue_id === $user->id && $reclamation->statut === 'brouillon')
+            return;
         abort(403);
     }
 
@@ -56,9 +61,12 @@ class ReclamationController extends Controller
             $query->whereIn('delegue_id', $delegateIds);
         }
 
-        if ($request->filled('statut')) $query->where('statut', $request->statut);
-        if ($request->filled('categorie')) $query->where('categorie', $request->categorie);
-        if ($request->filled('compte_id')) $query->where('compte_id', $request->compte_id);
+        if ($request->filled('statut'))
+            $query->where('statut', $request->statut);
+        if ($request->filled('categorie'))
+            $query->where('categorie', $request->categorie);
+        if ($request->filled('compte_id'))
+            $query->where('compte_id', $request->compte_id);
 
         $reclamations = $query->orderBy('created_at', 'desc')->paginate(15);
         $comptes = Compte::orderBy('etablissement')->get();
@@ -71,28 +79,38 @@ class ReclamationController extends Controller
     public function create()
     {
         $user = Auth::user();
-        if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue'))
+            abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->get();
         $produits = Product::orderBy('titre')->get();
-        $specimens = Bss::where('delegue_id', $user->id)->whereIn('statut', ['valide', 'livre'])->with('compte')->get();
         $mps = MpProduct::orderBy('nom')->get();
         $types = ['face_a_face', 'email', 'telephone', 'fax'];
         $categories = $this->getCategories();
         $sousCategoriesMap = $this->getSousCategories();
         $statuts = ['brouillon', 'en_cours', 'mise_en_attente', 'cloturee', 'annulee'];
         $examens = Examen::orderBy('date_demande', 'desc')->get();
-        $events  = Event::orderBy('date_event', 'desc')->get();
-        
+        $events = Event::orderBy('date_event', 'desc')->get();
 
-        return view('reclamations.create', compact('comptes', 'produits', 'specimens', 'mps', 'types', 'categories', 
-        'sousCategoriesMap', 'statuts', 'examens', 'events'));
+
+        return view('reclamations.create', compact(
+            'comptes',
+            'produits',
+            'mps',
+            'types',
+            'categories',
+            'sousCategoriesMap',
+            'statuts',
+            'examens',
+            'events'
+        ));
     }
 
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue'))
+            abort(403);
 
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',
@@ -106,7 +124,7 @@ class ReclamationController extends Controller
             'specimen_id' => 'nullable|exists:bsses,id',
             'mp_id' => 'nullable|exists:mp_products,id',
             'module_lie' => 'nullable|in:product,specimen,mp,examen,event',
-            'module_id'  => 'nullable|integer',
+            'module_id' => 'nullable|integer',
             'est_non_conformite' => 'nullable|boolean',
             'besoin_action_amelioration' => 'nullable|boolean',
         ]);
@@ -118,18 +136,18 @@ class ReclamationController extends Controller
 
 
         if ($validated['module_lie'] && $validated['module_id']) {
-    $model = match($validated['module_lie']) {
-        'product'  => Product::class,
-        'specimen' => Bss::class,
-        'mp'       => MpProduct::class,
-        'examen'   => Examen::class,
-        'event'    => Event::class,
-        default    => null,
-    };
-    if ($model && !$model::where('id', $validated['module_id'])->exists()) {
-        return back()->withErrors(['module_id' => 'Élément lié introuvable.']);
-    }
-}
+            $model = match ($validated['module_lie']) {
+                'product' => Product::class,
+                'specimen' => Bss::class,
+                'mp' => MpProduct::class,
+                'examen' => Examen::class,
+                'event' => Event::class,
+                default => null,
+            };
+            if ($model && !$model::where('id', $validated['module_id'])->exists()) {
+                return back()->withErrors(['module_id' => 'Élément lié introuvable.']);
+            }
+        }
 
         Reclamation::create($validated);
 
@@ -137,27 +155,27 @@ class ReclamationController extends Controller
     }
 
     public function show(Reclamation $reclamation)
-{
-    $this->authorizeView($reclamation);
-    $reclamation->load(['compte', 'contact', 'delegate', 'responsable', 'createdBy', 'updatedBy']);
+    {
+        $this->authorizeView($reclamation);
+        $reclamation->load(['compte', 'contact', 'delegate', 'responsable', 'createdBy', 'updatedBy']);
 
-    $linkedModule = null;
-    if ($reclamation->module_lie && $reclamation->module_id) {
-        $modelMap = [
-            'examen'   => Examen::class,
-            'event'    => Event::class,
-            'product'  => Product::class,
-            'specimen' => Bss::class,
-            'mp'       => MpProduct::class,
-        ];
-        $class = $modelMap[$reclamation->module_lie] ?? null;
-        if ($class) {
-            $linkedModule = $class::find($reclamation->module_id);
+        $linkedModule = null;
+        if ($reclamation->module_lie && $reclamation->module_id) {
+            $modelMap = [
+                'examen' => Examen::class,
+                'event' => Event::class,
+                'product' => Product::class,
+                'specimen' => Bss::class,
+                'mp' => MpProduct::class,
+            ];
+            $class = $modelMap[$reclamation->module_lie] ?? null;
+            if ($class) {
+                $linkedModule = $class::find($reclamation->module_id);
+            }
         }
-    }
 
-    return view('reclamations.show', compact('reclamation', 'linkedModule'));
-}
+        return view('reclamations.show', compact('reclamation', 'linkedModule'));
+    }
 
     public function edit(Reclamation $reclamation)
     {
@@ -165,18 +183,27 @@ class ReclamationController extends Controller
         $user = Auth::user();
         $comptes = Compte::where('delegue_id', $user->id)->get();
         $produits = Product::orderBy('titre')->get();
-        $specimens = Bss::where('delegue_id', $user->id)->whereIn('statut', ['valide', 'livre'])->with('compte')->get();
         $mps = MpProduct::orderBy('nom')->get();
         $types = ['face_a_face', 'email', 'telephone', 'fax'];
         $categories = $this->getCategories();
         $sousCategoriesMap = $this->getSousCategories();
         $statuts = ['brouillon', 'en_cours', 'mise_en_attente', 'cloturee', 'annulee'];
         $examens = Examen::orderBy('date_demande', 'desc')->get();
-        $events  = Event::orderBy('date_event', 'desc')->get();
-        
+        $events = Event::orderBy('date_event', 'desc')->get();
 
-        return view('reclamations.edit', compact('reclamation', 'comptes', 'produits', 'specimens', 'mps', 'types',
-         'categories', 'sousCategoriesMap', 'statuts', 'examens', 'events'));
+
+        return view('reclamations.edit', compact(
+            'reclamation',
+            'comptes',
+            'produits',
+            'mps',
+            'types',
+            'categories',
+            'sousCategoriesMap',
+            'statuts',
+            'examens',
+            'events'
+        ));
     }
 
     public function update(Request $request, Reclamation $reclamation)
@@ -218,7 +245,8 @@ class ReclamationController extends Controller
 
     public function destroy(Reclamation $reclamation)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (Auth::user()->role !== 'admin')
+            abort(403);
         $reclamation->delete();
         return redirect()->route('reclamations.index')->with('success', 'Réclamation supprimée.');
     }
@@ -231,11 +259,11 @@ class ReclamationController extends Controller
         $linkedModule = null;
         if ($reclamation->module_lie && $reclamation->module_id) {
             $modelMap = [
-                'examen'   => Examen::class,
-                'event'    => Event::class,
-                'product'  => Product::class,
+                'examen' => Examen::class,
+                'event' => Event::class,
+                'product' => Product::class,
                 'specimen' => Bss::class,
-                'mp'       => MpProduct::class,
+                'mp' => MpProduct::class,
             ];
             $class = $modelMap[$reclamation->module_lie] ?? null;
             if ($class) {
@@ -249,7 +277,7 @@ class ReclamationController extends Controller
 
     private function getCategories()
     {
-        return ['Produit', 'Spécimen', 'Matériel pédagogique',  'Événement', 'Autre'];
+        return ['Produit', 'Spécimen', 'Matériel pédagogique', 'Événement', 'Autre'];
     }
 
     private function getSousCategories()

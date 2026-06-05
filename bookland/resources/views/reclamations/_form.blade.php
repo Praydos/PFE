@@ -75,11 +75,8 @@
 
 <div id="linked_specimen_container" style="display: none;" class="mb-3">
     <label>Spécimen lié (BSS)</label>
-    <select name="specimen_id" class="form-select">
-        <option value="">-- Sélectionnez --</option>
-        @foreach($specimens as $s)
-            <option value="{{ $s->id }}" {{ old('specimen_id', $isEdit ? $reclamation->specimen_id : '') == $s->id ? 'selected' : '' }}>{{ $s->numero }} - {{ $s->compte->etablissement }}</option>
-        @endforeach
+    <select name="specimen_id" id="specimen_id" class="form-select">
+        <option value="">-- Sélectionnez d'abord un compte --</option>
     </select>
 </div>
 
@@ -148,18 +145,25 @@
     </div>
 </div>
 @endif<script>
-    // Load contacts when compte changes
+    // Load contacts and specimens when compte changes
     document.getElementById('compte_id')?.addEventListener('change', function() {
         let compteId = this.value;
         let contactSelect = document.getElementById('contact_id');
         let responsableSelect = document.getElementById('responsable_id');
+        let specimenSelect = document.getElementById('specimen_id');
+
         if (!compteId) {
             contactSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
             if (responsableSelect) {
                 responsableSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
             }
+            if (specimenSelect) {
+                specimenSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord un compte --</option>';
+            }
             return;
         }
+
+        // Load contacts
         fetch(`/api/comptes/${compteId}/contacts`)
             .then(r => r.json())
             .then(data => {
@@ -184,6 +188,26 @@
                     }
                 @endif
             });
+
+        // Load BSS/specimens for the selected compte
+        if (specimenSelect) {
+            fetch(`/api/comptes/${compteId}/bss`)
+                .then(r => r.json())
+                .then(data => {
+                    let specimenOptions = '<option value="">-- Sélectionnez --</option>';
+                    if (data.length === 0) {
+                        specimenOptions = '<option value="">-- Aucun spécimen disponible --</option>';
+                    } else {
+                        data.forEach(s => {
+                            specimenOptions += `<option value="${s.id}">${s.numero} (${s.statut})</option>`;
+                        });
+                    }
+                    specimenSelect.innerHTML = specimenOptions;
+                    @if($isEdit)
+                        specimenSelect.value = '{{ old('specimen_id', $reclamation->specimen_id) }}';
+                    @endif
+                });
+        }
     });
     if (document.getElementById('compte_id')?.value) {
         document.getElementById('compte_id').dispatchEvent(new Event('change'));
