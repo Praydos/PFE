@@ -292,16 +292,24 @@
             <h1>Bons de sortie spécimens (BSS)</h1>
             <p>Gérez vos demandes de spécimens</p>
         </div>
-        @if(auth()->user()->role === 'delegue' || auth()->user()->role === 'admin')
-        <div class="zn-header-actions">
+        <div class="zn-header-actions" style="display:flex; gap:0.5rem; align-items:center;">
+            <a href="{{ route('bss.printList', request()->query()) }}" target="_blank" class="btn-zn btn-zn-ghost">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                Imprimer PDF
+            </a>
+            @if(auth()->user()->role === 'delegue' || auth()->user()->role === 'admin')
             <a href="{{ route('bss.create') }}" class="btn-zn btn-zn-primary">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
                 Nouveau BSS
             </a>
+            @endif
         </div>
-        @endif
     </div>
 
     {{-- Filters --}}

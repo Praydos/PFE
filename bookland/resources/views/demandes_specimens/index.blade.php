@@ -594,8 +594,17 @@
                 <h1>Demandes spéciales – Spécimens</h1>
                 <p>Gérez les demandes de spécimens en attente de validation</p>
             </div>
-            @if(auth()->user()->role === 'delegue' || auth()->user()->role === 'admin')
-                <div class="zn-header-actions">
+            <div class="zn-header-actions" style="display:flex; gap:0.5rem; align-items:center;">
+                <a href="{{ route('demandes-specimens.printList', request()->query()) }}" target="_blank"
+                    class="btn-zn btn-zn-ghost">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    Imprimer PDF
+                </a>
+                @if(auth()->user()->role === 'delegue' || auth()->user()->role === 'admin')
                     <a href="{{ route('demandes-specimens.create') }}" class="btn-zn btn-zn-primary">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <line x1="12" y1="5" x2="12" y2="19" />
@@ -603,8 +612,8 @@
                         </svg>
                         Nouvelle demande
                     </a>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
 
         {{-- Filters --}}
@@ -641,7 +650,8 @@
                             <option value="">Tous comptes</option>
                             @foreach($comptes as $c)
                                 <option value="{{ $c->id }}" {{ request('compte_id') == $c->id ? 'selected' : '' }}>
-                                    {{ $c->etablissement }}</option>
+                                    {{ $c->etablissement }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -654,7 +664,8 @@
                                 <option value="">Tous les délégués</option>
                                 @foreach($delegates as $d)
                                     <option value="{{ $d->id }}" {{ request('delegue_id') == $d->id ? 'selected' : '' }}>
-                                        {{ $d->prenom }} {{ $d->nom }}</option>
+                                        {{ $d->prenom }} {{ $d->nom }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>

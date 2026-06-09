@@ -280,6 +280,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bss', [BssController::class, 'store'])
         ->name('bss.store')->middleware('role:admin,delegue');
 
+    Route::get('/bss/print-list', [BssController::class, 'printList'])->name('bss.printList')->middleware('role:admin,delegue,rbo,abo');
+    Route::get('/bss/{bss}/print', [BssController::class, 'print'])->name('bss.print');
+
     Route::get('/bss/{bss}', [BssController::class, 'show'])
         ->name('bss.show');
 
@@ -388,6 +391,8 @@ Route::get('/api/moyens-by-action-type', [ActionController::class, 'getMoyensByA
 
 //=========================================================================================================
 // requetes special 
+Route::get('/demandes-specimens/print-list', [DemandeSpecimenController::class, 'printList'])->name('demandes-specimens.printList');
+Route::get('/demandes-specimens/{demandes_specimen}/print', [DemandeSpecimenController::class, 'print'])->name('demandes-specimens.print');
 Route::resource('demandes-specimens', DemandeSpecimenController::class);
 Route::post('/demandes-specimens/{demandes_specimen}/validate', [DemandeSpecimenController::class, 'validateRequest'])->name('demandes-specimens.validate');
 

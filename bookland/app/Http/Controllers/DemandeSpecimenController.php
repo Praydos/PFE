@@ -19,6 +19,7 @@ use App\Models\Action;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DemandeSpecimenController extends Controller
 {
@@ -214,6 +215,43 @@ class DemandeSpecimenController extends Controller
 
         return redirect()->route('demandes-specimens.index')
             ->with('success', 'Demande spéciale créée. En attente de validation par l\'administrateur ou le RBO.');
+    }
+
+    public function printList(Request $request)
+    {
+        $user = Auth::user();
+        $query = DemandeSpecimen::with(['compte', 'contact', 'delegate', 'ville', 'zone', 'originalBss']);
+
+        if ($user->role === 'delegue') {
+            $query->where('delegue_id', $user->id);
+        } elseif ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            $query->whereIn('delegue_id', $delegateIds);
+        }
+
+        if ($request->filled('statut'))
+            $query->where('statut', $request->statut);
+        if ($request->filled('type'))
+            $query->where('type', $request->type);
+        if ($request->filled('compte_id'))
+            $query->where('compte_id', $request->compte_id);
+
+        if ($request->filled('delegue_id') && in_array($user->role, ['admin', 'abo', 'rbo'])) {
+            $query->where('delegue_id', $request->delegue_id);
+        }
+
+        $demandes = $query->orderBy('created_at', 'desc')->get();
+
+        $pdf = Pdf::loadView('demandes_specimens.pdf_index', compact('demandes'));
+        return $pdf->stream('demandes_specimen_list.pdf');
+    }
+
+    public function print(DemandeSpecimen $demandes_specimen)
+    {
+        $this->authorizeView($demandes_specimen);
+        $demandes_specimen->load('lignes.product', 'compte', 'contact', 'ville', 'zone', 'originalBss', 'validePar');
+        $pdf = Pdf::loadView('demandes_specimens.pdf_show', compact('demandes_specimen'));
+        return $pdf->stream('demande_' . $demandes_specimen->id . '.pdf');
     }
 
     // Show detail

@@ -16,6 +16,7 @@ use App\Support\YearLock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BssController extends Controller
 {
@@ -275,6 +276,42 @@ class BssController extends Controller
         }
 
         return redirect()->route('bss.index')->with('success', 'BSS créé et livraison planifiée.');
+    }
+
+    public function printList(Request $request)
+    {
+        $user = Auth::user();
+        $query = Bss::with(['compte', 'contact', 'delegate', 'anneeScolaire', 'lignes.product']);
+
+        if ($user->role === 'delegue') {
+            $query->where('delegate_id', $user->id);
+        } elseif ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            $query->whereIn('delegate_id', $delegateIds);
+        }
+
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+        if ($request->filled('delegate_id') && $user->role !== 'delegue') {
+            $query->where('delegate_id', $request->delegate_id);
+        }
+        if ($request->filled('compte_id')) {
+            $query->where('compte_id', $request->compte_id);
+        }
+
+        $bssList = $query->orderBy('created_at', 'desc')->get();
+
+        $pdf = Pdf::loadView('bss.pdf_index', compact('bssList'));
+        return $pdf->stream('bss_list.pdf');
+    }
+
+    public function print(Bss $bss)
+    {
+        $this->authorizeView($bss);
+        $bss->load('lignes.product', 'compte', 'contact', 'delegate');
+        $pdf = Pdf::loadView('bss.pdf_show', compact('bss'));
+        return $pdf->stream('bss_' . $bss->numero . '.pdf');
     }
 
     // Show a single BSS (detail)
