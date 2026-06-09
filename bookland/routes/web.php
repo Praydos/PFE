@@ -252,6 +252,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // contact routes to authorize later
+Route::get('/contacts/print-list', [ContactController::class, 'printList'])->name('contacts.printList');
 Route::resource('contacts', ContactController::class);
 
 
