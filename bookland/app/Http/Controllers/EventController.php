@@ -48,8 +48,7 @@ class EventController extends Controller
 
         if ($user->role === 'delegue') {
             $query->where('delegue_id', $user->id);
-        }
-        elseif ($user->role === 'rbo') {
+        } elseif ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
             $query->whereIn('delegue_id', $delegateIds);
         }
@@ -61,16 +60,28 @@ class EventController extends Controller
         if ($request->filled('ville_id'))
             $query->where('ville_id', $request->ville_id);
 
+        if ($request->filled('delegue_id') && in_array($user->role, ['admin', 'abo', 'rbo'])) {
+            $query->where('delegue_id', $request->delegue_id);
+        }
+
         $events = $query->orderBy('date_event', 'desc')->paginate(15);
         $villes = $this->getDelegateVilles();
         $types = ['Public Speaking', 'Ateliers de lecture', 'English Day', 'Compétitions', 'Amizing minds', 'Workshop', 'Exposition de livres', 'Salon', 'Formation Editeur', 'Présentation Produit'];
         $editeurs = ['Esprit du livre', 'Matifica', 'Express publishing', 'Bookland'];
 
-        return view('events.index', compact('events', 'villes', 'types', 'editeurs'));
+        $delegates = collect();
+        if (in_array($user->role, ['admin', 'abo'])) {
+            $delegates = User::where('role', 'delegue')->orderBy('nom')->get();
+        } elseif ($user->role === 'rbo') {
+            $delegates = $user->zonesAsRbo->flatMap->delegates->unique('id')->sortBy('nom')->values();
+        }
+
+        return view('events.index', compact('events', 'villes', 'types', 'editeurs', 'delegates'));
     }
 
     // Create form
-    public function create(Request $request)    {
+    public function create(Request $request)
+    {
         $user = Auth::user();
         if ($user->role !== 'admin' && ($user->role !== 'delegue'))
             abort(403);
@@ -94,7 +105,8 @@ class EventController extends Controller
         }
         $defaultDate = $request->get('date_event', now()->toDateString());
 
-        return view('events.create', compact('villes', 'currentYear', 'years', 'types', 'editeurs', 'defaultVilleId', 'defaultZoneId', 'defaultDate'));    }
+        return view('events.create', compact('villes', 'currentYear', 'years', 'types', 'editeurs', 'defaultVilleId', 'defaultZoneId', 'defaultDate'));
+    }
 
     // Store event
     public function store(Request $request)
@@ -142,7 +154,8 @@ class EventController extends Controller
     }
 
     // API: get contacts by city (for the "by city" method)
-    public function getContactsByCity(Request $request)    {
+    public function getContactsByCity(Request $request)
+    {
         $user = Auth::user();
         if ($user->role !== 'admin' && ($user->role !== 'delegue')) {
             return response()->json([]);
@@ -171,16 +184,18 @@ class EventController extends Controller
             ->with('ville')
             ->get()
             ->map(fn($c) => [
-        'id' => $c->id,
-        'name' => $c->prenom . ' ' . $c->nom,
-        'ville' => $c->ville->nom,
-        'fonction' => $c->fonction,
-        ]);
+                'id' => $c->id,
+                'name' => $c->prenom . ' ' . $c->nom,
+                'ville' => $c->ville->nom,
+                'fonction' => $c->fonction,
+            ]);
 
-        return response()->json($contacts);    }
+        return response()->json($contacts);
+    }
 
     // API: get all contacts for direct selection (filtered by delegate's villes)
-    public function getAllContacts()    {
+    public function getAllContacts()
+    {
         $user = Auth::user();
         // Only delegates can access this endpoint
         if ($user->role !== 'admin' && ($user->role !== 'delegue')) {
@@ -198,16 +213,18 @@ class EventController extends Controller
             ->with('ville')
             ->get()
             ->map(fn($c) => [
-        'id' => $c->id,
-        'name' => $c->prenom . ' ' . $c->nom,
-        'ville' => $c->ville->nom,
-        'fonction' => $c->fonction,
-        ]);
+                'id' => $c->id,
+                'name' => $c->prenom . ' ' . $c->nom,
+                'ville' => $c->ville->nom,
+                'fonction' => $c->fonction,
+            ]);
 
-        return response()->json($contacts);    }
+        return response()->json($contacts);
+    }
 
     // Store invitations (sync contacts)
-    public function storeInvitations(Request $request, Event $event)    {
+    public function storeInvitations(Request $request, Event $event)
+    {
         $user = Auth::user();
         if ($user->role !== 'admin' && ($user->role !== 'delegue' || $event->delegue_id !== $user->id))
             abort(403);
@@ -215,8 +232,7 @@ class EventController extends Controller
         $contactIdsRaw = $request->input('contact_ids');
         if (is_string($contactIdsRaw)) {
             $contactIds = array_filter(explode(',', $contactIdsRaw));
-        }
-        else {
+        } else {
             $contactIds = $contactIdsRaw ?? [];
         }
 
@@ -234,7 +250,8 @@ class EventController extends Controller
         }
         $event->contacts()->syncWithoutDetaching($syncData);
 
-        return redirect()->route('events.show', $event)->with('success', 'Invitations envoyées.');    }
+        return redirect()->route('events.show', $event)->with('success', 'Invitations envoyées.');
+    }
     // Show event details with contacts and their statuses
     public function show(Event $event)
     {
@@ -314,12 +331,12 @@ class EventController extends Controller
             'total_declines' => $event->contacts->where('pivot.statut', 'decline')->count(),
             'participation_rate' => $event->contacts->count() > 0 ? round(($event->contacts->where('pivot.statut', 'present')->count() / $event->contacts->count()) * 100, 2) : 0,
             'by_ville' => $event->contacts->groupBy('ville.nom')->map(function ($group) {
-            return [
-            'total' => $group->count(),
-            'presents' => $group->where('pivot.statut', 'present')->count(),
-            'rate' => $group->count() > 0 ? round(($group->where('pivot.statut', 'present')->count() / $group->count()) * 100, 2) : 0,
-            ];
-        }),
+                return [
+                    'total' => $group->count(),
+                    'presents' => $group->where('pivot.statut', 'present')->count(),
+                    'rate' => $group->count() > 0 ? round(($group->where('pivot.statut', 'present')->count() / $group->count()) * 100, 2) : 0,
+                ];
+            }),
             'by_delegate' => [], // If multiple delegates, but event has one delegate
         ];
         return view('events.statistics', compact('event', 'stats'));
@@ -363,20 +380,27 @@ class EventController extends Controller
     {
         $this->authorizeForDelegate($delegate);
 
-        $villes      = $this->getDelegateVillesForUser($delegate);
+        $villes = $this->getDelegateVillesForUser($delegate);
         $currentYear = $this->getCurrentYear();
-        $years       = AnneeScolaire::orderBy('date_debut', 'desc')->get();
-        $types       = ['Public Speaking', 'Ateliers de lecture', 'English Day', 'Compétitions', 'Amizing minds', 'Workshop', 'Exposition de livres', 'Salon', 'Formation Editeur', 'Présentation Produit'];
-        $editeurs    = ['Esprit du livre', 'Matifica', 'Express publishing', 'Bookland'];
+        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+        $types = ['Public Speaking', 'Ateliers de lecture', 'English Day', 'Compétitions', 'Amizing minds', 'Workshop', 'Exposition de livres', 'Salon', 'Formation Editeur', 'Présentation Produit'];
+        $editeurs = ['Esprit du livre', 'Matifica', 'Express publishing', 'Bookland'];
 
-        $defaultDate    = $request->get('date_event', now()->toDateString());
+        $defaultDate = $request->get('date_event', now()->toDateString());
         $defaultVilleId = null;
-        $defaultZoneId  = null;
+        $defaultZoneId = null;
         $targetDelegate = $delegate;
 
         return view('events.create', compact(
-            'villes', 'currentYear', 'years', 'types', 'editeurs',
-            'defaultVilleId', 'defaultZoneId', 'defaultDate', 'targetDelegate'
+            'villes',
+            'currentYear',
+            'years',
+            'types',
+            'editeurs',
+            'defaultVilleId',
+            'defaultZoneId',
+            'defaultDate',
+            'targetDelegate'
         ));
     }
 
@@ -385,20 +409,20 @@ class EventController extends Controller
         $this->authorizeForDelegate($delegate);
 
         $validated = $request->validate([
-            'ville_id'          => 'required|exists:villes,id',
-            'type'              => 'required|string',
-            'editeur'           => 'required|string',
-            'date_event'        => 'required|date',
+            'ville_id' => 'required|exists:villes,id',
+            'type' => 'required|string',
+            'editeur' => 'required|string',
+            'date_event' => 'required|date',
             'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
         ]);
 
         $ville = Ville::find($validated['ville_id']);
-        $zone  = $ville->zones()->first();
+        $zone = $ville->zones()->first();
         if (!$zone) {
             return redirect()->back()->withErrors(['ville_id' => 'Cette ville n\'a pas de zone associée.']);
         }
 
-        $validated['zone_id']    = $zone->id;
+        $validated['zone_id'] = $zone->id;
         $validated['delegue_id'] = $delegate->id;
 
         $event = Event::create($validated);
@@ -417,10 +441,12 @@ class EventController extends Controller
     private function authorizeForDelegate(User $delegate): void
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
+        if ($user->role === 'admin')
+            return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($delegate->id)) return;
+            if ($delegateIds->contains($delegate->id))
+                return;
         }
         abort(403, 'Non autorisé à créer des événements pour ce délégué.');
     }

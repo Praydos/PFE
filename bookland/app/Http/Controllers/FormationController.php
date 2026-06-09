@@ -27,8 +27,7 @@ class FormationController extends Controller
 
         if ($user->role === 'delegue') {
             $query->where('delegue_id', $user->id);
-        }
-        elseif ($user->role === 'rbo') {
+        } elseif ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
             $query->whereIn('delegue_id', $delegateIds);
         }
@@ -40,16 +39,32 @@ class FormationController extends Controller
         if ($request->filled('type'))
             $query->where('type', $request->type);
 
+        if ($request->filled('delegue_id') && in_array($user->role, ['admin', 'abo', 'rbo'])) {
+            $query->where('delegue_id', $request->delegue_id);
+        }
+
         $formations = $query->orderBy('date_demande', 'desc')->paginate(15);
         $comptes = Compte::orderBy('etablissement')->get();
         $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
         $statuts = ['demande' => 'Demandée', 'planifiee' => 'Planifiée', 'annulee' => 'Annulée', 'reportee' => 'Reportée', 'realisee' => 'Réalisée'];
         $types = [
-            'Formation méthode', 'Présentation méthode', 'Accompagnement pédagogique',
-            'Leçon modèle', 'Intégration de classe', 'Audit de classe', 'Formation Examen CAMBRIDGE'
+            'Formation méthode',
+            'Présentation méthode',
+            'Accompagnement pédagogique',
+            'Leçon modèle',
+            'Intégration de classe',
+            'Audit de classe',
+            'Formation Examen CAMBRIDGE'
         ];
 
-        return view('formations.index', compact('formations', 'comptes', 'years', 'statuts', 'types'));
+        $delegates = collect();
+        if (in_array($user->role, ['admin', 'abo'])) {
+            $delegates = User::where('role', 'delegue')->orderBy('nom')->get();
+        } elseif ($user->role === 'rbo') {
+            $delegates = $user->zonesAsRbo->flatMap->delegates->unique('id')->sortBy('nom')->values();
+        }
+
+        return view('formations.index', compact('formations', 'comptes', 'years', 'statuts', 'types', 'delegates'));
     }
 
 
@@ -83,8 +98,13 @@ class FormationController extends Controller
         $currentYear = $this->getCurrentYear();
         $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
         $types = [
-            'Formation méthode', 'Présentation méthode', 'Accompagnement pédagogique',
-            'Leçon modèle', 'Intégration de classe', 'Audit de classe', 'Formation Examen CAMBRIDGE'
+            'Formation méthode',
+            'Présentation méthode',
+            'Accompagnement pédagogique',
+            'Leçon modèle',
+            'Intégration de classe',
+            'Audit de classe',
+            'Formation Examen CAMBRIDGE'
         ];
 
 
@@ -108,21 +128,23 @@ class FormationController extends Controller
         return view('formations.create', compact('comptes', 'currentYear', 'years', 'types', 'cibles', 'villes', 'zones', 'selectedCompteId', 'defaultVilleId', 'defaultZoneId', 'defaultDate'));
     }
 
-    public function store(Request $request)    {
+    public function store(Request $request)
+    {
         $user = Auth::user();
-    if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue'))
+            abort(403);
 
-    // Filter empty dates
-    if ($request->has('dates_ecole')) {
-        $request->merge([
-            'dates_ecole' => array_filter($request->input('dates_ecole', []), fn($d) => !empty($d))
-        ]);
-    }
-    if ($request->has('dates_proposees')) {
-        $request->merge([
-            'dates_proposees' => array_filter($request->input('dates_proposees', []), fn($d) => !empty($d))
-        ]);
-    }
+        // Filter empty dates
+        if ($request->has('dates_ecole')) {
+            $request->merge([
+                'dates_ecole' => array_filter($request->input('dates_ecole', []), fn($d) => !empty($d))
+            ]);
+        }
+        if ($request->has('dates_proposees')) {
+            $request->merge([
+                'dates_proposees' => array_filter($request->input('dates_proposees', []), fn($d) => !empty($d))
+            ]);
+        }
 
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',
@@ -160,7 +182,8 @@ class FormationController extends Controller
 
         Formation::create($data);
 
-        return redirect()->route('formations.index')->with('success', 'Demande de formation créée.');    }
+        return redirect()->route('formations.index')->with('success', 'Demande de formation créée.');
+    }
     public function show(Formation $formation)
     {
         $this->authorizeView($formation);
@@ -177,8 +200,13 @@ class FormationController extends Controller
         $villes = $this->getUserVilles($user); // helper
         $zones = Zone::all();
         $types = [
-            'Formation méthode', 'Présentation méthode', 'Accompagnement pédagogique',
-            'Leçon modèle', 'Intégration de classe', 'Audit de classe', 'Formation Examen CAMBRIDGE'
+            'Formation méthode',
+            'Présentation méthode',
+            'Accompagnement pédagogique',
+            'Leçon modèle',
+            'Intégration de classe',
+            'Audit de classe',
+            'Formation Examen CAMBRIDGE'
         ];
         $cibles = ['Direction', 'Enseignants', 'Parents'];
         $statuts = ['demande' => 'Demandée', 'planifiee' => 'Planifiée', 'annulee' => 'Annulée', 'reportee' => 'Reportée', 'realisee' => 'Réalisée'];
@@ -186,7 +214,8 @@ class FormationController extends Controller
         return view('formations.edit', compact('formation', 'comptes', 'years', 'types', 'cibles', 'statuts', 'currentYear', 'villes', 'zones'));
     }
 
-    public function update(Request $request, Formation $formation)    {
+    public function update(Request $request, Formation $formation)
+    {
         YearLock::check($formation);
         $this->authorizeEdit($formation);
         $validated = $request->validate([
@@ -205,7 +234,8 @@ class FormationController extends Controller
         $validated['dates_proposees'] = array_filter($validated['dates_proposees'] ?? []);
 
         $formation->update($validated);
-        return redirect()->route('formations.index')->with('success', 'Formation mise à jour.');    }
+        return redirect()->route('formations.index')->with('success', 'Formation mise à jour.');
+    }
 
     public function destroy(Formation $formation)
     {
@@ -266,88 +296,105 @@ class FormationController extends Controller
     {
         $this->authorizeForDelegate($delegate);
 
-        $comptes     = Compte::where('delegue_id', $delegate->id)->with('ville', 'zone')->get();
+        $comptes = Compte::where('delegue_id', $delegate->id)->with('ville', 'zone')->get();
         $currentYear = $this->getCurrentYear();
-        $years       = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
         $types = [
-            'Formation méthode', 'Présentation méthode', 'Accompagnement pédagogique',
-            'Leçon modèle', 'Intégration de classe', 'Audit de classe', 'Formation Examen CAMBRIDGE'
+            'Formation méthode',
+            'Présentation méthode',
+            'Accompagnement pédagogique',
+            'Leçon modèle',
+            'Intégration de classe',
+            'Audit de classe',
+            'Formation Examen CAMBRIDGE'
         ];
         $cibles = ['Direction', 'Enseignants', 'Parents'];
         $villes = $this->getUserVilles($delegate);
-        $zones  = Zone::all();
+        $zones = Zone::all();
 
         $selectedCompteId = $request->get('compte_id');
-        $defaultVilleId   = null;
-        $defaultZoneId    = null;
+        $defaultVilleId = null;
+        $defaultZoneId = null;
         if ($selectedCompteId && $comptes->contains('id', $selectedCompteId)) {
             $compte = $comptes->find($selectedCompteId);
             $defaultVilleId = $compte->ville_id;
-            $defaultZoneId  = $compte->zone_id;
+            $defaultZoneId = $compte->zone_id;
         }
-        $defaultDate    = $request->get('date_demande', now()->toDateString());
+        $defaultDate = $request->get('date_demande', now()->toDateString());
         $targetDelegate = $delegate;
 
         return view('formations.create', compact(
-            'comptes', 'currentYear', 'years', 'types', 'cibles', 'villes', 'zones',
-            'selectedCompteId', 'defaultVilleId', 'defaultZoneId', 'defaultDate', 'targetDelegate'
+            'comptes',
+            'currentYear',
+            'years',
+            'types',
+            'cibles',
+            'villes',
+            'zones',
+            'selectedCompteId',
+            'defaultVilleId',
+            'defaultZoneId',
+            'defaultDate',
+            'targetDelegate'
         ));
     }
 
     public function storeForDelegate(Request $request, User $delegate)
-{
-    $this->authorizeForDelegate($delegate);
+    {
+        $this->authorizeForDelegate($delegate);
 
-    // 🔥 Filter empty dates before validation
-    if ($request->has('dates_ecole')) {
-        $request->merge([
-            'dates_ecole' => array_filter($request->input('dates_ecole', []), fn($d) => !empty($d))
+        // 🔥 Filter empty dates before validation
+        if ($request->has('dates_ecole')) {
+            $request->merge([
+                'dates_ecole' => array_filter($request->input('dates_ecole', []), fn($d) => !empty($d))
+            ]);
+        }
+        if ($request->has('dates_proposees')) {
+            $request->merge([
+                'dates_proposees' => array_filter($request->input('dates_proposees', []), fn($d) => !empty($d))
+            ]);
+        }
+
+        $validated = $request->validate([
+            'compte_id' => 'required|exists:comptes,id',
+            'contact_id' => 'required|exists:contacts,id',
+            'ville_id' => 'required|exists:villes,id',
+            'zone_id' => 'required|exists:zones,id',
+            'type' => 'required|in:Formation méthode,Présentation méthode,Accompagnement pédagogique,Leçon modèle,Intégration de classe,Audit de classe,Formation Examen CAMBRIDGE',
+            'cible' => 'nullable|in:Direction,Enseignants,Parents',
+            'dates_ecole' => 'nullable|array',
+            'dates_ecole.*' => 'date',
+            'dates_proposees' => 'nullable|array',
+            'dates_proposees.*' => 'date',
         ]);
-    }
-    if ($request->has('dates_proposees')) {
-        $request->merge([
-            'dates_proposees' => array_filter($request->input('dates_proposees', []), fn($d) => !empty($d))
+
+        Formation::create([
+            'compte_id' => $validated['compte_id'],
+            'contact_id' => $validated['contact_id'],
+            'ville_id' => $validated['ville_id'],
+            'zone_id' => $validated['zone_id'],
+            'type' => $validated['type'],
+            'cible' => $validated['cible'] ?? null,
+            'delegue_id' => $delegate->id,
+            'annee_scolaire_id' => $this->getCurrentYear()->id,
+            'statut' => 'demande',
+            'date_demande' => $validated['dates_ecole'] ?? [],      // JSON array
+            'dates_proposees' => $validated['dates_proposees'] ?? [],  // JSON array
         ]);
+
+        return redirect()->route('formations.index')
+            ->with('success', 'Demande de formation créée pour ' . $delegate->prenom . ' ' . $delegate->nom . '.');
     }
-
-    $validated = $request->validate([
-        'compte_id'         => 'required|exists:comptes,id',
-        'contact_id'        => 'required|exists:contacts,id',
-        'ville_id'          => 'required|exists:villes,id',
-        'zone_id'           => 'required|exists:zones,id',
-        'type'              => 'required|in:Formation méthode,Présentation méthode,Accompagnement pédagogique,Leçon modèle,Intégration de classe,Audit de classe,Formation Examen CAMBRIDGE',
-        'cible'             => 'nullable|in:Direction,Enseignants,Parents',
-        'dates_ecole'       => 'nullable|array',
-        'dates_ecole.*'     => 'date',
-        'dates_proposees'   => 'nullable|array',
-        'dates_proposees.*' => 'date',
-    ]);
-
-    Formation::create([
-        'compte_id'         => $validated['compte_id'],
-        'contact_id'        => $validated['contact_id'],
-        'ville_id'          => $validated['ville_id'],
-        'zone_id'           => $validated['zone_id'],
-        'type'              => $validated['type'],
-        'cible'             => $validated['cible'] ?? null,
-        'delegue_id'        => $delegate->id,
-        'annee_scolaire_id' => $this->getCurrentYear()->id,
-        'statut'            => 'demande',
-        'date_demande'      => $validated['dates_ecole'] ?? [],      // JSON array
-        'dates_proposees'   => $validated['dates_proposees'] ?? [],  // JSON array
-    ]);
-
-    return redirect()->route('formations.index')
-        ->with('success', 'Demande de formation créée pour ' . $delegate->prenom . ' ' . $delegate->nom . '.');
-}
 
     private function authorizeForDelegate(User $delegate): void
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
+        if ($user->role === 'admin')
+            return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($delegate->id)) return;
+            if ($delegateIds->contains($delegate->id))
+                return;
         }
         abort(403, 'Non autorisé à créer des formations pour ce délégué.');
     }
