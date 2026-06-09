@@ -13,9 +13,21 @@ class DemandeSpecimen extends Model
     protected $table = 'demandes_specimens';
 
     protected $fillable = [
-        'type', 'compte_id', 'contact_id', 'delegue_id', 'annee_scolaire_id',
-        'ville_id', 'zone_id', 'date_demande', 'description', 'statut',
-        'valide_par', 'date_validation', 'bss_id', 'original_bss_id', 'generated_bss_id'
+        'type',
+        'compte_id',
+        'contact_id',
+        'delegue_id',
+        'annee_scolaire_id',
+        'ville_id',
+        'zone_id',
+        'date_demande',
+        'description',
+        'statut',
+        'valide_par',
+        'date_validation',
+        'bss_id',
+        'original_bss_id',
+        'generated_bss_id'
     ];
 
     protected $casts = [
@@ -60,14 +72,20 @@ class DemandeSpecimen extends Model
 
     // linked to the bss
 
+    // The OLD BSS that existed before the special demande (set at creation)
     public function originalBss()
     {
         return $this->belongsTo(Bss::class, 'original_bss_id');
     }
 
- 
+    // The NEW special BSS generated upon admin/RBO validation
+    public function generatedBss()
+    {
+        return $this->belongsTo(Bss::class, 'generated_bss_id');
+    }
+
     public function lignes()
-{
-    return $this->hasMany(DemandeLigne::class, 'demande_id');
-}
+    {
+        return $this->hasMany(DemandeLigne::class, 'demande_id');
+    }
 }

@@ -188,6 +188,25 @@ class DemandeSpecimenController extends Controller
         }
 
         // ========================================================================
+        // FIND THE OLD (ORIGINAL) BSS FOR THIS COMPTE — link it to the demande
+        // This is the existing BSS that proves a specimen was already delivered
+        // ========================================================================
+
+        $requestedProductIds = collect($validated['products'])->pluck('product_id');
+
+        $originalBss = null;
+        if ($compteId) {
+            $originalBss = Bss::where('compte_id', $compteId)
+                ->whereIn('annee_scolaire_id', $yearIds)
+                ->whereIn('statut', ['valide', 'livre', 'retour', 'adopte'])
+                ->whereHas('lignes', function ($q) use ($requestedProductIds) {
+                    $q->whereIn('product_id', $requestedProductIds);
+                })
+                ->orderBy('date_bss', 'desc')
+                ->first();
+        }
+
+        // ========================================================================
         // CREATE SPECIAL DEMANDE IN "DEMANDE" STATUS (PENDING VALIDATION)
         // ========================================================================
 
@@ -201,8 +220,8 @@ class DemandeSpecimenController extends Controller
             'zone_id' => $zoneId,
             'date_demande' => now()->toDateString(),
             'description' => $validated['description'] ?? null,
-            'statut' => 'demande', // Pending admin/rbo validation
-            'original_bss_id' => null, // Will be set after validation
+            'statut' => 'demande',
+            'original_bss_id' => $originalBss?->id, // Link to the old BSS at creation time
         ]);
 
         foreach ($validated['products'] as $item) {
@@ -457,12 +476,14 @@ class DemandeSpecimenController extends Controller
                 ]);
             }
 
-            // 3. Update demande to validated status and link to BSS
+            // 3. Update demande to validated status and link to the newly created special BSS
+            // NOTE: original_bss_id holds the OLD bss (set at creation time)
+            //       generated_bss_id holds the NEW special bss created here upon validation
             $demandes_specimen->update([
                 'statut' => 'valide',
                 'valide_par' => $user->id,
                 'date_validation' => now(),
-                'original_bss_id' => $specialBss->id,
+                'generated_bss_id' => $specialBss->id,
             ]);
 
             // 4. CREATE COMMERCIAL ACTION (Optional - for tracking)
