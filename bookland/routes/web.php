@@ -371,6 +371,8 @@ Route::post('/formations/for-delegate/{delegate}', [FormationController::class, 
 Route::get('/events/for-delegate/{delegate}', [EventController::class, 'createForDelegate'])->name('events.createForDelegate')->middleware('auth', 'role:admin,rbo');
 Route::post('/events/for-delegate/{delegate}', [EventController::class, 'storeForDelegate'])->name('events.storeForDelegate')->middleware('auth', 'role:admin,rbo');
 
+Route::get('/actions/print-list', [ActionController::class, 'printList'])->name('actions.printList');
+Route::get('/actions/{action}/print', [ActionController::class, 'print'])->name('actions.print');
 Route::resource('actions', ActionController::class);
 Route::post('/actions/{action}/realiser', [ActionController::class, 'realiser'])->name('actions.realiser');
 Route::post('/actions/{action}/valider', [ActionController::class, 'valider'])->name('actions.valider');

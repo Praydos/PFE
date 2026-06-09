@@ -17,6 +17,7 @@ use App\Models\MpDelivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ActionController extends Controller
 {
@@ -376,6 +377,49 @@ class ActionController extends Controller
             }
             return $action;
         });
+    }
+
+    public function printList(Request $request)
+    {
+        $user = Auth::user();
+        $query = Action::with(['compte', 'delegate', 'lignes.contacts']);
+
+        if ($user->role !== 'admin') {
+            $query = $this->getDelegateScope($query);
+        }
+
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->filled('compte_id')) {
+            $query->where('compte_id', $request->compte_id);
+        }
+
+        if ($request->filled('delegue_id') && in_array($user->role, ['admin', 'abo', 'rbo'])) {
+            $query->where('delegue_id', $request->delegue_id);
+        }
+
+        $actions = $query->orderBy('date_planification', 'desc')->get();
+
+        $pdf = Pdf::loadView('actions.pdf_index', compact('actions'));
+        return $pdf->stream('actions_list.pdf');
+    }
+
+    public function print(Action $action)
+    {
+        $this->authorizeView($action);
+        $action->load('lignes.contacts', 'lignes.products', 'lignes.examens', 'lignes.bss', 'lignes.retour', 'compte', 'delegate');
+
+        $mpDelivery = null;
+        if ($action->module_lie === 'mp_delivery' && $action->module_id) {
+            $mpDelivery = MpDelivery::with(['mpProduct', 'anneeScolaire'])->find($action->module_id);
+        }
+
+        $pdf = Pdf::loadView('actions.pdf_show', compact('action', 'mpDelivery'));
+        return $pdf->stream('action_' . $action->id . '.pdf');
     }
 
     public function show(Action $action)

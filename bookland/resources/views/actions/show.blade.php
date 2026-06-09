@@ -380,6 +380,16 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
             <h1>{{ $action->objet }}</h1>
             <p>Action du {{ $action->date_planification->format('d/m/Y') }} – {{ $action->compte->etablissement }}</p>
         </div>
+        <div class="zn-header-right">
+            <a href="{{ route('actions.print', $action) }}" target="_blank" class="btn-zn btn-zn-ghost">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                Imprimer PDF
+            </a>
+        </div>
     </div>
 
     <div class="zn-card">
