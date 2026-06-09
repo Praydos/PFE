@@ -25,8 +25,7 @@ class ActionController extends Controller
         $user = Auth::user();
         if ($user->role === 'delegue') {
             $query->where('delegue_id', $user->id);
-        }
-        elseif ($user->role === 'rbo') {
+        } elseif ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
             $query->whereIn('delegue_id', $delegateIds);
         }
@@ -52,23 +51,49 @@ class ActionController extends Controller
             $query->where('compte_id', $request->compte_id);
         }
 
+        if ($request->filled('delegue_id') && in_array($user->role, ['admin', 'abo', 'rbo'])) {
+            $query->where('delegue_id', $request->delegue_id);
+        }
+
         $actions = $query->orderBy('date_planification', 'desc')->paginate(15);
         $comptes = Compte::orderBy('etablissement')->get();
         $statuts = ['planifie', 'realise', 'valide', 'annule', 'reporte'];
         $types = ['commercial', 'tache'];
 
-        return view('actions.index', compact('actions', 'comptes', 'statuts', 'types'));
+        $delegates = collect();
+        if (in_array($user->role, ['admin', 'abo'])) {
+            $delegates = User::where('role', 'delegue')->orderBy('nom')->get();
+        } elseif ($user->role === 'rbo') {
+            $delegates = $user->zonesAsRbo->flatMap->delegates->unique('id')->sortBy('nom')->values();
+        }
+
+        return view('actions.index', compact('actions', 'comptes', 'statuts', 'types', 'delegates'));
     }
 
     // Add these properties at the top of the class    
     private $requiresProduct = [
-        'Alimentation bibliothèque', 'Livraison Matériel promotionnel', 'Cadeaux personnalisés',
-        'Prix / Lots', 'Livres offerts', 'Visite de Prospection – Présentation Produits'    ];    private $requiresBss = [
-        'Livraison Spécimens', 'Retour Spécimens', 'Livraison Spécimens – Requêtes Spéciales', 'Livraison MP'    ];    private $requiresRetour = [
-        'Retour MP'    ];    private $requiresExamen = [
-        'Visite de Prospection – Présentation Examens'    ];
+        'Alimentation bibliothèque',
+        'Livraison Matériel promotionnel',
+        'Cadeaux personnalisés',
+        'Prix / Lots',
+        'Livres offerts',
+        'Visite de Prospection – Présentation Produits'
+    ];
+    private $requiresBss = [
+        'Livraison Spécimens',
+        'Retour Spécimens',
+        'Livraison Spécimens – Requêtes Spéciales',
+        'Livraison MP'
+    ];
+    private $requiresRetour = [
+        'Retour MP'
+    ];
+    private $requiresExamen = [
+        'Visite de Prospection – Présentation Examens'
+    ];
     // In the create method:    
-    public function create(Request $request)    {
+    public function create(Request $request)
+    {
         $user = Auth::user();
         // if ($user->role == 'ABO')
         //     abort(403);
@@ -103,8 +128,19 @@ class ActionController extends Controller
         );
 
         return view('actions.create', compact(
-            'comptes', 'categories', 'products', 'examens', 'bssList', 'retoursList',
-            'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen', 'selectedCompteId', 'defaultDate', 'prefilledDate'
+            'comptes',
+            'categories',
+            'products',
+            'examens',
+            'bssList',
+            'retoursList',
+            'requiresProduct',
+            'requiresBss',
+            'requiresRetour',
+            'requiresExamen',
+            'selectedCompteId',
+            'defaultDate',
+            'prefilledDate'
         ));
     }
 
@@ -115,30 +151,41 @@ class ActionController extends Controller
     {
         $this->authorizeForDelegate($delegate);
 
-        $comptes       = Compte::where('delegue_id', $delegate->id)->with('ville')->get();
-        $categories    = $this->getCategories();
-        $products      = Product::orderBy('titre')->get();
-        $examens       = Examen::orderBy('titre')->get();
-        $bssList       = Bss::where('delegue_id', $delegate->id)
-                            ->whereIn('statut', ['valide', 'livre'])
-                            ->with('compte')->get();
-        $retoursList   = Retour::whereHas('bss', fn($q) => $q->where('delegue_id', $delegate->id))
-                            ->with('bss.compte')->get();
+        $comptes = Compte::where('delegue_id', $delegate->id)->with('ville')->get();
+        $categories = $this->getCategories();
+        $products = Product::orderBy('titre')->get();
+        $examens = Examen::orderBy('titre')->get();
+        $bssList = Bss::where('delegue_id', $delegate->id)
+            ->whereIn('statut', ['valide', 'livre'])
+            ->with('compte')->get();
+        $retoursList = Retour::whereHas('bss', fn($q) => $q->where('delegue_id', $delegate->id))
+            ->with('bss.compte')->get();
 
         $requiresProduct = $this->requiresProduct;
-        $requiresBss     = $this->requiresBss;
-        $requiresRetour  = $this->requiresRetour;
-        $requiresExamen  = $this->requiresExamen;
+        $requiresBss = $this->requiresBss;
+        $requiresRetour = $this->requiresRetour;
+        $requiresExamen = $this->requiresExamen;
 
         $selectedCompteId = $request->get('compte_id');
-        $prefilledDate    = $request->get('date_planification', now()->toDateString());
-        $defaultDate      = $prefilledDate;
-        $targetDelegate   = $delegate;
+        $prefilledDate = $request->get('date_planification', now()->toDateString());
+        $defaultDate = $prefilledDate;
+        $targetDelegate = $delegate;
 
         return view('actions.create', compact(
-            'comptes', 'categories', 'products', 'examens', 'bssList', 'retoursList',
-            'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen',
-            'selectedCompteId', 'defaultDate', 'prefilledDate', 'targetDelegate'
+            'comptes',
+            'categories',
+            'products',
+            'examens',
+            'bssList',
+            'retoursList',
+            'requiresProduct',
+            'requiresBss',
+            'requiresRetour',
+            'requiresExamen',
+            'selectedCompteId',
+            'defaultDate',
+            'prefilledDate',
+            'targetDelegate'
         ));
     }
 
@@ -150,43 +197,47 @@ class ActionController extends Controller
         $this->authorizeForDelegate($delegate);
 
         $rules = [
-            'objet'                  => 'required|string|max:255',
-            'compte_id'              => 'required|exists:comptes,id',
-            'date_planification'     => 'required|date',
-            'heure'                  => 'nullable|date_format:H:i',
-            'duree'                  => 'nullable|integer|min:0',
-            'lieu'                   => 'nullable|string|max:255',
-            'rappel'                 => 'nullable|boolean',
-            'rappel_avant'           => 'nullable|integer|min:1',
-            'lines'                  => 'nullable|array',
-            'lines.*.categorie'      => 'required_with:lines|string',
-            'lines.*.action_type'    => 'required_with:lines|string',
-            'lines.*.moyen'          => 'nullable|string',
-            'lines.*.description'    => 'nullable|string',
-            'lines.*.contact_ids'    => 'nullable|array',
-            'lines.*.contact_ids.*'  => 'exists:contacts,id',
-            'lines.*.product_ids'    => 'nullable|array',
-            'lines.*.product_ids.*'  => 'exists:products,id',
-            'lines.*.examen_ids'     => 'nullable|array',
-            'lines.*.examen_ids.*'   => 'exists:examens,id',
-            'lines.*.bss_id'         => 'nullable|exists:bsses,id',
-            'lines.*.retour_id'      => 'nullable|exists:retours,id',
+            'objet' => 'required|string|max:255',
+            'compte_id' => 'required|exists:comptes,id',
+            'date_planification' => 'required|date',
+            'heure' => 'nullable|date_format:H:i',
+            'duree' => 'nullable|integer|min:0',
+            'lieu' => 'nullable|string|max:255',
+            'rappel' => 'nullable|boolean',
+            'rappel_avant' => 'nullable|integer|min:1',
+            'lines' => 'nullable|array',
+            'lines.*.categorie' => 'required_with:lines|string',
+            'lines.*.action_type' => 'required_with:lines|string',
+            'lines.*.moyen' => 'nullable|string',
+            'lines.*.description' => 'nullable|string',
+            'lines.*.contact_ids' => 'nullable|array',
+            'lines.*.contact_ids.*' => 'exists:contacts,id',
+            'lines.*.product_ids' => 'nullable|array',
+            'lines.*.product_ids.*' => 'exists:products,id',
+            'lines.*.examen_ids' => 'nullable|array',
+            'lines.*.examen_ids.*' => 'exists:examens,id',
+            'lines.*.bss_id' => 'nullable|exists:bsses,id',
+            'lines.*.retour_id' => 'nullable|exists:retours,id',
         ];
 
         $lines = $request->input('lines', []);
         foreach ($lines as $idx => $line) {
             $actionType = $line['action_type'] ?? '';
-            if (in_array($actionType, $this->requiresProduct))    $rules["lines.{$idx}.product_ids"] = 'required|array|min:1';
-            elseif (in_array($actionType, $this->requiresBss))    $rules["lines.{$idx}.bss_id"]      = 'required|exists:bsses,id';
-            elseif (in_array($actionType, $this->requiresRetour)) $rules["lines.{$idx}.retour_id"]   = 'required|exists:retours,id';
-            elseif (in_array($actionType, $this->requiresExamen)) $rules["lines.{$idx}.examen_ids"]  = 'required|array|min:1';
+            if (in_array($actionType, $this->requiresProduct))
+                $rules["lines.{$idx}.product_ids"] = 'required|array|min:1';
+            elseif (in_array($actionType, $this->requiresBss))
+                $rules["lines.{$idx}.bss_id"] = 'required|exists:bsses,id';
+            elseif (in_array($actionType, $this->requiresRetour))
+                $rules["lines.{$idx}.retour_id"] = 'required|exists:retours,id';
+            elseif (in_array($actionType, $this->requiresExamen))
+                $rules["lines.{$idx}.examen_ids"] = 'required|array|min:1';
         }
 
         $validated = $this->validateActionRequest($request, $rules);
 
         $validated['delegue_id'] = $delegate->id;
-        $validated['type']       = $request->type ?? 'commercial';
-        $validated['statut']     = 'planifie';
+        $validated['type'] = $request->type ?? 'commercial';
+        $validated['statut'] = 'planifie';
 
         $this->createActionWithLines($validated);
 
@@ -201,15 +252,18 @@ class ActionController extends Controller
     private function authorizeForDelegate(User $delegate): void
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
+        if ($user->role === 'admin')
+            return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($delegate->id)) return;
+            if ($delegateIds->contains($delegate->id))
+                return;
         }
         abort(403, 'Vous n\'êtes pas autorisé à créer des actions pour ce délégué.');
     }
 
-    public function store(Request $request)    {
+    public function store(Request $request)
+    {
         $user = Auth::user();
         if ($user->role !== 'admin' && ($user->role !== 'delegue'))
             abort(403);
@@ -245,14 +299,11 @@ class ActionController extends Controller
             $actionType = $line['action_type'] ?? '';
             if (in_array($actionType, $this->requiresProduct)) {
                 $rules["lines.{$idx}.product_ids"] = 'required|array|min:1';
-            }
-            elseif (in_array($actionType, $this->requiresBss)) {
+            } elseif (in_array($actionType, $this->requiresBss)) {
                 $rules["lines.{$idx}.bss_id"] = 'required|exists:bsses,id';
-            }
-            elseif (in_array($actionType, $this->requiresRetour)) {
+            } elseif (in_array($actionType, $this->requiresRetour)) {
                 $rules["lines.{$idx}.retour_id"] = 'required|exists:retours,id';
-            }
-            elseif (in_array($actionType, $this->requiresExamen)) {
+            } elseif (in_array($actionType, $this->requiresExamen)) {
                 $rules["lines.{$idx}.examen_ids"] = 'required|array|min:1';
             }
         }
@@ -354,31 +405,39 @@ class ActionController extends Controller
     }
 
     public function edit(Action $action)
-{
-    $this->authorizeEdit($action);
-    $user = Auth::user();
-    $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
-    $categories = $this->getCategories();
-    $action->load('lignes.contacts', 'lignes.products', 'lignes.examens');
+    {
+        $this->authorizeEdit($action);
+        $user = Auth::user();
+        $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
+        $categories = $this->getCategories();
+        $action->load('lignes.contacts', 'lignes.products', 'lignes.examens');
 
-    $products = Product::orderBy('titre')->get();
-    $examens = Examen::orderBy('titre')->get();
-    $bssOptions = Bss::where('delegue_id', $user->id)
-        ->whereIn('statut', ['valide', 'livre'])
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->map(fn($b) => ['id' => $b->id, 'label' => $b->numero . ' - ' . $b->compte->etablissement]);
+        $products = Product::orderBy('titre')->get();
+        $examens = Examen::orderBy('titre')->get();
+        $bssOptions = Bss::where('delegue_id', $user->id)
+            ->whereIn('statut', ['valide', 'livre'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($b) => ['id' => $b->id, 'label' => $b->numero . ' - ' . $b->compte->etablissement]);
 
-    $requiresProduct = $this->requiresProduct;
-    $requiresBss     = $this->requiresBss;
-    $requiresRetour  = $this->requiresRetour;
-    $requiresExamen  = $this->requiresExamen;
+        $requiresProduct = $this->requiresProduct;
+        $requiresBss = $this->requiresBss;
+        $requiresRetour = $this->requiresRetour;
+        $requiresExamen = $this->requiresExamen;
 
-    return view('actions.edit', compact(
-        'action', 'comptes', 'categories', 'products', 'examens', 'bssOptions',
-        'requiresProduct', 'requiresBss', 'requiresRetour', 'requiresExamen'
-    ));
-}
+        return view('actions.edit', compact(
+            'action',
+            'comptes',
+            'categories',
+            'products',
+            'examens',
+            'bssOptions',
+            'requiresProduct',
+            'requiresBss',
+            'requiresRetour',
+            'requiresExamen'
+        ));
+    }
 
     public function update(Request $request, Action $action)
     {
@@ -437,7 +496,7 @@ class ActionController extends Controller
     public function realiser(Request $request, Action $action)
     {
         $user = Auth::user();
-        if ($user->role !== 'admin' && ($user->role !== 'delegue' || (int) $action->delegue_id !== (int)$user->id)) {
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || (int) $action->delegue_id !== (int) $user->id)) {
             abort(403);
         }
         YearLock::check($action);
@@ -461,7 +520,7 @@ class ActionController extends Controller
         $mp = null;
         if ($action->module_lie === 'mp_delivery' && $action->module_id) {
             $mp = MpDelivery::with('anneeScolaire')->find($action->module_id);
-            if (! $mp) {
+            if (!$mp) {
                 return redirect()->back()->with('error', 'Livraison MP introuvable.');
             }
             YearLock::check($mp);
@@ -557,7 +616,7 @@ class ActionController extends Controller
         $isMp = $action->module_lie === 'mp_delivery';
         $this->authorizeEdit($action);
 
-        if (! in_array($action->statut, ['planifie', 'realise'])) {
+        if (!in_array($action->statut, ['planifie', 'realise'])) {
             return redirect()->back()->with('error', 'Action non annulable.');
         }
         if ($isMp && $action->module_id) {
@@ -632,13 +691,13 @@ class ActionController extends Controller
     // Helpers
     private function getCategories()
     {
-        return [ 'Action Marketing', 'Correspondance', 'Action Promotion'];
+        return ['Action Marketing', 'Correspondance', 'Action Promotion'];
     }
 
     private function getActionTypesForCategory($category)
     {
         $map = [
-           
+
             'Action Marketing' => [
                 'Visite de courtoisie',
                 'Livraison Matériel promotionnel',
@@ -698,7 +757,7 @@ class ActionController extends Controller
         $user = Auth::user();
         if ($user->role === 'admin')
             return;
-        if($user->role === 'abo')
+        if ($user->role === 'abo')
             return;
         if ($user->role === 'delegue' && $action->delegue_id === $user->id)
             return;
