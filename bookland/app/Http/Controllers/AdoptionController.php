@@ -9,6 +9,7 @@ use App\Models\Compte;
 use App\Models\Product;
 use App\Models\Contact;
 use App\Models\AnneeScolaire;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,14 +21,15 @@ class AdoptionController extends Controller
     }
 
     private function getPreviousYear()
-{
-    $current = $this->getCurrentYear();
-    if (!$current) return null;
+    {
+        $current = $this->getCurrentYear();
+        if (!$current)
+            return null;
 
-    return AnneeScolaire::where('date_debut', '<', $current->date_debut)
-        ->orderBy('date_debut', 'desc')
-        ->first();
-}
+        return AnneeScolaire::where('date_debut', '<', $current->date_debut)
+            ->orderBy('date_debut', 'desc')
+            ->first();
+    }
 
     // List adoptions (role‑based)
     public function index(Request $request)
@@ -42,118 +44,133 @@ class AdoptionController extends Controller
             $query->whereIn('delegate_id', $delegateIds);
         }
 
-        if ($request->filled('compte_id')) $query->where('compte_id', $request->compte_id);
-        if ($request->filled('annee_scolaire_id')) $query->where('annee_scolaire_id', $request->annee_scolaire_id);
+        if ($request->filled('compte_id'))
+            $query->where('compte_id', $request->compte_id);
+        if ($request->filled('annee_scolaire_id'))
+            $query->where('annee_scolaire_id', $request->annee_scolaire_id);
+        if ($request->filled('delegue_id') && in_array($user->role, ['admin', 'abo', 'rbo'])) {
+            $query->where('delegate_id', $request->delegue_id);
+        }
 
         $adoptions = $query->orderBy('date_adoption', 'desc')->paginate(15);
-if ($user->role === 'delegue') {
-    $comptes = Compte::where('delegue_id', $user->id)->orderBy('etablissement')->get();
-} else {
-    $comptes = Compte::orderBy('etablissement')->get();
-}
-$years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+        if ($user->role === 'delegue') {
+            $comptes = Compte::where('delegue_id', $user->id)->orderBy('etablissement')->get();
+        } else {
+            $comptes = Compte::orderBy('etablissement')->get();
+        }
+        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
 
-        return view('adoptions.index', compact('adoptions', 'comptes', 'years'));
+        $delegates = collect();
+        if (in_array($user->role, ['admin', 'abo'])) {
+            $delegates = User::where('role', 'delegue')->orderBy('nom')->get();
+        } elseif ($user->role === 'rbo') {
+            $delegates = $user->zonesAsRbo->flatMap->delegates->unique('id')->sortBy('nom')->values();
+        }
+
+        return view('adoptions.index', compact('adoptions', 'comptes', 'years', 'delegates'));
     }
 
     // Manual adoption – create form (only delegates)
     public function create()
-{
-    $user = Auth::user();
-    if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
+    {
+        $user = Auth::user();
+        if ($user->role !== 'admin' && ($user->role !== 'delegue'))
+            abort(403);
 
-    $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
-    // Include the fields needed for the form
-    $products = Product::orderBy('titre')->get(['id', 'titre', 'isbn_13', 'isbn_10', 'sous_categorie']);
-    $currentYear = $this->getCurrentYear();
-    $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
+        $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
+        // Include the fields needed for the form
+        $products = Product::orderBy('titre')->get(['id', 'titre', 'isbn_13', 'isbn_10', 'sous_categorie']);
+        $currentYear = $this->getCurrentYear();
+        $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
 
-    if (!$currentYear) return redirect()->back()->withErrors(['error' => 'Aucune année scolaire active.']);
+        if (!$currentYear)
+            return redirect()->back()->withErrors(['error' => 'Aucune année scolaire active.']);
 
-    $contacts = collect();
-    return view('adoptions.create', compact('comptes', 'products', 'currentYear', 'years', 'contacts'));
-}
+        $contacts = collect();
+        return view('adoptions.create', compact('comptes', 'products', 'currentYear', 'years', 'contacts'));
+    }
     // Store manual adoption
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'admin' && ($user->role !== 'delegue')) abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue'))
+            abort(403);
 
         $validated = $request->validate([
-        'compte_id' => 'required|exists:comptes,id',
-        'contact_id' => 'required|exists:contacts,id',
-        'methode' => 'required|string|max:255',
-        'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
-        'date_adoption' => 'required|date',
+            'compte_id' => 'required|exists:comptes,id',
+            'contact_id' => 'required|exists:contacts,id',
+            'methode' => 'required|string|max:255',
+            'annee_scolaire_id' => 'required|exists:annees_scolaires,id',
+            'date_adoption' => 'required|date',
 
-        'products' => 'required|array|min:1',
-        'products.*.product_id' => 'required|exists:products,id',
-        'products.*.niveau' => 'required|string|max:255',
-        'products.*.cycle' => 'required|string|max:255',
-        'products.*.quantity' => 'required|integer|min:1',
+            'products' => 'required|array|min:1',
+            'products.*.product_id' => 'required|exists:products,id',
+            'products.*.niveau' => 'required|string|max:255',
+            'products.*.cycle' => 'required|string|max:255',
+            'products.*.quantity' => 'required|integer|min:1',
 
-        'products.*.type_adoption' => 'required|in:BOOKLAND,ESPRIT_DU_LIVRE,CONCURRENT',
-        'products.*.isbn' => 'nullable|string|max:255',
-        'products.*.sous_categorie' => 'nullable|string|max:255',
-    ]);
+            'products.*.type_adoption' => 'required|in:BOOKLAND,ESPRIT_DU_LIVRE,CONCURRENT',
+            'products.*.isbn' => 'nullable|string|max:255',
+            'products.*.sous_categorie' => 'nullable|string|max:255',
+        ]);
 
-    $previousYear = $this->getPreviousYear();
-    $yearIds = collect([$validated['annee_scolaire_id']]);
-    // Also block if a BSS was delivered in the previous year for this product+compte
-    if ($previousYear) {
-        $yearIds->push($previousYear->id);
-    }
+        $previousYear = $this->getPreviousYear();
+        $yearIds = collect([$validated['annee_scolaire_id']]);
+        // Also block if a BSS was delivered in the previous year for this product+compte
+        if ($previousYear) {
+            $yearIds->push($previousYear->id);
+        }
 
 
 
-        
 
-    $errors = [];
-$createdCount = 0;
 
-foreach ($validated['products'] as $product) {
-    // Check manual adoption duplicates across current + previous year
-    $adoptionExists = Adoption::where('compte_id', $validated['compte_id'])
-        ->where('product_id', $product['product_id'])
-        ->whereIn('annee_scolaire_id', $yearIds->all())
-        ->exists();
+        $errors = [];
+        $createdCount = 0;
 
-    // Also check if a BSS specimen was already delivered in current or previous year
-    $bssExists = BssLigne::whereHas('bss', function ($q) use ($validated, $yearIds) {
-        $q->where('compte_id', $validated['compte_id'])
-          ->whereIn('annee_scolaire_id', $yearIds->all())
-          ->where('statut', '!=', 'refuse');
-    })->where('product_id', $product['product_id'])->exists();
+        foreach ($validated['products'] as $product) {
+            // Check manual adoption duplicates across current + previous year
+            $adoptionExists = Adoption::where('compte_id', $validated['compte_id'])
+                ->where('product_id', $product['product_id'])
+                ->whereIn('annee_scolaire_id', $yearIds->all())
+                ->exists();
 
-    if ($adoptionExists || $bssExists) {
-        $errors[] = "Le produit ID {$product['product_id']} a déjà été livré ou adopté pour ce compte cette année ou l'année précédente.";
-        continue;
-    }
+            // Also check if a BSS specimen was already delivered in current or previous year
+            $bssExists = BssLigne::whereHas('bss', function ($q) use ($validated, $yearIds) {
+                $q->where('compte_id', $validated['compte_id'])
+                    ->whereIn('annee_scolaire_id', $yearIds->all())
+                    ->where('statut', '!=', 'refuse');
+            })->where('product_id', $product['product_id'])->exists();
 
-    Adoption::create([
-        'compte_id'        => $validated['compte_id'],
-        'product_id'       => $product['product_id'],
-        'contact_id'       => $validated['contact_id'],
-        'methode'          => $validated['methode'],
-        'annee_scolaire_id'=> $validated['annee_scolaire_id'],
-        'quantity'         => $product['quantity'],
-        'date_adoption'    => $validated['date_adoption'],
-        'delegate_id'      => $user->id,
-        'niveau'           => $product['niveau'],
-        'cycle'            => $product['cycle'],
-        'bss_ligne_id'     => null,
-        'type_adoption'    => $product['type_adoption'],
-        'isbn'             => $product['isbn'],
-        'sous_categorie'   => $product['sous_categorie'],
-    ]);
-    $createdCount++;
-}
+            if ($adoptionExists || $bssExists) {
+                $errors[] = "Le produit ID {$product['product_id']} a déjà été livré ou adopté pour ce compte cette année ou l'année précédente.";
+                continue;
+            }
 
-if ($createdCount > 0) {
-    return redirect()->route('adoptions.index')->with('success', "$createdCount adoption(s) enregistrée(s).");
-} else {
-    return redirect()->back()->withErrors(['products' => 'Aucune adoption n\'a été créée. ' . implode(' ', $errors)])->withInput();
-}
+            Adoption::create([
+                'compte_id' => $validated['compte_id'],
+                'product_id' => $product['product_id'],
+                'contact_id' => $validated['contact_id'],
+                'methode' => $validated['methode'],
+                'annee_scolaire_id' => $validated['annee_scolaire_id'],
+                'quantity' => $product['quantity'],
+                'date_adoption' => $validated['date_adoption'],
+                'delegate_id' => $user->id,
+                'niveau' => $product['niveau'],
+                'cycle' => $product['cycle'],
+                'bss_ligne_id' => null,
+                'type_adoption' => $product['type_adoption'],
+                'isbn' => $product['isbn'],
+                'sous_categorie' => $product['sous_categorie'],
+            ]);
+            $createdCount++;
+        }
+
+        if ($createdCount > 0) {
+            return redirect()->route('adoptions.index')->with('success', "$createdCount adoption(s) enregistrée(s).");
+        } else {
+            return redirect()->back()->withErrors(['products' => 'Aucune adoption n\'a été créée. ' . implode(' ', $errors)])->withInput();
+        }
 
         // return redirect()->route('adoptions.index')->with('success', 'Adoption enregistrée.');
     }
@@ -185,25 +202,34 @@ if ($createdCount > 0) {
             $product = Product::find($ligne->product_id);
             $defaultLines[] = [
                 'bss_ligne_id' => $ligne->id,
-                'product_id'   => $ligne->product_id,
-                'quantity'     => $ligne->quantity,
-                'isbn'         => $product->isbn_13 ?? $product->isbn_10 ?? '',
+                'product_id' => $ligne->product_id,
+                'quantity' => $ligne->quantity,
+                'isbn' => $product->isbn_13 ?? $product->isbn_10 ?? '',
                 'sous_categorie' => $product->sous_categorie ?? '',
-                'niveau'       => null,
-                'cycle'        => null,
+                'niveau' => null,
+                'cycle' => null,
             ];
         }
 
-        $defaultCompteId  = $bss->compte_id;
+        $defaultCompteId = $bss->compte_id;
         $defaultContactId = $bss->contact_id;
-        $defaultDate      = now()->toDateString();
-        $defaultMethode   = null;
+        $defaultDate = now()->toDateString();
+        $defaultMethode = null;
 
         $contacts = Contact::whereHas('comptes', fn($q) => $q->where('comptes.id', $bss->compte_id))->get();
 
         return view('adoptions.convert', compact(
-            'bss', 'comptes', 'products', 'currentYear', 'years', 'defaultContactId', 'contacts',
-            'defaultCompteId', 'defaultDate', 'defaultMethode', 'defaultLines'
+            'bss',
+            'comptes',
+            'products',
+            'currentYear',
+            'years',
+            'defaultContactId',
+            'contacts',
+            'defaultCompteId',
+            'defaultDate',
+            'defaultMethode',
+            'defaultLines'
         ));
     }
 
@@ -237,7 +263,8 @@ if ($createdCount > 0) {
 
         $previousYear = $this->getPreviousYear();
         $yearIds = collect([$annee_scolaire_id]);
-        if ($previousYear) $yearIds->push($previousYear->id);
+        if ($previousYear)
+            $yearIds->push($previousYear->id);
 
         $created = 0;
         foreach ($validated['products'] as $item) {
@@ -247,9 +274,9 @@ if ($createdCount > 0) {
             }
 
             $exists = Adoption::where('compte_id', $compte_id)
-    ->where('product_id', $item['product_id'])
-    ->whereIn('annee_scolaire_id', $yearIds->all())
-    ->exists();
+                ->where('product_id', $item['product_id'])
+                ->whereIn('annee_scolaire_id', $yearIds->all())
+                ->exists();
 
             if ($exists) {
                 continue; // or return error
@@ -288,9 +315,9 @@ if ($createdCount > 0) {
     // Show a single adoption (detail view)
     public function show(Adoption $adoption)
     {
-        
+
         $this->authorizeView($adoption);
-        
+
         return view('adoptions.show', compact('adoption'));
     }
 
@@ -298,7 +325,8 @@ if ($createdCount > 0) {
     public function edit(Adoption $adoption)
     {
         $user = Auth::user();
-        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id)) abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id))
+            abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
         $products = Product::orderBy('titre')->get();
@@ -313,7 +341,8 @@ if ($createdCount > 0) {
     public function update(Request $request, Adoption $adoption)
     {
         $user = Auth::user();
-        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id)) abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id))
+            abort(403);
 
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',
@@ -348,18 +377,18 @@ if ($createdCount > 0) {
         if (!$adoption->bss_ligne_id) {
             $bssExists = BssLigne::whereHas('bss', function ($q) use ($validated, $yearIds) {
                 $q->where('compte_id', $validated['compte_id'])
-                  ->whereIn('annee_scolaire_id', $yearIds->all())
-                  ->where('statut', '!=', 'refuse');
+                    ->whereIn('annee_scolaire_id', $yearIds->all())
+                    ->where('statut', '!=', 'refuse');
             })->where('product_id', $validated['product_id'])->exists();
         } else {
             $bssExists = BssLigne::whereHas('bss', function ($q) use ($validated, $yearIds) {
                 $q->where('compte_id', $validated['compte_id'])
-                  ->whereIn('annee_scolaire_id', $yearIds->all())
-                  ->where('statut', '!=', 'refuse');
+                    ->whereIn('annee_scolaire_id', $yearIds->all())
+                    ->where('statut', '!=', 'refuse');
             })
-            ->where('product_id', $validated['product_id'])
-            ->where('id', '!=', $adoption->bss_ligne_id)
-            ->exists();
+                ->where('product_id', $validated['product_id'])
+                ->where('id', '!=', $adoption->bss_ligne_id)
+                ->exists();
         }
 
         if ($adoptionExists || $bssExists) {
@@ -374,7 +403,8 @@ if ($createdCount > 0) {
     public function destroy(Adoption $adoption)
     {
         $user = Auth::user();
-        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id)) abort(403);
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $adoption->delegate_id !== $user->id))
+            abort(403);
         $adoption->delete();
         return redirect()->route('adoptions.index')->with('success', 'Adoption supprimée.');
     }
@@ -439,12 +469,16 @@ if ($createdCount > 0) {
     private function authorizeView(Adoption $adoption)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'abo') return;
-        if ($user->role === 'delegue' && $adoption->delegate_id === $user->id) return;
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'abo')
+            return;
+        if ($user->role === 'delegue' && $adoption->delegate_id === $user->id)
+            return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($adoption->delegate_id)) return;
+            if ($delegateIds->contains($adoption->delegate_id))
+                return;
         }
         abort(403);
     }
