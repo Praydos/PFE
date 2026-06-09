@@ -16,6 +16,7 @@ use App\Models\Consignation;
 use App\Support\YearLock;
 use Illuminate\Http\Request;
 use App\Models\Action;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -39,23 +40,38 @@ class DemandeSpecimenController extends Controller
             $query->whereIn('delegue_id', $delegateIds);
         }
 
-        if ($request->filled('statut')) $query->where('statut', $request->statut);
-        if ($request->filled('type')) $query->where('type', $request->type);
-        if ($request->filled('compte_id')) $query->where('compte_id', $request->compte_id);
+        if ($request->filled('statut'))
+            $query->where('statut', $request->statut);
+        if ($request->filled('type'))
+            $query->where('type', $request->type);
+        if ($request->filled('compte_id'))
+            $query->where('compte_id', $request->compte_id);
+
+        if ($request->filled('delegue_id') && in_array($user->role, ['admin', 'abo', 'rbo'])) {
+            $query->where('delegue_id', $request->delegue_id);
+        }
 
         $demandes = $query->orderBy('created_at', 'desc')->paginate(15);
         $comptes = Compte::orderBy('etablissement')->get();
         $statuts = ['demande', 'valide', 'decline', 'annule'];
         $types = ['etablissement', 'personnelle'];
 
-        return view('demandes_specimens.index', compact('demandes', 'comptes', 'statuts', 'types'));
+        $delegates = collect();
+        if (in_array($user->role, ['admin', 'abo'])) {
+            $delegates = User::where('role', 'delegue')->orderBy('nom')->get();
+        } elseif ($user->role === 'rbo') {
+            $delegates = $user->zonesAsRbo->flatMap->delegates->unique('id')->sortBy('nom')->values();
+        }
+
+        return view('demandes_specimens.index', compact('demandes', 'comptes', 'statuts', 'types', 'delegates'));
     }
 
     // Create form
     public function create()
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' && $user->role !== 'admin') abort(403);
+        if ($user->role !== 'delegue' && $user->role !== 'admin')
+            abort(403);
 
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
         $products = Product::orderBy('titre')->get();
@@ -92,7 +108,8 @@ class DemandeSpecimenController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' && $user->role !== 'admin') abort(403);
+        if ($user->role !== 'delegue' && $user->role !== 'admin')
+            abort(403);
 
         $validated = $request->validate([
             'type' => 'required|in:etablissement,personnelle',
@@ -135,10 +152,10 @@ class DemandeSpecimenController extends Controller
         // ========================================================================
         // NEW VALIDATION LOGIC: Check products against consignation & deliveries
         // ========================================================================
-        
+
         foreach ($validated['products'] as $item) {
             $productId = $item['product_id'];
-            
+
             // Check if product exists in delegate's consignation
             $consignation = Consignation::where('delegate_id', $user->id)
                 ->where('product_id', $productId)
@@ -151,8 +168,8 @@ class DemandeSpecimenController extends Controller
                 $alreadyDelivered = BssLigne::where('product_id', $productId)
                     ->whereHas('bss', function ($q) use ($compteId, $yearIds) {
                         $q->where('compte_id', $compteId)
-                          ->whereIn('annee_scolaire_id', $yearIds)
-                          ->whereIn('statut', ['valide', 'livre','retour','adopte']);
+                            ->whereIn('annee_scolaire_id', $yearIds)
+                            ->whereIn('statut', ['valide', 'livre', 'retour', 'adopte']);
                     })
                     ->exists();
 
@@ -172,7 +189,7 @@ class DemandeSpecimenController extends Controller
         // ========================================================================
         // CREATE SPECIAL DEMANDE IN "DEMANDE" STATUS (PENDING VALIDATION)
         // ========================================================================
-        
+
         $demande = DemandeSpecimen::create([
             'type' => $validated['type'],
             'compte_id' => $compteId ?? null,
@@ -204,10 +221,10 @@ class DemandeSpecimenController extends Controller
     {
         $this->authorizeView($demandes_specimen);
         $demandes_specimen->load('lignes.product', 'compte', 'contact', 'ville', 'zone', 'originalBss', 'validePar');
-        
+
         // Check if validated (locked)
         $isLocked = $demandes_specimen->statut === 'valide';
-        
+
         return view('demandes_specimens.show', compact('demandes_specimen', 'isLocked'));
     }
 
@@ -219,14 +236,14 @@ class DemandeSpecimenController extends Controller
             return redirect()->route('demandes-specimens.index')
                 ->with('error', 'Seules les demandes en attente peuvent être modifiées.');
         }
-        
+
         $user = Auth::user();
         $comptes = Compte::where('delegue_id', $user->id)->with('ville')->get();
         $products = Product::orderBy('titre')->get();
         $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
         $villes = $this->getUserVilles($user);
         $zones = Zone::all();
-        
+
         return view('demandes_specimens.edit', compact('demandes_specimen', 'comptes', 'products', 'years', 'villes', 'zones'));
     }
 
@@ -235,7 +252,8 @@ class DemandeSpecimenController extends Controller
     {
         YearLock::check($demandes_specimen);
         $this->authorizeEdit($demandes_specimen);
-        if ($demandes_specimen->statut !== 'demande') abort(403);
+        if ($demandes_specimen->statut !== 'demande')
+            abort(403);
 
         $validated = $request->validate([
             'type' => 'required|in:etablissement,personnelle',
@@ -257,7 +275,7 @@ class DemandeSpecimenController extends Controller
             'contact_id' => $validated['contact_id'] ?? null,
             'description' => $validated['description'] ?? null,
         ];
-        
+
         if ($validated['type'] === 'etablissement' && $validated['compte_id']) {
             $compte = Compte::find($validated['compte_id']);
             $headerData['ville_id'] = $compte->ville_id;
@@ -266,7 +284,7 @@ class DemandeSpecimenController extends Controller
             $headerData['ville_id'] = $validated['ville_id'];
             $headerData['zone_id'] = $validated['zone_id'];
         }
-        
+
         $demandes_specimen->update($headerData);
 
         // Sync lines
@@ -376,7 +394,7 @@ class DemandeSpecimenController extends Controller
 
             // 1. Create Special BSS with "SPECIAL" in numero
             $specialBssNumber = $this->generateSpecialBssNumber();
-            
+
             $specialBss = Bss::create([
                 'numero' => $specialBssNumber,
                 'compte_id' => $demandes_specimen->compte_id,
@@ -470,12 +488,16 @@ class DemandeSpecimenController extends Controller
     private function authorizeView(DemandeSpecimen $demande)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'abo') return;
-        if ($user->role === 'delegue' && $demande->delegue_id === $user->id) return;
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'abo')
+            return;
+        if ($user->role === 'delegue' && $demande->delegue_id === $user->id)
+            return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($demande->delegue_id)) return;
+            if ($delegateIds->contains($demande->delegue_id))
+                return;
         }
         abort(403);
     }
@@ -483,8 +505,10 @@ class DemandeSpecimenController extends Controller
     private function authorizeEdit(DemandeSpecimen $demande)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'delegue' && $demande->delegue_id === $user->id && $demande->statut === 'demande') return;
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'delegue' && $demande->delegue_id === $user->id && $demande->statut === 'demande')
+            return;
         abort(403);
     }
 }

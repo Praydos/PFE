@@ -60,8 +60,7 @@ class BssController extends Controller
 
         if ($user->role === 'delegue') {
             $query->where('delegate_id', $user->id);
-        }
-        elseif ($user->role === 'rbo') {
+        } elseif ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
             $query->whereIn('delegate_id', $delegateIds);
         }
@@ -70,7 +69,7 @@ class BssController extends Controller
         if ($request->filled('statut')) {
             $query->where('statut', $request->statut);
         }
-        if ($user->role !== 'admin' && ($request->filled('delegate_id') && $user->role !== 'delegue')) {
+        if ($request->filled('delegate_id') && $user->role !== 'delegue') {
             $query->where('delegate_id', $request->delegate_id);
         }
         if ($request->filled('compte_id')) {
@@ -80,14 +79,21 @@ class BssController extends Controller
         $bssList = $query->orderBy('created_at', 'desc')->paginate(15);
 
         // For filters
-        $delegates = $user->role === 'admin' ?User::where('role', 'delegue')->get() : collect();
+        if (in_array($user->role, ['admin', 'abo'])) {
+            $delegates = User::where('role', 'delegue')->get();
+        } elseif ($user->role === 'rbo') {
+            $delegates = $user->zonesAsRbo->flatMap->delegates->unique('id');
+        } else {
+            $delegates = collect();
+        }
         $comptes = Compte::orderBy('etablissement')->get();
 
         return view('bss.index', compact('bssList', 'delegates', 'comptes'));
     }
 
     // Show creation form
-    public function create(Request $request)    {
+    public function create(Request $request)
+    {
         $user = Auth::user();
         if ($user->role !== 'delegue' && $user->role !== 'admin')
             abort(403);
@@ -99,7 +105,7 @@ class BssController extends Controller
         $selectedCompteId = request('compte_id');
         if ($selectedCompteId && $comptes->contains('id', $selectedCompteId)) {
             $selectedCompte = $comptes->find($selectedCompteId);
-        // You can also pre‑select the first contact of that compte if needed
+            // You can also pre‑select the first contact of that compte if needed
         }
 
         $currentYear = $this->getCurrentYear();
@@ -114,10 +120,12 @@ class BssController extends Controller
         $numero = $this->generateNumero();
         $defaultDate = $request->get('date_livraison_prevue', now()->toDateString());
 
-        return view('bss.create', compact('comptes', 'contacts', 'consignations', 'numero', 'currentYear', 'selectedCompteId', 'defaultDate'));    }
+        return view('bss.create', compact('comptes', 'contacts', 'consignations', 'numero', 'currentYear', 'selectedCompteId', 'defaultDate'));
+    }
 
     // Store new BSS
-    public function store(Request $request)    {
+    public function store(Request $request)
+    {
         $user = Auth::user();
         if ($user->role !== 'delegue' && $user->role !== 'admin')
             abort(403);
@@ -185,10 +193,10 @@ class BssController extends Controller
         if (!empty($alreadyDelivered)) {
             return redirect()->back()
                 ->withErrors([
-                'products' => 'Ces produits ont déjà été livrés à ce compte cette année ou l\'année précédente : '
-                . implode(', ', $alreadyDelivered)
-                . '. Un seul spécimen par an et par an précédent est autorisé.',
-            ])
+                    'products' => 'Ces produits ont déjà été livrés à ce compte cette année ou l\'année précédente : '
+                        . implode(', ', $alreadyDelivered)
+                        . '. Un seul spécimen par an et par an précédent est autorisé.',
+                ])
                 ->withInput();
         }
 
@@ -266,7 +274,8 @@ class BssController extends Controller
             $actionLine->contacts()->attach($bss->contact_id);
         }
 
-        return redirect()->route('bss.index')->with('success', 'BSS créé et livraison planifiée.');    }
+        return redirect()->route('bss.index')->with('success', 'BSS créé et livraison planifiée.');
+    }
 
     // Show a single BSS (detail)
     public function show(Bss $bss)
@@ -289,7 +298,8 @@ class BssController extends Controller
     }
 
     // Update feedback and document control
-    public function update(Request $request, Bss $bss)    {
+    public function update(Request $request, Bss $bss)
+    {
         YearLock::check($bss);
         $user = Auth::user();
         if ($user->role !== 'admin' && ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'valide')) {
@@ -306,7 +316,8 @@ class BssController extends Controller
             $ligne->update(['statut_ligne' => 'livree']);
         }
         $bss->update(['statut' => 'livre']);
-        return redirect()->route('bss.show', $bss)->with('success', 'Feedback enregistré.');    }
+        return redirect()->route('bss.show', $bss)->with('success', 'Feedback enregistré.');
+    }
 
     // Validation by RBO/Admin
     public function validateBss(Request $request, Bss $bss)
@@ -330,8 +341,7 @@ class BssController extends Controller
                 'validated_by' => $user->id,
             ]);
             $message = 'BSS approuvé.';
-        }
-        else {
+        } else {
             $bss->update([
                 'statut' => 'refuse',
                 'motif_refus' => $request->motif_refus,
@@ -399,8 +409,14 @@ class BssController extends Controller
         $targetDelegate = $delegate;
 
         return view('bss.create', compact(
-            'comptes', 'contacts', 'consignations', 'numero',
-            'currentYear', 'selectedCompteId', 'defaultDate', 'targetDelegate'
+            'comptes',
+            'contacts',
+            'consignations',
+            'numero',
+            'currentYear',
+            'selectedCompteId',
+            'defaultDate',
+            'targetDelegate'
         ));
     }
 
@@ -408,7 +424,7 @@ class BssController extends Controller
     {
         $this->authorizeForDelegate($delegate);
 
-                $rules = [
+        $rules = [
             // 'numero' => 'required|unique:bsses,numero', // removed to auto-generate
             'compte_id' => 'required|exists:comptes,id',
             'contact_id' => 'required|exists:contacts,id',
@@ -432,8 +448,7 @@ class BssController extends Controller
         $validated['numero'] = $this->generateNumero();
         if ($request->recupere_par_type === 'contact') {
             $rules['recupere_par_nom_contact'] = 'required|string|max:255';
-        }
-        else {
+        } else {
             $rules['numero_expedition'] = 'required|string|max:255';
         }
 

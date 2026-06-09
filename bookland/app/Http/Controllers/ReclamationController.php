@@ -61,6 +61,10 @@ class ReclamationController extends Controller
             $query->whereIn('delegue_id', $delegateIds);
         }
 
+        if ($request->filled('delegue_id') && $user->role !== 'delegue') {
+            $query->where('delegue_id', $request->delegue_id);
+        }
+
         if ($request->filled('statut'))
             $query->where('statut', $request->statut);
         if ($request->filled('categorie'))
@@ -73,7 +77,15 @@ class ReclamationController extends Controller
         $statuts = ['brouillon', 'en_cours', 'mise_en_attente', 'cloturee', 'annulee'];
         $categories = $this->getCategories();
 
-        return view('reclamations.index', compact('reclamations', 'comptes', 'statuts', 'categories'));
+        if (in_array($user->role, ['admin', 'abo'])) {
+            $delegates = User::where('role', 'delegue')->get();
+        } elseif ($user->role === 'rbo') {
+            $delegates = $user->zonesAsRbo->flatMap->delegates->unique('id');
+        } else {
+            $delegates = collect();
+        }
+
+        return view('reclamations.index', compact('reclamations', 'comptes', 'statuts', 'categories', 'delegates'));
     }
 
     public function create()

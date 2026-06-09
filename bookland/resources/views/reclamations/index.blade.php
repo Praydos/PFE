@@ -243,6 +243,17 @@
     {{-- Filter bar --}}
     <div class="zn-search-bar">
         <form method="GET" action="{{ route('reclamations.index') }}" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+            @if(auth()->user()->role !== 'delegue')
+            <div class="zn-filter-group">
+                <label class="zn-filter-label">Délégué</label>
+                <select name="delegue_id" class="zn-select">
+                    <option value="">Tous</option>
+                    @foreach($delegates as $del)
+                        <option value="{{ $del->id }}" {{ request('delegue_id') == $del->id ? 'selected' : '' }}>{{ $del->prenom }} {{ $del->nom }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
             <div class="zn-filter-group">
                 <label class="zn-filter-label">Statut</label>
                 <select name="statut" class="zn-select">
