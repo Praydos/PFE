@@ -12,6 +12,7 @@ use App\Models\AnneeScolaire;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdoptionController extends Controller
 {
@@ -461,6 +462,45 @@ class AdoptionController extends Controller
             'effectif_valide' => $effectif ? $effectif->effectif_valide : null,
             'is_validated' => $effectif ? $effectif->is_validated : false,
         ]);
+    }
+
+    // ------------------------------------------------------------------
+    // PDF Printing
+    // ------------------------------------------------------------------
+    public function printList(Request $request)
+    {
+        $user = Auth::user();
+        $query = Adoption::with(['compte', 'product', 'anneeScolaire', 'delegate', 'bssLigne']);
+
+        if ($user->role === 'delegue') {
+            $query->where('delegate_id', $user->id);
+        } elseif ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            $query->whereIn('delegate_id', $delegateIds);
+        }
+
+        if ($request->filled('compte_id'))
+            $query->where('compte_id', $request->compte_id);
+        if ($request->filled('annee_scolaire_id'))
+            $query->where('annee_scolaire_id', $request->annee_scolaire_id);
+        if ($request->filled('delegue_id') && in_array($user->role, ['admin', 'abo', 'rbo'])) {
+            $query->where('delegate_id', $request->delegue_id);
+        }
+
+        $adoptions = $query->orderBy('date_adoption', 'desc')->get();
+
+        $pdf = Pdf::loadView('adoptions.pdf_index', compact('adoptions'));
+        $pdf->setPaper('a4', 'landscape');
+        return $pdf->stream('adoptions_' . date('Y-m-d') . '.pdf');
+    }
+
+    public function print(Adoption $adoption)
+    {
+        $this->authorizeView($adoption);
+        $adoption->load(['compte', 'product', 'anneeScolaire', 'delegate', 'contact', 'bssLigne.bss']);
+
+        $pdf = Pdf::loadView('adoptions.pdf_show', compact('adoption'));
+        return $pdf->stream('adoption_' . $adoption->id . '.pdf');
     }
 
     // ------------------------------------------------------------------

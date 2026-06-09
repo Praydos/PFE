@@ -235,7 +235,11 @@ Route::middleware('auth')->group(function () {
         }
     );
 
-    //adoptions authenticatoed routes for all three roles, but create/store is only for delegue and admin, and show is for all three
+    Route::get('/adoptions/print-list', [AdoptionController::class, 'printList'])
+        ->name('adoptions.printList')->middleware('role:admin,delegue,rbo,abo');
+    Route::get('/adoptions/{adoption}/print', [AdoptionController::class, 'print'])
+        ->name('adoptions.print');
+
     Route::resource('adoptions', AdoptionController::class)
         ->except(['create', 'store']); // delegue admin rbo
 
