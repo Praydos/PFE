@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\Action;
 use App\Models\ActionLine;
 use App\Models\Compte;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class RetourController extends Controller
@@ -38,9 +39,9 @@ class RetourController extends Controller
         // Optional search filters
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('numero', 'like', "%{$search}%")
-                ->orWhereHas('bss', fn($q2) => $q2->where('numero', 'like', "%{$search}%"));
+                    ->orWhereHas('bss', fn($q2) => $q2->where('numero', 'like', "%{$search}%"));
             });
         }
 
@@ -48,10 +49,21 @@ class RetourController extends Controller
             $query->where('bss_id', $request->bss_id);
         }
 
+        if ($request->filled('delegue_id') && in_array($user->role, ['admin', 'abo', 'rbo'])) {
+            $query->whereHas('bss', fn($q) => $q->where('delegate_id', $request->delegue_id));
+        }
+
         $retours = $query->orderBy('created_at', 'desc')->paginate(15);
         $bssList = Bss::orderBy('numero')->get(); // for filter dropdown
 
-        return view('retours.index', compact('retours', 'bssList'));
+        $delegates = collect();
+        if (in_array($user->role, ['admin', 'abo'])) {
+            $delegates = User::where('role', 'delegue')->orderBy('nom')->get();
+        } elseif ($user->role === 'rbo') {
+            $delegates = $user->zonesAsRbo->flatMap->delegates->unique('id')->sortBy('nom')->values();
+        }
+
+        return view('retours.index', compact('retours', 'bssList', 'delegates'));
     }
 
 
@@ -78,95 +90,95 @@ class RetourController extends Controller
     }
 
     public function store(Request $request, Bss $bss)
-{
-    $user = Auth::user();
-    if ($user->role !== 'admin' && ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre')) {
-        abort(403);
-    }
-
-    $validated = $request->validate([
-        'numero' => 'required|unique:retours,numero',
-        'date_retour' => 'required|date',
-        'motif' => 'nullable|string',
-        'lignes' => 'required|array|min:1',
-        'lignes.*.id' => 'required|exists:bss_lignes,id',
-        'lignes.*.quantite' => 'required|integer|min:1',
-    ]);
-
-    $currentYear = $this->getCurrentYear();
-    if (!$currentYear) {
-        return redirect()->back()->withErrors(['error' => 'Année scolaire non trouvée.']);
-    }
-
-    $retour = Retour::create([
-        'numero' => $validated['numero'],
-        'bss_id' => $bss->id,
-        'date_retour' => $validated['date_retour'],
-        'created_by' => $user->id,
-        'motif' => $validated['motif'],
-    ]);
-
-    $returnedProductIds = [];
-
-    foreach ($validated['lignes'] as $item) {
-        $ligne = BssLigne::find($item['id']);
-        if ($item['quantite'] > $ligne->quantity) {
-            return redirect()->back()->withErrors(['quantite' => "Quantité retournée supérieure à la quantité livrée."]);
-        }
-        $retour->lignes()->attach($ligne->id, ['quantite_retournee' => $item['quantite']]);
-
-        if ($item['quantite'] == $ligne->quantity) {
-            $ligne->update(['statut_ligne' => 'retournee']);
+    {
+        $user = Auth::user();
+        if ($user->role !== 'admin' && ($user->role !== 'delegue' || $bss->delegate_id !== $user->id || $bss->statut !== 'livre')) {
+            abort(403);
         }
 
-        if ($ligne->source === 'consignation') {
-            $consignation = Consignation::firstOrCreate([
-                'delegate_id' => $user->id,
-                'product_id' => $ligne->product_id,
-                'annee_scolaire_id' => $currentYear->id,
-            ], ['quantity' => 0]);
-            $consignation->increment('quantity', $item['quantite']);
+        $validated = $request->validate([
+            'numero' => 'required|unique:retours,numero',
+            'date_retour' => 'required|date',
+            'motif' => 'nullable|string',
+            'lignes' => 'required|array|min:1',
+            'lignes.*.id' => 'required|exists:bss_lignes,id',
+            'lignes.*.quantite' => 'required|integer|min:1',
+        ]);
+
+        $currentYear = $this->getCurrentYear();
+        if (!$currentYear) {
+            return redirect()->back()->withErrors(['error' => 'Année scolaire non trouvée.']);
         }
 
-        $returnedProductIds[] = $ligne->product_id;
+        $retour = Retour::create([
+            'numero' => $validated['numero'],
+            'bss_id' => $bss->id,
+            'date_retour' => $validated['date_retour'],
+            'created_by' => $user->id,
+            'motif' => $validated['motif'],
+        ]);
+
+        $returnedProductIds = [];
+
+        foreach ($validated['lignes'] as $item) {
+            $ligne = BssLigne::find($item['id']);
+            if ($item['quantite'] > $ligne->quantity) {
+                return redirect()->back()->withErrors(['quantite' => "Quantité retournée supérieure à la quantité livrée."]);
+            }
+            $retour->lignes()->attach($ligne->id, ['quantite_retournee' => $item['quantite']]);
+
+            if ($item['quantite'] == $ligne->quantity) {
+                $ligne->update(['statut_ligne' => 'retournee']);
+            }
+
+            if ($ligne->source === 'consignation') {
+                $consignation = Consignation::firstOrCreate([
+                    'delegate_id' => $user->id,
+                    'product_id' => $ligne->product_id,
+                    'annee_scolaire_id' => $currentYear->id,
+                ], ['quantity' => 0]);
+                $consignation->increment('quantity', $item['quantite']);
+            }
+
+            $returnedProductIds[] = $ligne->product_id;
+        }
+
+        // Update BSS status to 'retour'
+        $bss->update(['statut' => 'retour']);
+
+        // Create an action for the return
+        $compte = Compte::with(['zone', 'ville'])->find($bss->compte_id);
+        $lieu = 'Zone: ' . ($compte->zone->name ?? 'N/A') . ' - Ville: ' . ($compte->ville->nom ?? 'N/A');
+
+        $action = Action::create([
+            'objet' => 'Retour BSS ' . $bss->numero,
+            'compte_id' => $bss->compte_id,
+            'delegue_id' => $user->id,
+            'date_planification' => now(),
+            'lieu' => $lieu,
+            'statut' => 'planifie',
+            'type' => 'commercial',
+            'module_lie' => 'retour',
+            'module_id' => $retour->id,
+        ]);
+
+        $actionLine = ActionLine::create([
+            'action_id' => $action->id,
+            'categorie' => 'Visite',
+            'action_type' => 'Retour Spécimens',
+            'moyen' => 'Visite',
+            'description' => 'Retour BSS ' . $bss->numero,
+        ]);
+
+        // Attach contact
+        if ($bss->contact_id) {
+            $actionLine->contacts()->attach($bss->contact_id);
+        }
+
+        // Attach returned products (unique)
+        $uniqueProductIds = array_unique($returnedProductIds);
+        $actionLine->products()->attach($uniqueProductIds);
+
+        return redirect()->route('bss.show', $bss)->with('success', 'Bon de retour créé, BSS marqué comme retourné.');
     }
-
-    // Update BSS status to 'retour'
-    $bss->update(['statut' => 'retour']);
-
-    // Create an action for the return
-    $compte = Compte::with(['zone', 'ville'])->find($bss->compte_id);
-    $lieu = 'Zone: ' . ($compte->zone->name ?? 'N/A') . ' - Ville: ' . ($compte->ville->nom ?? 'N/A');
-
-    $action = Action::create([
-        'objet' => 'Retour BSS ' . $bss->numero,
-        'compte_id' => $bss->compte_id,
-        'delegue_id' => $user->id,
-        'date_planification' => now(),
-        'lieu' => $lieu,
-        'statut' => 'planifie',
-        'type' => 'commercial',
-        'module_lie' => 'retour',
-        'module_id' => $retour->id,
-    ]);
-
-    $actionLine = ActionLine::create([
-        'action_id' => $action->id,
-        'categorie' => 'Visite',
-        'action_type' => 'Retour Spécimens',
-        'moyen' => 'Visite',
-        'description' => 'Retour BSS ' . $bss->numero,
-    ]);
-
-    // Attach contact
-    if ($bss->contact_id) {
-        $actionLine->contacts()->attach($bss->contact_id);
-    }
-
-    // Attach returned products (unique)
-    $uniqueProductIds = array_unique($returnedProductIds);
-    $actionLine->products()->attach($uniqueProductIds);
-
-    return redirect()->route('bss.show', $bss)->with('success', 'Bon de retour créé, BSS marqué comme retourné.');
-}
 }

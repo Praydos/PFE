@@ -328,6 +328,21 @@
                     </select>
                 </div>
             </div>
+            @if(in_array(auth()->user()->role, ['admin', 'abo', 'rbo']))
+            <div class="zn-filter-group">
+                <label class="zn-filter-label">Délégué</label>
+                <div class="frm-select-wrap">
+                    <select name="delegue_id" class="zn-select">
+                        <option value="">Tous les délégués</option>
+                        @foreach($delegates as $d)
+                            <option value="{{ $d->id }}" {{ request('delegue_id') == $d->id ? 'selected' : '' }}>
+                                {{ $d->prenom }} {{ $d->nom }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            @endif
             <div class="filter-actions">
                 <button type="submit" class="btn-zn btn-zn-sm btn-zn-ghost">
                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -422,7 +437,7 @@
                                         </svg>
                                     </div>
                                     <h3>Aucun bon de retour trouvé</h3>
-                                    <p>{{ request('search') ? 'Aucun résultat pour «\u00a0'.request('search').'\u00a0». Essayez un autre terme.' : 'Aucun retour enregistré pour le moment.' }}</p>
+                                    <p>{{ request('search') || request('bss_id') || request('delegue_id') ? 'Aucun résultat pour les filtres sélectionnés.' : 'Aucun retour enregistré pour le moment.' }}</p>
                                 </div>
                             </td>
                         </tr>
