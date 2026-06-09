@@ -31,9 +31,15 @@ class ActionAmeliorationController extends Controller
             $query->whereHas('compte', fn($q) => $q->whereIn('delegue_id', $delegateIds));
         }
 
-        if ($request->filled('statut')) $query->where('statut', $request->statut);
-        if ($request->filled('type')) $query->where('type', $request->type);
-        if ($request->filled('compte_id')) $query->where('compte_id', $request->compte_id);
+        if ($request->filled('statut'))
+            $query->where('statut', $request->statut);
+        if ($request->filled('type'))
+            $query->where('type', $request->type);
+        if ($request->filled('compte_id'))
+            $query->where('compte_id', $request->compte_id);
+        if ($request->filled('delegue_id') && in_array($user->role, ['admin', 'abo', 'rbo'])) {
+            $query->whereHas('compte', fn($q) => $q->where('delegue_id', $request->delegue_id));
+        }
 
         $actions = $query->orderBy('created_at', 'desc')->paginate(15);
         $comptes = Compte::orderBy('etablissement')->get();
@@ -41,26 +47,44 @@ class ActionAmeliorationController extends Controller
         $types = ['Action corrective', 'Action préventive', 'Action d\'amélioration'];
         $origines = ['Réclamation client', 'Audit et controle interne', 'PROJET D’AMÉLIORATION', 'Réclamation fournisseur', 'Dysfonctionnement interne'];
 
-        return view('actions_amelioration.index', compact('actions', 'comptes', 'statuts', 'types', 'origines'));
+        $delegates = collect();
+        if (in_array($user->role, ['admin', 'abo'])) {
+            $delegates = User::where('role', 'delegue')->orderBy('nom')->get();
+        } elseif ($user->role === 'rbo') {
+            $delegates = $user->zonesAsRbo->flatMap->delegates->unique('id')->sortBy('nom')->values();
+        }
+
+        return view('actions_amelioration.index', compact('actions', 'comptes', 'statuts', 'types', 'origines', 'delegates'));
     }
 
     // Stage 1: create
     public function create()
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' && $user->role !== 'admin') abort(403);
+        if ($user->role !== 'delegue' && $user->role !== 'admin')
+            abort(403);
         $comptes = Compte::where('delegue_id', $user->id)->get();
         $types = ['Action corrective', 'Action préventive', 'Action d\'amélioration'];
-        $origines = 
-        ['Réclamation client', 'Audit et controle interne', 'PROJET D’AMÉLIORATION', "RECLAMATION COLLABORATEUR",
-        'Réclamation fournisseur', 'Dysfonctionnement interne',"REVUE DE DIRECTION","RÉUNION PROCESSUS","SÉCURITÉ"];
+        $origines =
+            [
+                'Réclamation client',
+                'Audit et controle interne',
+                'PROJET D’AMÉLIORATION',
+                "RECLAMATION COLLABORATEUR",
+                'Réclamation fournisseur',
+                'Dysfonctionnement interne',
+                "REVUE DE DIRECTION",
+                "RÉUNION PROCESSUS",
+                "SÉCURITÉ"
+            ];
         return view('actions_amelioration.create', compact('comptes', 'types', 'origines'));
     }
 
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user->role !== 'delegue' && $user->role !== 'admin') abort(403);
+        if ($user->role !== 'delegue' && $user->role !== 'admin')
+            abort(403);
 
         $validated = $request->validate([
             'compte_id' => 'required|exists:comptes,id',
@@ -157,7 +181,8 @@ class ActionAmeliorationController extends Controller
 
     public function destroy(ActionAmelioration $actions_amelioration)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (Auth::user()->role !== 'admin')
+            abort(403);
         $actions_amelioration->delete();
         return redirect()->route('actions-amelioration.index')->with('success', 'Action supprimée.');
     }
@@ -165,12 +190,16 @@ class ActionAmeliorationController extends Controller
     private function authorizeView(ActionAmelioration $action)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'abo') return;
-        if ($user->role === 'delegue' && $action->compte->delegue_id === $user->id) return;
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'abo')
+            return;
+        if ($user->role === 'delegue' && $action->compte->delegue_id === $user->id)
+            return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($action->compte->delegue_id)) return;
+            if ($delegateIds->contains($action->compte->delegue_id))
+                return;
         }
         abort(403);
     }
@@ -178,11 +207,14 @@ class ActionAmeliorationController extends Controller
     private function authorizeEdit(ActionAmelioration $action)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return;
-        if ($user->role === 'delegue' && $action->compte->delegue_id === $user->id) return;
+        if ($user->role === 'admin')
+            return;
+        if ($user->role === 'delegue' && $action->compte->delegue_id === $user->id)
+            return;
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($action->compte->delegue_id)) return;
+            if ($delegateIds->contains($action->compte->delegue_id))
+                return;
         }
         abort(403);
     }
