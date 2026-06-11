@@ -13,13 +13,25 @@ class Formation extends Model
     protected $fillable = [
         'compte_id', 'contact_id', 'zone_id', 'ville_id', 'delegue_id',
         'annee_scolaire_id', 'date_demande', 'dates_proposees', 'statut',
-        'type', 'cible'
+        'type', 'cible',
+        'rapport_titre', 'rapport_description', 'date_validation', 'valide_par',
     ];
 
     protected $casts = [
         'dates_proposees' => 'array',
         'date_demande' => 'array',
+        'date_validation' => 'datetime',
     ];
+
+    public function isValidated(): bool
+    {
+        return $this->statut === 'validee';
+    }
+
+    public function canBeCompletedByDelegate(): bool
+    {
+        return in_array($this->statut, ['demande', 'planifiee', 'reportee'], true);
+    }
 
     public function compte()
     {
@@ -49,5 +61,10 @@ class Formation extends Model
     public function anneeScolaire()
     {
         return $this->belongsTo(AnneeScolaire::class);
+    }
+
+    public function validePar()
+    {
+        return $this->belongsTo(User::class, 'valide_par');
     }
 }

@@ -186,6 +186,46 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
     border-color: var(--blue);
     box-shadow: 0 0 0 3px var(--blue-mid);
 }
+.frm-textarea {
+    width: 100%; min-height: 120px; padding: .62rem .9rem;
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+    background: var(--bg-card); font-family: var(--font);
+    font-size: .84rem; color: var(--text-primary);
+    box-shadow: var(--shadow-xs); resize: vertical;
+    transition: border-color var(--t), box-shadow var(--t);
+    outline: none;
+}
+.frm-textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-mid);
+}
+.dlg-modal.realiser-modal { max-width: 560px; }
+.dlg-modal.realiser-modal .dlg-modal-body { white-space: normal; }
+.rapport-card {
+    margin-top: 1.5rem;
+    padding: 1.25rem 1.35rem;
+    background: var(--green-light);
+    border: 1px solid rgba(40, 199, 111, .25);
+    border-radius: var(--r-lg);
+}
+.rapport-card h3 {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: .85rem;
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+}
+.alert-errors {
+    margin-top: 1rem;
+    padding: .85rem 1rem;
+    background: var(--rose-light);
+    border: 1px solid rgba(232, 80, 106, .2);
+    border-radius: var(--r-sm);
+    font-size: .82rem;
+    color: var(--rose);
+}
 .frm-input.is-invalid,
 .frm-select.is-invalid {
     border-color: var(--rose);
@@ -476,35 +516,72 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
                 <div class="info-item">
                     <span class="info-label">Statut</span>
                     @php
-                        $statuts = [
-                            'demande' => 'Demandée',
-                            'planifiee' => 'Planifiée',
-                            'annulee' => 'Annulée',
-                            'reportee' => 'Reportée',
-                            'realisee' => 'Réalisée'
-                        ];
                         $badgeClass = match($formation->statut) {
                             'demande' => 'bd-blue',
                             'planifiee' => 'bd-teal',
                             'annulee' => 'bd-none',
                             'reportee' => 'bd-amber',
                             'realisee' => 'bd-green',
+                            'validee' => 'bd-green',
                             default => 'bd-none'
                         };
                     @endphp
-                    <span class="dr-badge {{ $badgeClass }}">{{ $statuts[$formation->statut] }}</span>
+                    <span class="dr-badge {{ $badgeClass }}">{{ $statuts[$formation->statut] ?? $formation->statut }}</span>
                 </div>
+                @if($formation->statut === 'validee' && $formation->date_validation)
+                    <div class="info-item">
+                        <span class="info-label">Validée le</span>
+                        {{ $formation->date_validation->format('d/m/Y H:i') }}
+                        @if($formation->validePar)
+                            · {{ $formation->validePar->prenom }} {{ $formation->validePar->nom }}
+                        @endif
+                    </div>
+                @endif
             </div>
 
-            @if(in_array(auth()->user()->role, ['admin','rbo']) || (auth()->user()->role === 'delegue' && $formation->delegue_id === auth()->id()))
-            <div class="status-update-box" style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-subtle); border-radius: var(--r-lg);">
-                <form method="POST" action="{{ route('formations.change-status', $formation) }}" class="status-form" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            @if($formation->rapport_titre)
+            <div class="rapport-card">
+                <h3>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Rapport de réalisation
+                </h3>
+                <div class="info-item" style="border:none;padding-bottom:0;">
+                    <span class="info-label">Titre</span>
+                    {{ $formation->rapport_titre }}
+                </div>
+                <div style="margin-top:.75rem;">
+                    <span class="info-label">Description</span>
+                    <div style="margin-top:.35rem;white-space:pre-wrap;color:var(--text-secondary);font-size:.84rem;line-height:1.55;">
+                        {{ $formation->rapport_description }}
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($errors->hasAny(['rapport_titre', 'rapport_description']))
+            <div class="alert-errors">
+                <strong>Veuillez corriger le formulaire du rapport.</strong>
+                <ul style="margin:.45rem 0 0 1rem;">
+                    @foreach($errors->get('rapport_titre') as $e)<li>{{ $e }}</li>@endforeach
+                    @foreach($errors->get('rapport_description') as $e)<li>{{ $e }}</li>@endforeach
+                </ul>
+            </div>
+            @endif
+
+            @if(in_array(auth()->user()->role, ['admin','rbo']) && $formation->statut !== 'validee')
+            <div class="status-update-box">
+                <form method="POST" action="{{ route('formations.change-status', $formation) }}" class="status-form">
                     @csrf
                     <label class="frm-label" style="margin:0;">Changer le statut :</label>
                     <div class="frm-select-wrap" style="width: auto; min-width: 200px;">
                         <select name="statut" class="frm-select">
                             @foreach($statuts as $key => $label)
-                                <option value="{{ $key }}" {{ $formation->statut == $key ? 'selected' : '' }}>{{ $label }}</option>
+                                @if($key !== 'validee')
+                                    <option value="{{ $key }}" {{ $formation->statut == $key ? 'selected' : '' }}>{{ $label }}</option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
@@ -519,7 +596,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
             @endif
         </div>
 
-        <div class="card-footer" style="padding: 1.1rem 1.6rem; border-top: 1px solid var(--border); background: var(--bg-base); display: flex; justify-content: flex-end; gap: 0.6rem;">
+        <div class="card-footer" style="padding: 1.1rem 1.6rem; border-top: 1px solid var(--border); background: var(--bg-base); display: flex; justify-content: flex-end; gap: 0.6rem; flex-wrap: wrap;">
             <a href="{{ route('formations.index') }}" class="btn-zn btn-zn-ghost">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="19" y1="12" x2="5" y2="12"/>
@@ -527,7 +604,26 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
                 </svg>
                 Retour
             </a>
-            @if(in_array(auth()->user()->role, ['admin','rbo']) || (auth()->user()->role === 'delegue' && $formation->delegue_id === auth()->id()))
+
+            @if(!empty($canRealiser))
+                <button type="button" class="btn-zn btn-zn-primary" id="openRealiserModalBtn">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Marquer comme réalisée
+                </button>
+            @endif
+
+            @if(!empty($canDevalider))
+                <form method="POST" action="{{ route('formations.devalider', $formation) }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="btn-zn btn-zn-warning" onclick="return confirm('Dévalider cette formation ? Le délégué pourra la modifier et soumettre un nouveau rapport.')">
+                        Dévalider
+                    </button>
+                </form>
+            @endif
+
+            @if($formation->statut !== 'validee' && (in_array(auth()->user()->role, ['admin','rbo']) || (auth()->user()->role === 'delegue' && $formation->delegue_id === auth()->id())))
                 <a href="{{ route('formations.edit', $formation) }}" class="btn-zn btn-zn-primary">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -538,5 +634,88 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
             @endif
         </div>
     </div>
+
+    @if(!empty($canRealiser))
+    <div class="dlg-modal-overlay" id="realiserModalOverlay">
+        <div class="dlg-modal realiser-modal">
+            <div class="dlg-modal-hd">
+                <div class="dlg-modal-icon">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                </div>
+                <div class="dlg-modal-titles">
+                    <h2>Rapport de réalisation</h2>
+                    <p>Renseignez le rapport pour clôturer et valider la formation.</p>
+                </div>
+                <button type="button" class="dlg-modal-close" id="closeRealiserModal" aria-label="Fermer">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="dlg-modal-body">
+                <form method="POST" action="{{ route('formations.realiser', $formation) }}" id="realiserForm">
+                    @csrf
+                    <div class="frm-group">
+                        <label class="frm-label">Titre du rapport <span class="req">*</span></label>
+                        <input type="text" name="rapport_titre" class="frm-input" value="{{ old('rapport_titre') }}" required maxlength="255">
+                    </div>
+                    <div class="frm-group">
+                        <label class="frm-label">Description du rapport <span class="req">*</span></label>
+                        <textarea name="rapport_description" class="frm-textarea" required>{{ old('rapport_description') }}</textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1rem;">
+                        <button type="button" class="btn-zn btn-zn-ghost" id="cancelRealiserBtn">Annuler</button>
+                        <button type="submit" class="btn-zn btn-zn-primary">Valider le rapport et clôturer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const realiserOverlay = document.getElementById('realiserModalOverlay');
+    const openBtn = document.getElementById('openRealiserModalBtn');
+    const closeBtn = document.getElementById('closeRealiserModal');
+    const cancelBtn = document.getElementById('cancelRealiserBtn');
+
+    function openRealiserModal() {
+        if (realiserOverlay) realiserOverlay.classList.add('visible');
+    }
+
+    function closeRealiserModal() {
+        if (realiserOverlay) realiserOverlay.classList.remove('visible');
+    }
+
+    openBtn?.addEventListener('click', openRealiserModal);
+    closeBtn?.addEventListener('click', closeRealiserModal);
+    cancelBtn?.addEventListener('click', closeRealiserModal);
+
+    if (realiserOverlay) {
+        realiserOverlay.addEventListener('click', (e) => {
+            if (e.target === realiserOverlay) closeRealiserModal();
+        });
+    }
+
+    @if($errors->hasAny(['rapport_titre', 'rapport_description']))
+        openRealiserModal();
+    @endif
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('realiser') === '1') openRealiserModal();
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && realiserOverlay?.classList.contains('visible')) {
+            closeRealiserModal();
+        }
+    });
+});
+</script>
+@endpush
 @endsection

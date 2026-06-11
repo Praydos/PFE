@@ -338,11 +338,12 @@
                         <td>
                             @php
                                 $badgeClass = match($f->statut) {
-                                    'en_attente' => 'bd-blue',
-                                    'valide' => 'bd-teal',
-                                    'refuse' => 'bd-none',
-                                    'planifie' => 'bd-green',
-                                    'annule' => 'bd-none',
+                                    'demande' => 'bd-blue',
+                                    'planifiee' => 'bd-teal',
+                                    'annulee' => 'bd-none',
+                                    'reportee' => 'bd-amber',
+                                    'realisee' => 'bd-green',
+                                    'validee' => 'bd-green',
                                     default => 'bd-none'
                                 };
                             @endphp
@@ -356,7 +357,7 @@
                                     </svg>
                                     Voir
                                 </a>
-                                @if(in_array(auth()->user()->role, ['admin','rbo']) || (auth()->user()->role === 'delegue' && $f->delegue_id === auth()->id()))
+                                @if($f->statut !== 'validee' && (in_array(auth()->user()->role, ['admin','rbo']) || (auth()->user()->role === 'delegue' && $f->delegue_id === auth()->id())))
                                     <a href="{{ route('formations.edit', $f) }}" class="btn-zn btn-zn-sm btn-zn-warning">
                                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>

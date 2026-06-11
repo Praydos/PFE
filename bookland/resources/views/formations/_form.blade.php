@@ -143,7 +143,9 @@
     <div class="frm-select-wrap">
         <select name="statut" id="statut" class="frm-select">
             @foreach($statuts as $key => $label)
-                <option value="{{ $key }}" {{ old('statut', $formation->statut) == $key ? 'selected' : '' }}>{{ $label }}</option>
+                @if($key !== 'validee' && !(auth()->user()->role === 'delegue' && $key === 'realisee'))
+                    <option value="{{ $key }}" {{ old('statut', $formation->statut) == $key ? 'selected' : '' }}>{{ $label }}</option>
+                @endif
             @endforeach
         </select>
     </div>

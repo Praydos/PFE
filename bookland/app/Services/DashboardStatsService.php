@@ -271,7 +271,7 @@ class DashboardStatsService
     {
         return [
             'examens' => $this->moduleCounts(Examen::query(), 'delegue_id', $delegateId, self::EXAMEN_COMPLETED_STATUTS),
-            'formations' => $this->moduleCounts(Formation::query(), 'delegue_id', $delegateId, ['realisee']),
+            'formations' => $this->moduleCounts(Formation::query(), 'delegue_id', $delegateId, ['realisee', 'validee']),
             'events' => $this->eventCounts($delegateId),
             'taches' => $this->moduleCounts(Tache::query(), 'delegue_id', $delegateId, null, 'is_validated', true),
         ];

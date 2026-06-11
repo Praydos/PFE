@@ -46,7 +46,7 @@ class FormationController extends Controller
         $formations = $query->orderBy('date_demande', 'desc')->paginate(15);
         $comptes = Compte::orderBy('etablissement')->get();
         $years = AnneeScolaire::orderBy('date_debut', 'desc')->get();
-        $statuts = ['demande' => 'Demandée', 'planifiee' => 'Planifiée', 'annulee' => 'Annulée', 'reportee' => 'Reportée', 'realisee' => 'Réalisée'];
+        $statuts = $this->getStatutLabels();
         $types = [
             'Formation méthode',
             'Présentation méthode',
@@ -187,7 +187,24 @@ class FormationController extends Controller
     public function show(Formation $formation)
     {
         $this->authorizeView($formation);
-        return view('formations.show', compact('formation'));
+        $formation->load(['compte', 'contact', 'zone', 'ville', 'delegate', 'anneeScolaire', 'validePar']);
+
+        $user = Auth::user();
+        $delegateIds = $user->role === 'rbo'
+            ? $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique()
+            : collect();
+
+        $canDevalider = $formation->statut === 'validee'
+            && in_array($user->role, ['admin', 'rbo'], true)
+            && ($user->role === 'admin' || $delegateIds->contains($formation->delegue_id));
+
+        $canRealiser = $formation->canBeCompletedByDelegate()
+            && $user->role === 'delegue'
+            && (int) $formation->delegue_id === (int) $user->id;
+
+        $statuts = $this->getStatutLabels();
+
+        return view('formations.show', compact('formation', 'canDevalider', 'canRealiser', 'statuts'));
     }
 
     public function edit(Formation $formation)
@@ -209,7 +226,7 @@ class FormationController extends Controller
             'Formation Examen CAMBRIDGE'
         ];
         $cibles = ['Direction', 'Enseignants', 'Parents'];
-        $statuts = ['demande' => 'Demandée', 'planifiee' => 'Planifiée', 'annulee' => 'Annulée', 'reportee' => 'Reportée', 'realisee' => 'Réalisée'];
+        $statuts = $this->getStatutLabels();
         $currentYear = $this->getCurrentYear();
         return view('formations.edit', compact('formation', 'comptes', 'years', 'types', 'cibles', 'statuts', 'currentYear', 'villes', 'zones'));
     }
@@ -248,14 +265,93 @@ class FormationController extends Controller
     public function changeStatus(Request $request, Formation $formation)
     {
         $user = Auth::user();
-        if ($user->role !== 'admin' && $user->role !== 'rbo' && $formation->delegue_id !== $user->id) {
+        if (! in_array($user->role, ['admin', 'rbo'], true)) {
             abort(403);
         }
+
+        $this->authorizeRboOrAdminForDelegateFormation($formation);
+
+        if ($formation->statut === 'validee') {
+            return redirect()->back()->with('error', 'Cette formation est validée. Dévalidez-la d\'abord pour modifier le statut.');
+        }
+
         $request->validate([
-            'statut' => 'required|in:demande,planifiee,annulee,reportee,realisee'
+            'statut' => 'required|in:demande,planifiee,annulee,reportee,realisee',
         ]);
+
+        if ($request->statut === 'validee') {
+            return redirect()->back()->with('error', 'Utilisez le rapport de réalisation pour valider une formation.');
+        }
+
         $formation->update(['statut' => $request->statut]);
+
         return redirect()->back()->with('success', 'Statut mis à jour.');
+    }
+
+    public function realiser(Request $request, Formation $formation)
+    {
+        $user = Auth::user();
+        if ($user->role !== 'delegue' || (int) $formation->delegue_id !== (int) $user->id) {
+            abort(403);
+        }
+
+        YearLock::check($formation);
+        $this->authorizeEdit($formation);
+
+        if (! $formation->canBeCompletedByDelegate()) {
+            return redirect()->back()->with('error', 'Cette formation ne peut pas être clôturée dans son état actuel.');
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'rapport_titre' => 'required|string|max:255',
+            'rapport_description' => 'required|string|max:10000',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->to(route('formations.show', $formation).'?realiser=1')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $validated = $validator->validated();
+
+        $formation->update([
+            'statut' => 'validee',
+            'rapport_titre' => $validated['rapport_titre'],
+            'rapport_description' => $validated['rapport_description'],
+            'date_validation' => now(),
+            'valide_par' => $user->id,
+        ]);
+
+        return redirect()->route('formations.show', $formation)
+            ->with('success', 'Rapport enregistré : formation validée.');
+    }
+
+    public function devalider(Formation $formation)
+    {
+        $user = Auth::user();
+        if (! in_array($user->role, ['admin', 'rbo'], true)) {
+            abort(403);
+        }
+
+        $this->authorizeRboOrAdminForDelegateFormation($formation);
+
+        if ($formation->statut !== 'validee') {
+            return redirect()->back()->with('error', 'Seules les formations validées peuvent être dévalidées.');
+        }
+
+        YearLock::check($formation);
+
+        $formation->update([
+            'statut' => 'planifiee',
+            'rapport_titre' => null,
+            'rapport_description' => null,
+            'date_validation' => null,
+            'valide_par' => null,
+        ]);
+
+        return redirect()->route('formations.show', $formation)
+            ->with('success', 'Formation dévalidée : le délégué peut à nouveau la modifier et soumettre un rapport.');
     }
 
     private function authorizeView(Formation $formation)
@@ -277,17 +373,51 @@ class FormationController extends Controller
 
     private function authorizeEdit(Formation $formation)
     {
+        if ($formation->statut === 'validee') {
+            abort(403, 'Cette formation est validée. Un administrateur ou un RBO doit d\'abord la dévalider.');
+        }
+
         $user = Auth::user();
-        if ($user->role === 'admin')
+        if ($user->role === 'admin') {
             return;
-        if ($user->role === 'delegue' && $formation->delegue_id === $user->id)
+        }
+        if ($user->role === 'delegue' && $formation->delegue_id === $user->id) {
             return;
+        }
         if ($user->role === 'rbo') {
             $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
-            if ($delegateIds->contains($formation->delegue_id))
+            if ($delegateIds->contains($formation->delegue_id)) {
                 return;
+            }
         }
         abort(403);
+    }
+
+    private function authorizeRboOrAdminForDelegateFormation(Formation $formation): void
+    {
+        $user = Auth::user();
+        if ($user->role === 'admin') {
+            return;
+        }
+        if ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            if ($delegateIds->contains($formation->delegue_id)) {
+                return;
+            }
+        }
+        abort(403);
+    }
+
+    private function getStatutLabels(): array
+    {
+        return [
+            'demande' => 'Demandée',
+            'planifiee' => 'Planifiée',
+            'annulee' => 'Annulée',
+            'reportee' => 'Reportée',
+            'realisee' => 'Réalisée',
+            'validee' => 'Validée',
+        ];
     }
 
     // ── For-delegate flow (RBO / Admin) ──────────────────────────────────

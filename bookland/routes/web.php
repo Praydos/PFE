@@ -357,6 +357,8 @@ Route::post('/examens/{examen}/change-status', [ExamenController::class, 'change
 
 Route::resource('formations', FormationController::class);
 Route::post('/formations/{formation}/change-status', [FormationController::class, 'changeStatus'])->name('formations.change-status');
+Route::post('/formations/{formation}/realiser', [FormationController::class, 'realiser'])->name('formations.realiser');
+Route::post('/formations/{formation}/devalider', [FormationController::class, 'devalider'])->name('formations.devalider');
 
 
 
