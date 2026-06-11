@@ -302,6 +302,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const categories      = @json($categories);
     const requiresProduct = @json($requiresProduct);
     const requiresBss     = @json($requiresBss);
+    const requiresMpDelivery = @json($requiresMpDelivery);
     const requiresRetour  = @json($requiresRetour);
     const requiresExamen  = @json($requiresExamen);
 
@@ -324,6 +325,76 @@ document.addEventListener('DOMContentLoaded', function () {
                 ).join('');
             })
             .catch(err => console.error('Error loading contacts:', err));
+    }
+
+    function loadBss(compteId, selectEl, currentValue) {
+        if (!compteId) {
+            selectEl.innerHTML = '<option value="">— Sélectionnez un BSS —</option>';
+            return;
+        }
+        fetch(`/api/comptes/${compteId}/bss`)
+            .then(r => r.json())
+            .then(data => {
+                selectEl.innerHTML = '<option value="">— Sélectionnez un BSS —</option>' +
+                    data.map(c =>
+                        `<option value="${c.id}" ${currentValue == c.id ? 'selected' : ''}>${c.numero}</option>`
+                    ).join('');
+            })
+            .catch(err => console.error('Error loading BSS:', err));
+    }
+
+    function loadMpDeliveries(compteId, selectEl, currentValue) {
+        if (!compteId) {
+            selectEl.innerHTML = '<option value="">— Sélectionnez d\'abord un compte —</option>';
+            return;
+        }
+        const include = currentValue ? `?include=${encodeURIComponent(currentValue)}` : '';
+        fetch(`/api/comptes/${compteId}/mp-deliveries${include}`)
+            .then(r => {
+                if (!r.ok) throw new Error('Network error');
+                return r.json();
+            })
+            .then(data => {
+                selectEl.innerHTML = '<option value="">— Sélectionnez une livraison MP —</option>' +
+                    data.map(d =>
+                        `<option value="${d.id}" ${currentValue == d.id ? 'selected' : ''}>${d.label}</option>`
+                    ).join('');
+            })
+            .catch(err => console.error('Error loading MP deliveries:', err));
+    }
+
+    function reloadCompteScopedSelects(lineEl) {
+        const compteId = compteSelect?.value || '';
+        const bssSelect = lineEl.querySelector('.bss-select');
+        const retourSelect = lineEl.querySelector('.retour-select');
+        const mpDeliverySelect = lineEl.querySelector('.mp-delivery-select');
+        const actionType = lineEl.querySelector('.action-type-select')?.value || '';
+
+        if (bssSelect && requiresBss.includes(actionType)) {
+            loadBss(compteId, bssSelect, bssSelect.dataset.saved || bssSelect.value || '');
+        }
+        if (retourSelect && requiresRetour.includes(actionType)) {
+            loadRetours(compteId, retourSelect, retourSelect.dataset.saved || retourSelect.value || '');
+        }
+        if (mpDeliverySelect && requiresMpDelivery.includes(actionType)) {
+            loadMpDeliveries(compteId, mpDeliverySelect, mpDeliverySelect.dataset.saved || mpDeliverySelect.value || '');
+        }
+    }
+
+    function loadRetours(compteId, selectEl, currentValue) {
+        if (!compteId) {
+            selectEl.innerHTML = '<option value="">— Sélectionnez un retour —</option>';
+            return;
+        }
+        fetch(`/api/comptes/${compteId}/retours`)
+            .then(r => r.json())
+            .then(data => {
+                selectEl.innerHTML = '<option value="">— Sélectionnez un retour —</option>' +
+                    data.map(c =>
+                        `<option value="${c.id}" ${currentValue == c.id ? 'selected' : ''}>${c.numero}</option>`
+                    ).join('');
+            })
+            .catch(err => console.error('Error loading retours:', err));
     }
 
     function loadActionTypes(categorie, selectEl, currentValue) {
@@ -358,19 +429,23 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateConditional(lineEl) {
         const actionType = lineEl.querySelector('.action-type-select')?.value || '';
         const idx        = lineEl.dataset.lineIndex;
-        const bssGrp     = lineEl.querySelector(`#bss-group-${idx}`);
-        const retourGrp  = lineEl.querySelector(`#retour-group-${idx}`);
-        const productGrp = lineEl.querySelector('.cond-product');
-        const examenGrp  = lineEl.querySelector('.cond-examen');
+        const bssGrp        = lineEl.querySelector(`#bss-group-${idx}`);
+        const retourGrp     = lineEl.querySelector(`#retour-group-${idx}`);
+        const mpDeliveryGrp = lineEl.querySelector(`#mp-delivery-group-${idx}`);
+        const productGrp    = lineEl.querySelector('.cond-product');
+        const examenGrp     = lineEl.querySelector('.cond-examen');
 
-        [bssGrp, retourGrp, productGrp, examenGrp].forEach(g => {
+        [bssGrp, retourGrp, mpDeliveryGrp, productGrp, examenGrp].forEach(g => {
             if (g) g.classList.remove('visible');
         });
 
-        if      (requiresProduct.includes(actionType) && productGrp) productGrp.classList.add('visible');
-        else if (requiresBss.includes(actionType)     && bssGrp)     bssGrp.classList.add('visible');
-        else if (requiresRetour.includes(actionType)  && retourGrp)  retourGrp.classList.add('visible');
-        else if (requiresExamen.includes(actionType)  && examenGrp)  examenGrp.classList.add('visible');
+        if      (requiresProduct.includes(actionType) && productGrp)       productGrp.classList.add('visible');
+        else if (requiresBss.includes(actionType)     && bssGrp)           bssGrp.classList.add('visible');
+        else if (requiresMpDelivery.includes(actionType) && mpDeliveryGrp) mpDeliveryGrp.classList.add('visible');
+        else if (requiresRetour.includes(actionType)  && retourGrp)        retourGrp.classList.add('visible');
+        else if (requiresExamen.includes(actionType)  && examenGrp)        examenGrp.classList.add('visible');
+
+        reloadCompteScopedSelects(lineEl);
     }
 
     /* ── Wire up a single line ──────────────── */
@@ -379,6 +454,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const actionTypeSelect = lineEl.querySelector('.action-type-select');
         const moyenSelect      = lineEl.querySelector('.moyen-select');
         const contactSelect    = lineEl.querySelector('.contact-multiselect');
+        const bssSelect        = lineEl.querySelector('.bss-select');
+        const retourSelect     = lineEl.querySelector('.retour-select');
+        const mpDeliverySelect = lineEl.querySelector('.mp-delivery-select');
 
         // Load contacts, preserving existing selections on edit
         if (compteSelect?.value && contactSelect) {
@@ -407,9 +485,10 @@ document.addEventListener('DOMContentLoaded', function () {
             if (actionTypeSelect.value) {
                 const savedMoyen = moyenSelect?.dataset.saved || moyenSelect?.value || '';
                 if (moyenSelect) loadMoyens(actionTypeSelect.value, moyenSelect, savedMoyen);
-                updateConditional(lineEl);
             }
         }
+
+        updateConditional(lineEl);
     }
 
     /* ── Global compte change → reload contacts for ALL lines ── */
@@ -417,6 +496,13 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.line-item').forEach(lineEl => {
             const contactSel = lineEl.querySelector('.contact-multiselect');
             if (contactSel) loadContacts(compteSelect.value, contactSel, []);
+
+            lineEl.querySelectorAll('.bss-select, .retour-select, .mp-delivery-select').forEach(el => {
+                el.dataset.saved = '';
+                el.value = '';
+            });
+
+            reloadCompteScopedSelects(lineEl);
         });
     });
 
@@ -438,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (el.name.includes('contact_ids'))  el.innerHTML = '';
                 if (el.name.includes('product_ids') || el.name.includes('examen_ids'))
                     Array.from(el.options).forEach(o => o.selected = false);
-                if (el.name.includes('bss_id') || el.name.includes('retour_id'))
+                if (el.name.includes('bss_id') || el.name.includes('retour_id') || el.name.includes('mp_delivery_id'))
                     el.value = '';
             }
 
@@ -447,6 +533,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         template.querySelectorAll('[id^="bss-group-"]').forEach(el    => el.id = `bss-group-${idx}`);
         template.querySelectorAll('[id^="retour-group-"]').forEach(el => el.id = `retour-group-${idx}`);
+        template.querySelectorAll('[id^="mp-delivery-group-"]').forEach(el => el.id = `mp-delivery-group-${idx}`);
         template.querySelectorAll('.cond-field').forEach(el => el.classList.remove('visible'));
 
         const badge = template.querySelector('.line-num-badge');

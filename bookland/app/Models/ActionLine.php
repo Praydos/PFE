@@ -10,7 +10,7 @@ class ActionLine extends Model
 {
     use HasFactory, LogsModelActivity;
 
-    protected $fillable = ['action_id', 'categorie', 'action_type', 'moyen', 'description','bss_id', 'retour_id'];
+    protected $fillable = ['action_id', 'categorie', 'action_type', 'moyen', 'description', 'bss_id', 'retour_id', 'mp_delivery_id'];
 
     public function action()
     {
@@ -33,12 +33,17 @@ class ActionLine extends Model
     }
 
     public function bss()
-{
-    return $this->belongsTo(Bss::class);
-}
+    {
+        return $this->belongsTo(Bss::class);
+    }
 
-public function retour()
-{
-    return $this->belongsTo(Retour::class);
-}
+    public function retour()
+    {
+        return $this->belongsTo(Retour::class);
+    }
+
+    public function mpDelivery()
+    {
+        return $this->belongsTo(MpDelivery::class);
+    }
 }

@@ -267,6 +267,15 @@ Route::get('/api/comptes/{compte}/bss', function (App\Models\Compte $compte) {
     return response()->json($bss);
 })->name('api.compte.bss');
 
+Route::get('/api/comptes/{compte}/retours', function (App\Models\Compte $compte) {
+    $retours = App\Models\Retour::whereHas('bss', function ($q) use ($compte) {
+        $q->where('compte_id', $compte->id);
+    })->get(['id', 'numero']);
+    return response()->json($retours);
+})->name('api.compte.retours');
+
+
+
 
 
 
@@ -389,6 +398,9 @@ Route::post('/actions/{action}/annuler', [ActionController::class, 'annuler'])->
 Route::post('/actions/{action}/reporter', [ActionController::class, 'reporter'])->name('actions.reporter');
 Route::get('/api/action-types-by-categorie', [ActionController::class, 'getActionTypesByCategorie'])->name('api.action-types');
 Route::get('/api/moyens-by-action-type', [ActionController::class, 'getMoyensByActionType'])->name('api.moyens');
+Route::get('/api/comptes/{compte}/mp-deliveries', [ActionController::class, 'mpDeliveriesForCompte'])
+    ->middleware('auth')
+    ->name('api.compte.mp-deliveries');
 
 
 

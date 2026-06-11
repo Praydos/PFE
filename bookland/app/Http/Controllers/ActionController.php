@@ -82,12 +82,14 @@ class ActionController extends Controller
     ];
     private $requiresBss = [
         'Livraison Spécimens',
-        'Retour Spécimens',
         'Livraison Spécimens – Requêtes Spéciales',
+        'Retour MP'
+    ];
+    private $requiresMpDelivery = [
         'Livraison MP'
     ];
     private $requiresRetour = [
-        'Retour MP'
+        'Retour Spécimens'
     ];
     private $requiresExamen = [
         'Visite de Prospection – Présentation Examens'
@@ -118,6 +120,7 @@ class ActionController extends Controller
 
         $requiresProduct = $this->requiresProduct;
         $requiresBss = $this->requiresBss;
+        $requiresMpDelivery = $this->requiresMpDelivery;
         $requiresRetour = $this->requiresRetour;
         $requiresExamen = $this->requiresExamen;
 
@@ -137,6 +140,7 @@ class ActionController extends Controller
             'retoursList',
             'requiresProduct',
             'requiresBss',
+            'requiresMpDelivery',
             'requiresRetour',
             'requiresExamen',
             'selectedCompteId',
@@ -164,6 +168,7 @@ class ActionController extends Controller
 
         $requiresProduct = $this->requiresProduct;
         $requiresBss = $this->requiresBss;
+        $requiresMpDelivery = $this->requiresMpDelivery;
         $requiresRetour = $this->requiresRetour;
         $requiresExamen = $this->requiresExamen;
 
@@ -181,6 +186,7 @@ class ActionController extends Controller
             'retoursList',
             'requiresProduct',
             'requiresBss',
+            'requiresMpDelivery',
             'requiresRetour',
             'requiresExamen',
             'selectedCompteId',
@@ -219,6 +225,7 @@ class ActionController extends Controller
             'lines.*.examen_ids.*' => 'exists:examens,id',
             'lines.*.bss_id' => 'nullable|exists:bsses,id',
             'lines.*.retour_id' => 'nullable|exists:retours,id',
+            'lines.*.mp_delivery_id' => 'nullable|exists:mp_deliveries,id',
         ];
 
         $lines = $request->input('lines', []);
@@ -228,6 +235,8 @@ class ActionController extends Controller
                 $rules["lines.{$idx}.product_ids"] = 'required|array|min:1';
             elseif (in_array($actionType, $this->requiresBss))
                 $rules["lines.{$idx}.bss_id"] = 'required|exists:bsses,id';
+            elseif (in_array($actionType, $this->requiresMpDelivery))
+                $rules["lines.{$idx}.mp_delivery_id"] = 'required|exists:mp_deliveries,id';
             elseif (in_array($actionType, $this->requiresRetour))
                 $rules["lines.{$idx}.retour_id"] = 'required|exists:retours,id';
             elseif (in_array($actionType, $this->requiresExamen))
@@ -292,6 +301,7 @@ class ActionController extends Controller
             'lines.*.examen_ids.*' => 'exists:examens,id',
             'lines.*.bss_id' => 'nullable|exists:bsses,id',
             'lines.*.retour_id' => 'nullable|exists:retours,id',
+            'lines.*.mp_delivery_id' => 'nullable|exists:mp_deliveries,id',
         ];
 
         // Add conditional requirements per line based on action type
@@ -302,6 +312,8 @@ class ActionController extends Controller
                 $rules["lines.{$idx}.product_ids"] = 'required|array|min:1';
             } elseif (in_array($actionType, $this->requiresBss)) {
                 $rules["lines.{$idx}.bss_id"] = 'required|exists:bsses,id';
+            } elseif (in_array($actionType, $this->requiresMpDelivery)) {
+                $rules["lines.{$idx}.mp_delivery_id"] = 'required|exists:mp_deliveries,id';
             } elseif (in_array($actionType, $this->requiresRetour)) {
                 $rules["lines.{$idx}.retour_id"] = 'required|exists:retours,id';
             } elseif (in_array($actionType, $this->requiresExamen)) {
@@ -332,7 +344,55 @@ class ActionController extends Controller
             $validated['rappel_avant'] = null;
         }
 
+        $this->validateScopedLineReferences($request, (int) $validated['compte_id']);
+
         return $validated;
+    }
+
+    private function validateScopedLineReferences(Request $request, int $compteId): void
+    {
+        foreach ($request->input('lines', []) as $idx => $line) {
+            $actionType = $line['action_type'] ?? '';
+
+            if ($actionType === 'Livraison MP' && ! empty($line['mp_delivery_id'])) {
+                $belongsToCompte = MpDelivery::query()
+                    ->where('id', $line['mp_delivery_id'])
+                    ->where('compte_id', $compteId)
+                    ->exists();
+
+                if (! $belongsToCompte) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        "lines.{$idx}.mp_delivery_id" => 'Cette livraison MP n\'appartient pas au compte sélectionné.',
+                    ]);
+                }
+            }
+
+            if (in_array($actionType, $this->requiresBss, true) && ! empty($line['bss_id'])) {
+                $belongsToCompte = Bss::query()
+                    ->where('id', $line['bss_id'])
+                    ->where('compte_id', $compteId)
+                    ->exists();
+
+                if (! $belongsToCompte) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        "lines.{$idx}.bss_id" => 'Ce BSS n\'appartient pas au compte sélectionné.',
+                    ]);
+                }
+            }
+
+            if (in_array($actionType, $this->requiresRetour, true) && ! empty($line['retour_id'])) {
+                $belongsToCompte = Retour::query()
+                    ->where('id', $line['retour_id'])
+                    ->whereHas('bss', fn ($q) => $q->where('compte_id', $compteId))
+                    ->exists();
+
+                if (! $belongsToCompte) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        "lines.{$idx}.retour_id" => 'Ce retour n\'appartient pas au compte sélectionné.',
+                    ]);
+                }
+            }
+        }
     }
 
     private function createActionWithLines(array $data): Action
@@ -364,6 +424,7 @@ class ActionController extends Controller
                     'description' => $lineData['description'],
                     'bss_id' => $lineData['bss_id'] ?? null,
                     'retour_id' => $lineData['retour_id'] ?? null,
+                    'mp_delivery_id' => $lineData['mp_delivery_id'] ?? null,
                 ]);
                 if (!empty($lineData['contact_ids'])) {
                     $line->contacts()->sync($lineData['contact_ids']);
@@ -466,6 +527,7 @@ class ActionController extends Controller
 
         $requiresProduct = $this->requiresProduct;
         $requiresBss = $this->requiresBss;
+        $requiresMpDelivery = $this->requiresMpDelivery;
         $requiresRetour = $this->requiresRetour;
         $requiresExamen = $this->requiresExamen;
 
@@ -478,6 +540,7 @@ class ActionController extends Controller
             'bssOptions',
             'requiresProduct',
             'requiresBss',
+            'requiresMpDelivery',
             'requiresRetour',
             'requiresExamen'
         ));
@@ -510,6 +573,9 @@ class ActionController extends Controller
                     'action_type' => $lineData['action_type'],
                     'moyen' => $lineData['moyen'],
                     'description' => $lineData['description'],
+                    'bss_id' => $lineData['bss_id'] ?? null,
+                    'retour_id' => $lineData['retour_id'] ?? null,
+                    'mp_delivery_id' => $lineData['mp_delivery_id'] ?? null,
                 ]);
                 if (!empty($lineData['contact_ids'])) {
                     $line->contacts()->sync($lineData['contact_ids']);
@@ -730,6 +796,55 @@ class ActionController extends Controller
         $actionType = $request->action_type;
         $moyens = $this->getMoyensForActionType($actionType);
         return response()->json($moyens);
+    }
+
+    public function mpDeliveriesForCompte(Request $request, Compte $compte)
+    {
+        $this->authorizeCompteForAction($compte);
+
+        $includeId = $request->integer('include');
+
+        $deliveries = MpDelivery::query()
+            ->where('compte_id', $compte->id)
+            ->where(function ($query) use ($includeId) {
+                $query->where('statut', 'planifie');
+                if ($includeId) {
+                    $query->orWhere('id', $includeId);
+                }
+            })
+            ->with('mpProduct')
+            ->orderBy('numero')
+            ->get();
+
+        return response()->json($deliveries->map(fn (MpDelivery $delivery) => [
+            'id' => $delivery->id,
+            'label' => $delivery->numero.' – '.($delivery->mpProduct->nom ?? '—'),
+        ]));
+    }
+
+    private function authorizeCompteForAction(Compte $compte): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            abort(401);
+        }
+
+        if (in_array($user->role, ['admin', 'abo'], true)) {
+            return;
+        }
+
+        if ($user->role === 'delegue' && (int) $compte->delegue_id === (int) $user->id) {
+            return;
+        }
+
+        if ($user->role === 'rbo') {
+            $delegateIds = $user->zonesAsRbo->flatMap->delegates->pluck('id')->unique();
+            if ($delegateIds->contains($compte->delegue_id)) {
+                return;
+            }
+        }
+
+        abort(403);
     }
 
     // Helpers
