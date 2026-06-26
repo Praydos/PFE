@@ -9,83 +9,430 @@
      <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 ──────────────────────────────────────────────────────────────── --}}
 
-<style>
-/* ── Reset & base ── */
-.tch-pg *  { box-sizing: border-box; margin: 0; padding: 0; }
-.tch-pg    {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg, #f5f6fa);
-    min-height: 100vh;
-    padding: 2rem 1.75rem;
-    color: var(--text, #1a1d23);
+<style>/* ============================================================
+   TASK SHOW VIEW – STYLED WITH THE SAME DESIGN SYSTEM
+   (Matches the action view’s look & feel)
+   ============================================================ */
+
+/* ── Reuse the same root variables ────────────────────────── */
+:root {
+    /* Backgrounds */
+    --bg-base:       #f5f6fa;
+    --bg-card:       #ffffff;
+    --bg-hover:      #f8f9fd;
+    --bg-subtle:     #f0f2f8;
+
+    /* Borders */
+    --border:        #e4e7f0;
+    --border-md:     #d0d5e8;
+
+    /* Colors – Brand */
+    --blue:          #5b8dee;
+    --blue-dark:     #3d6fd6;
+    --blue-light:    #eef3fd;
+    --blue-mid:      #dce8fb;
+
+    /* Colors – Accents */
+    --teal:          #0cb8b6;
+    --teal-light:    #e6faf9;
+    --violet:        #7c6fcd;
+    --violet-light:  #f0eeff;
+    --amber:         #e8a020;
+    --amber-light:   #fff8ec;
+    --rose:          #e8506a;
+    --rose-light:    #fef0f2;
+    --green:         #28c76f;
+    --green-light:   #e8fbf0;
+
+    /* Text */
+    --text-primary:   #1a1f36;
+    --text-secondary: #525f7f;
+    --text-muted:     #9ba8c5;
+    --text-hint:      #bcc5dc;
+
+    /* Radius */
+    --r-xs: 6px;
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 20px;
+
+    /* Shadows */
+    --shadow-xs: 0 1px 3px rgba(31,45,80,.06), 0 1px 2px rgba(31,45,80,.04);
+    --shadow-sm: 0 2px 8px rgba(31,45,80,.08), 0 1px 3px rgba(31,45,80,.05);
+    --shadow-md: 0 8px 24px rgba(31,45,80,.10), 0 2px 8px rgba(31,45,80,.06);
+    --shadow-blue: 0 4px 14px rgba(91,141,238,.35);
+
+    /* Typography */
+    --font: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+
+    /* Transitions */
+    --ease: cubic-bezier(.4,0,.2,1);
+    --t: .18s var(--ease);
 }
 
-/* ── Breadcrumb ── */
-.tch-bc               { display: flex; align-items: center; gap: .4rem; font-size: .78rem; color: #6b7280; margin-bottom: 2rem; }
-.tch-bc a             { color: #6b7280; text-decoration: none; display: flex; align-items: center; gap: .3rem; transition: color .15s; }
-.tch-bc a:hover       { color: #111827; }
-.tch-bc-sep           { opacity: .35; }
-.tch-bc-cur           { font-family: 'Sora', sans-serif; font-weight: 600; font-size: .78rem; color: #111827; }
+/* ── Page ──────────────────────────────────────────────────── */
+.tch-pg {
+    padding: 2rem 2.5rem 3rem;
+    animation: pageIn .4s var(--ease) both;
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
-/* ── Page header ── */
-.tch-hdr              { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
-.tch-hdr-l h1         { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.55rem; letter-spacing: -.02em; line-height: 1.2; color: #111827; }
-.tch-hdr-l p          { font-size: .82rem; color: #6b7280; margin-top: .3rem; }
-.tch-hdr-actions      { display: flex; gap: .5rem; flex-wrap: wrap; }
+/* reuse pageIn animation from the action view */
+@keyframes pageIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 
-/* ── Buttons ── */
-.btn-tch              { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 1rem; border-radius: 8px; font-size: .8rem; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; transition: all .15s; text-decoration: none; }
-.btn-tch-ghost        { background: #fff; border: 1px solid #e5e7eb; color: #374151; }
-.btn-tch-ghost:hover  { background: #f9fafb; }
-.btn-tch-primary      { background: #185FA5; color: #fff; }
-.btn-tch-primary:hover{ background: #0c447c; }
-.btn-tch-success      { background: #3B6D11; color: #fff; }
-.btn-tch-success:hover{ background: #27500A; }
-.btn-tch-danger       { background: #A32D2D; color: #fff; font-size: .78rem; padding: .42rem .9rem; }
-.btn-tch-danger:hover { background: #791F1F; }
+/* ── Breadcrumb ───────────────────────────────────────────── */
+.tch-bc {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .76rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 1.4rem;
+}
+.tch-bc a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--t);
+}
+.tch-bc a:hover { color: var(--blue); }
+.tch-bc-sep { color: var(--text-hint); }
+.tch-bc-cur { color: var(--text-secondary); }
 
-/* ── Main card ── */
-.tch-card             { background: #fff; border: 1px solid #e9eaee; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+/* ── Header ────────────────────────────────────────────────── */
+.tch-hdr {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+.tch-hdr-l h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -.03em;
+    color: var(--text-primary);
+    line-height: 1.15;
+    margin: 0;
+}
+.tch-hdr-l p {
+    font-size: .83rem;
+    color: var(--text-muted);
+    margin-top: .3rem;
+}
+.tch-hdr-actions {
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+}
 
-/* ── Card header ── */
-.tch-card-hd          { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f0f1f5; display: flex; align-items: center; justify-content: space-between; }
-.tch-card-title       { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 600; font-size: .88rem; color: #111827; }
-.tch-pip              { width: 6px; height: 6px; border-radius: 50%; background: #185FA5; flex-shrink: 0; }
+/* ── Buttons ───────────────────────────────────────────────── */
+.btn-tch {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .56rem 1.1rem;
+    border-radius: var(--r-sm);
+    font-family: var(--font);
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all var(--t);
+    text-decoration: none;
+    white-space: nowrap;
+    letter-spacing: -.01em;
+    line-height: 1;
+}
+.btn-tch svg { flex-shrink: 0; }
 
-/* ── Info grid ── */
-.tch-info-grid        { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.tch-info-row         { padding: 1rem 1.5rem; border-bottom: 1px solid #f0f1f5; display: flex; flex-direction: column; gap: .3rem; }
-.tch-info-row:nth-child(even) { background: #fafbfc; }
-.tch-info-row.full    { grid-column: 1 / -1; }
-.tch-info-lbl         { font-size: .72rem; font-weight: 500; text-transform: uppercase; letter-spacing: .07em; color: #9ca3af; }
-.tch-info-val         { font-size: .9rem; color: #111827; font-weight: 400; display: flex; align-items: center; gap: .4rem; }
-.tch-info-val.muted   { color: #9ca3af; font-style: italic; }
+.btn-tch-primary {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+    box-shadow: var(--shadow-blue);
+}
+.btn-tch-primary:hover {
+    background: var(--blue-dark);
+    border-color: var(--blue-dark);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(91,141,238,.4);
+}
 
-/* ── Badges ── */
-.tch-badge            { display: inline-flex; align-items: center; gap: .3rem; padding: .25rem .65rem; border-radius: 999px; font-size: .75rem; font-weight: 500; }
-.tch-badge-green      { background: #EAF3DE; color: #3B6D11; }
-.tch-badge-amber      { background: #FAEEDA; color: #854F0B; }
+.btn-tch-ghost {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border-color: var(--border);
+    box-shadow: var(--shadow-xs);
+}
+.btn-tch-ghost:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-md);
+    text-decoration: none;
+}
 
-/* ── Avatar ── */
-.tch-avatar           { width: 30px; height: 30px; border-radius: 50%; background: #B5D4F4; display: inline-flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 600; color: #0C447C; flex-shrink: 0; }
-.tch-avatar.sm        { width: 22px; height: 22px; font-size: .62rem; }
+.btn-tch-success {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+    box-shadow: 0 4px 14px rgba(40,199,111,.35);
+}
+.btn-tch-success:hover {
+    background: #1fa85a;
+    border-color: #1fa85a;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(40,199,111,.4);
+}
 
-/* ── Contact chips ── */
-.tch-chips            { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .1rem; }
-.tch-chip             { display: inline-flex; align-items: center; gap: .3rem; background: #f3f4f6; border: 1px solid #e9eaee; border-radius: 999px; padding: .2rem .55rem .2rem .3rem; font-size: .78rem; color: #374151; }
+.btn-tch-danger {
+    background: var(--rose-light);
+    color: var(--rose);
+    border-color: rgba(232,80,106,.18);
+}
+.btn-tch-danger:hover {
+    background: #fddde2;
+    color: var(--rose);
+    text-decoration: none;
+}
 
-/* ── Recurring section ── */
-.tch-recur            { margin: 1.25rem 1.5rem; border: 1px solid #F0997B; border-radius: 12px; background: #FAECE7; padding: 1.1rem 1.25rem; }
-.tch-recur-title      { display: flex; align-items: center; gap: .45rem; font-family: 'Sora', sans-serif; font-size: .8rem; font-weight: 600; color: #993C1D; margin-bottom: .85rem; }
-.tch-radio-group      { display: flex; flex-direction: column; gap: .45rem; margin-bottom: 1rem; }
-.tch-radio-lbl        { display: flex; align-items: center; gap: .5rem; font-size: .82rem; color: #712B13; cursor: pointer; }
-.tch-radio-lbl input  { accent-color: #993C1D; }
+/* ── Main Card ────────────────────────────────────────────── */
+.tch-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
 
-/* ── Card footer ── */
-.tch-card-ft          { padding: .9rem 1.5rem; border-top: 1px solid #f0f1f5; background: #fafbfc; display: flex; justify-content: flex-end; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.tch-card-hd {
+    padding: 1.1rem 1.6rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .55rem;
+    background: linear-gradient(to bottom, #fafbff, #fff);
+}
 
-/* ── SVG icons (inline helpers) ── */
-.tch-icon             { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+.tch-card-title {
+    font-size: .88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -.01em;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+}
+
+.tch-pip {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-mid);
+    display: inline-block;
+}
+
+/* ── Badges ────────────────────────────────────────────────── */
+.tch-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .22rem .65rem;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.tch-badge-green {
+    background: var(--green-light);
+    color: var(--green);
+}
+.tch-badge-amber {
+    background: var(--amber-light);
+    color: var(--amber);
+}
+
+/* ── Info Grid ────────────────────────────────────────────── */
+.tch-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem 1.6rem;
+}
+
+.tch-info-row {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+.tch-info-row.full {
+    grid-column: 1 / -1;
+}
+
+.tch-info-lbl {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.tch-info-val {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    color: var(--text-secondary);
+}
+.tch-info-val.muted {
+    color: var(--text-muted);
+}
+.tch-info-val .tch-icon {
+    color: var(--text-hint);
+}
+
+/* ── Avatar ────────────────────────────────────────────────── */
+.tch-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue);
+    font-size: .7rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+.tch-avatar.sm {
+    width: 22px;
+    height: 22px;
+    font-size: .6rem;
+}
+
+/* ── Chips ─────────────────────────────────────────────────── */
+.tch-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: .2rem;
+}
+.tch-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .15rem .6rem .15rem .3rem;
+    border-radius: 20px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    font-size: .75rem;
+    color: var(--text-secondary);
+}
+
+/* ── Recurrence Section ───────────────────────────────────── */
+.tch-recur {
+    margin: 0 1.6rem 1.5rem;
+    padding: 1rem 1.2rem;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+}
+
+.tch-recur-title {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .75rem;
+}
+
+.tch-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    margin-bottom: 1rem;
+}
+.tch-radio-lbl {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .82rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+.tch-radio-lbl input[type="radio"] {
+    accent-color: var(--blue);
+    width: 15px;
+    height: 15px;
+}
+
+/* ── Card Footer ──────────────────────────────────────────── */
+.tch-card-ft {
+    padding: 1.1rem 1.6rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg-base);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .6rem;
+    flex-wrap: wrap;
+}
+
+/* ── Utilities ────────────────────────────────────────────── */
+.tch-icon {
+    flex-shrink: 0;
+}
+.muted {
+    color: var(--text-muted);
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .tch-pg {
+        padding: 1.25rem 1rem 2rem;
+    }
+    .tch-info-grid {
+        grid-template-columns: 1fr;
+        padding: 1rem 1.2rem;
+    }
+    .tch-hdr {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .tch-hdr-actions {
+        justify-content: flex-start;
+    }
+    .tch-card-hd {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .5rem;
+    }
+    .tch-card-ft {
+        flex-direction: column-reverse;
+    }
+    .btn-tch {
+        width: 100%;
+        justify-content: center;
+    }
+}
 </style>
 @endpush
 @section('content')
