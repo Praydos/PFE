@@ -400,6 +400,9 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
         <div class="zn-card-body">
             <div class="info-grid">
                 <div class="info-item"><span class="info-label">Compte</span> {{ $action->compte->etablissement }}</div>
+                @if(in_array(auth()->user()->role, ['admin', 'rbo', 'abo']))
+                <div class="info-item"><span class="info-label">Délégué</span> {{ optional($action->delegate)->prenom }} {{ optional($action->delegate)->nom }}</div>
+                @endif
                 <div class="info-item"><span class="info-label">Date</span> {{ $action->date_planification->format('d/m/Y') }}</div>
                 <div class="info-item"><span class="info-label">Lieu</span> {{ $action->lieu ?? '-' }}</div>
                 <div class="info-item"><span class="info-label">Statut</span> <span class="dr-badge bd-{{ $action->statut }}">{{ ucfirst($action->statut) }}</span></div>

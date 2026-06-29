@@ -304,6 +304,9 @@
                 <thead>
                     <tr>
                         <th>Établissement</th>
+                        @if(in_array(auth()->user()->role, ['admin', 'rbo', 'abo']))
+                        <th>Délégué</th>
+                        @endif
                         <th>Année</th>
                         <th>Niveau</th>
                         <th>Cycle</th>
@@ -318,6 +321,9 @@
                     @forelse($effectifs as $e)
                     <tr>
                         <td><strong>{{ $e->compte->etablissement }}</strong></td>
+                        @if(in_array(auth()->user()->role, ['admin', 'rbo', 'abo']))
+                        <td>{{ optional($e->compte->delegue)->prenom }} {{ optional($e->compte->delegue)->nom }}</td>
+                        @endif
                         <td>{{ $e->anneeScolaire->libelle }}</td>
                         <td>{{ $e->niveau }}</td>
                         <td>{{ $e->cycle ?? '-' }}</td>

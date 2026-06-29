@@ -442,6 +442,9 @@ textarea.frm-input {
             <div class="tch-info-grid">
                 <div class="tch-info-row"><span class="tch-info-lbl">Compte</span><span class="tch-info-val">{{ $reclamation->compte->etablissement }}</span></div>
                 <div class="tch-info-row"><span class="tch-info-lbl">Contact</span><span class="tch-info-val">{{ $reclamation->contact->prenom }} {{ $reclamation->contact->nom }}</span></div>
+                @if(in_array(auth()->user()->role, ['admin', 'rbo', 'abo']))
+                <div class="tch-info-row"><span class="tch-info-lbl">Délégué</span><span class="tch-info-val">{{ optional($reclamation->delegate)->prenom }} {{ optional($reclamation->delegate)->nom }}</span></div>
+                @endif
                 <div class="tch-info-row"><span class="tch-info-lbl">Date réclamation</span><span class="tch-info-val">{{ $reclamation->date_reclamation->format('d/m/Y') }}</span></div>
                 <div class="tch-info-row"><span class="tch-info-lbl">Type</span><span class="tch-info-val">{{ str_replace('_', ' ', $reclamation->type ?? '-') }}</span></div>
                 <div class="tch-info-row"><span class="tch-info-lbl">Priorité</span><span class="tch-info-val">{{ ucfirst($reclamation->priorite) }}</span></div>
