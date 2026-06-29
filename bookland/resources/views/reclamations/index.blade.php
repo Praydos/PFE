@@ -76,6 +76,7 @@
     .btn-zn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); color: #fff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(91,141,238,.4); }
     .btn-zn-ghost { background: var(--bg-card); color: var(--text-secondary); border-color: var(--border); box-shadow: var(--shadow-xs); }
     .btn-zn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-md); text-decoration: none; }
+     .btn-zn-danger { background: var(--rose-light); color: var(--rose); border-color: rgba(232,80,106,.18); }
     .btn-zn-info { background: var(--violet-light); color: var(--violet); border-color: rgba(124,111,205,.2); }
     .btn-zn-info:hover { background: #e8e5ff; color: var(--violet); text-decoration: none; }
     .btn-zn-sm { padding: .38rem .72rem; font-size: .75rem; }
@@ -357,8 +358,9 @@
                                     <form method="POST" action="{{ route('reclamations.destroy', $r) }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation ?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-zn btn-zn-sm btn-zn-danger-ghost" title="Supprimer">
+                                        <button type="submit" class="btn-zn btn-zn-sm btn-zn-danger" title="Supprimer">
                                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                        Supprimer
                                         </button>
                                     </form>
                                 @endif

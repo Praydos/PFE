@@ -796,7 +796,7 @@
                                                     </button>
                                                 </form>
                                             @endif
-                                            @if(auth()->user()->role === 'delegue' && $d->delegue_id === auth()->id())
+                                            @if((auth()->user()->role === 'delegue' && $d->delegue_id === auth()->id())|| auth()->user()->role === 'admin')
                                                 <a href="{{ route('demandes-specimens.edit', $d) }}"
                                                     class="btn-zn btn-zn-sm btn-zn-ghost"
                                                     style="border-color: var(--amber); color: var(--amber);">
