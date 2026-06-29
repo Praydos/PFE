@@ -240,8 +240,18 @@
             pointer-events: none;
             cursor: not-allowed;
         }
-        .btn-zn-warning { background: var(--amber-light); color: var(--amber); border-color: rgba(232,160,32,.2); }
-        .btn-zn-warning:hover { background: #ffefd4; color: var(--amber); text-decoration: none; }
+
+        .btn-zn-warning {
+            background: var(--amber-light);
+            color: var(--amber);
+            border-color: rgba(232, 160, 32, .2);
+        }
+
+        .btn-zn-warning:hover {
+            background: #ffefd4;
+            color: var(--amber);
+            text-decoration: none;
+        }
 
 
         .zn-search-bar {
@@ -546,6 +556,10 @@
                 gap: 1rem;
             }
 
+            .zn-header-actions {
+                flex-wrap: wrap;
+            }
+
             .zn-table th,
             .zn-table td {
                 padding: .75rem .9rem;
@@ -557,19 +571,74 @@
                 align-items: stretch;
             }
 
+            .zn-filter-group {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .zn-select {
+                width: 100%;
+            }
+
             .filter-actions {
                 margin-top: 0.5rem;
                 justify-content: flex-end;
+                width: 100%;
+            }
+
+            .filter-actions .btn-zn {
+                flex: 1;
+                justify-content: center;
             }
 
             .actions-cell {
                 flex-direction: column;
                 align-items: flex-start;
+                gap: .3rem;
+            }
+
+            .actions-cell .btn-zn,
+            .actions-cell form {
+                width: 100%;
+            }
+
+            .actions-cell form .btn-zn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .zn-header-left h1 {
+                font-size: 1.35rem;
+            }
+
+            .zn-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: .5rem;
+            }
+
+            .zn-table th {
+                font-size: .65rem;
+            }
+
+            .zn-table td {
+                font-size: .75rem;
             }
 
             .btn-zn {
-                width: 100%;
-                justify-content: center;
+                font-size: .78rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .zn-page {
+                padding: 1rem .75rem 1.5rem;
+            }
+
+            .zn-search-bar {
+                padding: 1rem;
             }
         }
     </style>
@@ -799,7 +868,7 @@
                                                     </button>
                                                 </form>
                                             @endif
-                                            @if((auth()->user()->role === 'delegue' && $d->delegue_id === auth()->id())|| auth()->user()->role === 'admin')
+                                            @if((auth()->user()->role === 'delegue' && $d->delegue_id === auth()->id()) || auth()->user()->role === 'admin')
                                                 <a href="{{ route('demandes-specimens.edit', $d) }}"
                                                     class="btn-zn btn-zn-sm btn-zn-warning"
                                                     style="border-color: var(--amber); color: var(--amber);">

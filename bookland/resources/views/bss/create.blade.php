@@ -205,6 +205,21 @@
         .fp-footer { flex-wrap: wrap; }
         .fp-footer-spacer { display: none; }
         .btn-zn { width: 100%; justify-content: center; }
+        .fp-section { padding: 1.5rem 1.25rem 1.25rem; }
+        .radio-group { flex-direction: column; gap: .75rem; }
+    }
+
+    @media (max-width: 576px) {
+        .zn-header h1 { font-size: 1.25rem; }
+        .fp-section-head { flex-direction: row; }
+        .fp-section-icon { width: 28px; height: 28px; }
+        .fp-section-title { font-size: .84rem; }
+    }
+
+    @media (max-width: 480px) {
+        .zn-page { padding: 1rem .75rem 1.5rem; }
+        .fp-section { padding: 1.25rem 1rem 1rem; }
+        .fp-footer { padding: 1rem; }
     }
 </style>
 @endpush

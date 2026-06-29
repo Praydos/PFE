@@ -635,6 +635,50 @@
                 width: 100%;
                 justify-content: center;
             }
+
+            .sv-side-body .btn-zn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .zn-header-left h1 {
+                font-size: 1.25rem;
+            }
+
+            .zn-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: .5rem;
+            }
+
+            .zn-table th {
+                font-size: .65rem;
+            }
+
+            .zn-table td {
+                font-size: .78rem;
+            }
+
+            .tbl-actions {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .tbl-actions .btn-zn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .zn-page {
+                padding: 1rem .75rem 1.5rem;
+            }
+
+            .sv-info-item {
+                padding: .7rem 0;
+            }
         }
     </style>
 @endpush

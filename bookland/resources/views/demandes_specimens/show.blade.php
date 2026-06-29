@@ -415,6 +415,11 @@
                 padding: 1.25rem 1rem 2rem;
             }
 
+            .zn-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
             .info-grid {
                 grid-template-columns: 1fr;
             }
@@ -427,11 +432,55 @@
 
             .card-footer {
                 flex-direction: column-reverse;
+                align-items: stretch;
+            }
+
+            .card-footer form {
+                width: 100%;
             }
 
             .btn-zn {
                 width: 100%;
                 justify-content: center;
+            }
+
+            .locked-banner {
+                flex-direction: column;
+                gap: .5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .zn-header-left h1 {
+                font-size: 1.35rem;
+            }
+
+            .zn-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: .5rem;
+            }
+
+            .zn-table th {
+                font-size: .65rem;
+            }
+
+            .zn-table td {
+                font-size: .75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .zn-page {
+                padding: 1rem .75rem 1.5rem;
+            }
+
+            .locked-banner {
+                padding: .75rem 1rem;
+            }
+
+            .zn-card-body {
+                padding: 1rem;
             }
         }
     </style>
@@ -506,7 +555,8 @@
                         {{ $demandes_specimen->compte->etablissement ?? '-' }}</div>
                     <div class="info-item"><span class="info-label">Contact</span>
                         {{ optional($demandes_specimen->contact)->prenom ?? '' }}
-                        {{ optional($demandes_specimen->contact)->nom ?? '-' }}</div>
+                        {{ optional($demandes_specimen->contact)->nom ?? '-' }}
+                    </div>
                     <div class="info-item"><span class="info-label">Délégué</span>
                         {{ $demandes_specimen->delegate->prenom }} {{ $demandes_specimen->delegate->nom }}</div>
                     <div class="info-item"><span class="info-label">Ville</span> {{ $demandes_specimen->ville->nom ?? '-' }}
@@ -529,7 +579,8 @@
                     @if($demandes_specimen->valide_par)
                         <div class="info-item"><span class="info-label">Validé par</span>
                             {{ $demandes_specimen->validePar->prenom }} {{ $demandes_specimen->validePar->nom }} le
-                            {{ $demandes_specimen->date_validation->format('d/m/Y H:i') }}</div>
+                            {{ $demandes_specimen->date_validation->format('d/m/Y H:i') }}
+                        </div>
                     @endif
                     @if($demandes_specimen->description)
                         <div class="info-item"><span class="info-label">Description</span> {{ $demandes_specimen->description }}
