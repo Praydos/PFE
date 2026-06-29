@@ -1093,37 +1093,6 @@
             </div>
         </div>
 
-        {{-- Stat Cards --}}
-        {{-- <div class="dr-stats">
-            <div class="dr-stat-card">
-                <div class="dr-stat-icon si-blue">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                </div>
-                <div>
-                    <div class="dr-stat-label">Total contacts</div>
-                    <div class="dr-stat-value">{{ $contacts->total() }}</div>
-                </div>
-            </div> --}}
-            {{-- <div class="dr-stat-card">
-                <div class="dr-stat-icon si-teal">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" />
-                        <circle cx="12" cy="10" r="3" />
-                    </svg>
-                </div>
-                <div>
-                    <div class="dr-stat-label">Page actuelle</div>
-                    <div class="dr-stat-value">{{ $contacts->currentPage() }}/{{ $contacts->lastPage() }}</div>
-                </div>
-            </div> --}}
-            {{--
-        </div> --}}
-
         {{-- Search bar --}}
         <div class="dr-search-bar">
             <form method="GET" action="{{ route('contacts.index') }}"
@@ -1246,7 +1215,7 @@
                                     @if(empty($categories))
                                         <span class="dr-badge bd-none">Aucune catégorie</span>
                                     @else
-                                        <button class="btn-dr btn-dr-sm btn-dr-info show-categories-btn"
+                                        <button class="btn-dr btn-dr-sm btn-dr-teal show-categories-btn"
                                             data-contact="{{ $contact->prenom }} {{ $contact->nom }}"
                                             data-items='@json($categories)'>
                                             {{ count($categories) }} catégorie(s)
@@ -1259,7 +1228,7 @@
                                     @if(empty($cycles))
                                         <span class="dr-badge bd-none">Aucun cycle</span>
                                     @else
-                                        <button class="btn-dr btn-dr-sm btn-dr-info show-cycles-btn"
+                                        <button class="btn-dr btn-dr-sm btn-dr-teal show-cycles-btn"
                                             data-contact="{{ $contact->prenom }} {{ $contact->nom }}" data-items='@json($cycles)'>
                                             {{ count($cycles) }} cycle(s)
                                         </button>
@@ -1270,7 +1239,7 @@
                                 <td>
                                     <div class="actions-cell">
                                         @if (auth()->user()->role !== 'admin')
-                                            <button class="btn-dr btn-dr-sm btn-dr-ghost show-comptes-btn"
+                                            <button class="btn-dr btn-dr-sm btn-dr-info show-comptes-btn"
                                                 data-contact-id="{{ $contact->id }}"
                                                 data-contact-name="{{ $contact->prenom }} {{ $contact->nom }}">
                                                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"
@@ -1302,7 +1271,7 @@
                                     <td>
                                         <div class="actions-cell">
                                             <a href="{{ route('contacts.edit', $contact) }}" class="btn-dr btn-dr-sm btn-dr-warning"
-                                                title="Modifier">
+                                                title="Modifier">Modifier
                                                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"
                                                     viewBox="0 0 24 24">
                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -1315,6 +1284,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn-dr btn-dr-sm btn-dr-danger" title="Supprimer">
+                                                    
                                                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"
                                                         viewBox="0 0 24 24">
                                                         <polyline points="3 6 5 6 21 6" />

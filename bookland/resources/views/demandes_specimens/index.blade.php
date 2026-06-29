@@ -240,6 +240,9 @@
             pointer-events: none;
             cursor: not-allowed;
         }
+        .btn-zn-warning { background: var(--amber-light); color: var(--amber); border-color: rgba(232,160,32,.2); }
+        .btn-zn-warning:hover { background: #ffefd4; color: var(--amber); text-decoration: none; }
+
 
         .zn-search-bar {
             background: var(--bg-card);
@@ -798,7 +801,7 @@
                                             @endif
                                             @if((auth()->user()->role === 'delegue' && $d->delegue_id === auth()->id())|| auth()->user()->role === 'admin')
                                                 <a href="{{ route('demandes-specimens.edit', $d) }}"
-                                                    class="btn-zn btn-zn-sm btn-zn-ghost"
+                                                    class="btn-zn btn-zn-sm btn-zn-warning"
                                                     style="border-color: var(--amber); color: var(--amber);">
                                                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"
                                                         viewBox="0 0 24 24">
@@ -812,6 +815,7 @@
                                                     @csrf @method('DELETE')
                                                     <button type="submit" class="btn-zn btn-zn-sm btn-zn-danger"
                                                         onclick="return confirm('Supprimer définitivement ?')" title="Supprimer">
+                                                        Supprimer
                                                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"
                                                             viewBox="0 0 24 24">
                                                             <polyline points="3 6 5 6 21 6" />

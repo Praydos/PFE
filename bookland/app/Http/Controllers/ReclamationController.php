@@ -94,7 +94,9 @@ class ReclamationController extends Controller
         if ($user->role !== 'admin' && ($user->role !== 'delegue'))
             abort(403);
 
-        $comptes = Compte::where('delegue_id', $user->id)->get();
+        $comptes = $user->role === 'admin'
+            ? Compte::orderBy('etablissement')->get()
+            : Compte::where('delegue_id', $user->id)->get();
         $produits = Product::orderBy('titre')->get();
         $mps = MpProduct::orderBy('nom')->get();
         $types = ['face_a_face', 'email', 'telephone', 'fax'];
@@ -142,7 +144,12 @@ class ReclamationController extends Controller
         ]);
 
         $validated['reference'] = $this->generateReference();
-        $validated['delegue_id'] = $user->id;
+        if ($user->role === 'admin') {
+            $compte = Compte::find($validated['compte_id']);
+            $validated['delegue_id'] = $compte->delegue_id ?? $user->id;
+        } else {
+            $validated['delegue_id'] = $user->id;
+        }
         $validated['statut'] = 'brouillon';
         $validated['created_by'] = $user->id;
 
@@ -193,7 +200,9 @@ class ReclamationController extends Controller
     {
         $this->authorizeEdit($reclamation);
         $user = Auth::user();
-        $comptes = Compte::where('delegue_id', $user->id)->get();
+        $comptes = $user->role === 'admin'
+            ? Compte::orderBy('etablissement')->get()
+            : Compte::where('delegue_id', $user->id)->get();
         $produits = Product::orderBy('titre')->get();
         $mps = MpProduct::orderBy('nom')->get();
         $types = ['face_a_face', 'email', 'telephone', 'fax'];
@@ -249,6 +258,10 @@ class ReclamationController extends Controller
             $validated['date_cloture'] = now()->toDateString();
         }
 
+        if ($user->role === 'admin') {
+            $compte = Compte::find($validated['compte_id']);
+            $validated['delegue_id'] = $compte->delegue_id ?? $reclamation->delegue_id;
+        }
         $validated['updated_by'] = $user->id;
         $reclamation->update($validated);
 

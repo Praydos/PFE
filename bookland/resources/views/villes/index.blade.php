@@ -440,6 +440,7 @@ body { font-family: var(--font); background: var(--bg-base); color: var(--text-p
                                 <form action="{{ route('villes.destroy', $ville) }}" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cette ville ?');">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn-vl btn-vl-sm btn-vl-danger" title="Supprimer">
+                                        Supprimer
                                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
                                     </button>
                                 </form>
